@@ -1,0 +1,492 @@
+//------------------------------------------------------------------ Data Folder Cont. ------------------------------------------------------------------//
+//****************************************************************** IDataProvider.cs ******************************************************************//
+using Microsoft.Data.SqlClient;
+using SOPSC.Api.Data.Interfaces;
+using System.Data;
+
+namespace SOPSC.Api.Data
+{
+    /// <summary>
+    /// Provides methods for executing SQL commands and stored procedures in a database.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This class serves as a concrete implementation of the <see cref="IDataProvider"/> interface. It includes methods
+    /// for executing SQL commands (SELECT, INSERT, UPDATE, DELETE) and handling results via delegates.
+    /// </para>
+    /// <para>
+    /// It uses ADO.NET components like <see cref="SqlConnection"/>, <see cref="SqlCommand"/>, and <see cref="SqlDataReader"/>
+    /// to interact with the database.
+    /// </para>
+    /// </remarks>
+    public sealed class DataProvider : IDataProvider
+    {
+        private const string LOG_CAT = "DAO";
+        private readonly string connectionString;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataProvider"/> class.
+        /// </summary>
+        /// <param name="connectionString">The connection string used to connect to the database.</param>
+        public DataProvider(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
+
+        /// <summary>
+        /// Executes a stored procedure that reads data and processes each record using a mapping function.
+        /// </summary>
+        /// <remarks>
+        /// This method allows execution of stored procedures that return multiple result sets. The results are processed
+        /// using the specified <paramref name="map"/> delegate.
+        /// </remarks>
+        /// <param name="storedProc">The name of the stored procedure to execute.</param>
+        /// <param name="inputParamMapper">A delegate to map input parameters for the stored procedure.</param>
+        /// <param name="map">A delegate to map each data row returned by the query.</param>
+        /// <param name="returnParameters">
+        /// An optional delegate to process output parameters after the stored procedure is executed.
+        /// </param>
+        /// <param name="cmdModifier">
+        /// An optional delegate to modify the <see cref="SqlCommand"/> before execution, e.g., to set command timeouts.
+        /// </param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="map"/> parameter is null.</exception>
+        public void ExecuteCmd(
+            string storedProc,
+            Action<SqlParameterCollection> inputParamMapper,
+            Action<IDataReader, short> map,
+            Action<SqlParameterCollection> returnParameters = null,
+            Action<SqlCommand> cmdModifier = null
+        )
+        {
+            if (map == null)
+            {
+                throw new ArgumentException("ObjectMapper is required.");
+            }
+            SqlDataReader reader = null;
+            SqlCommand cmd = null;
+            SqlConnection conn = null;
+            short result = 0;
+
+            try
+            {
+                using (conn = GetConnection())
+                {
+                    if (conn != null)
+                    {
+                        if (conn.State != ConnectionState.Open)
+                        {
+                            conn.Open();
+                        }
+
+                        cmd = GetCommand(conn, storedProc, inputParamMapper);
+                        if (cmd != null)
+                        {
+                            cmdModifier?.Invoke(cmd);
+                            reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                            do
+                            {
+                                while (reader.Read())
+                                {
+                                    map(reader, result);
+                                }
+                                result++;
+                            } while (reader.NextResult());
+
+                            returnParameters?.Invoke(cmd.Parameters);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed)
+                    reader.Close();
+                if (conn != null && conn.State != ConnectionState.Closed)
+                    conn.Close();
+            }
+        }
+
+        /// <summary>
+        /// Executes a stored procedure that performs an action (e.g., INSERT, UPDATE, DELETE) without returning data.
+        /// </summary>
+        /// <remarks>
+        /// This method is used for commands that do not return data but may have output parameters.
+        /// </remarks>
+        /// <param name="storedProc">The name of the stored procedure to execute.</param>
+        /// <param name="paramMapper">A delegate to map input parameters for the stored procedure.</param>
+        /// <param name="returnParameters">
+        /// An optional delegate to process output parameters after the stored procedure is executed.
+        /// </param>
+        /// <returns>The number of rows affected by the command.</returns>
+        public int ExecuteNonQuery(
+            string storedProc,
+            Action<SqlParameterCollection> paramMapper,
+            Action<SqlParameterCollection> returnParameters = null
+        )
+        {
+            SqlCommand cmd = null;
+            SqlConnection conn = null;
+
+            try
+            {
+                using (conn = GetConnection())
+                {
+                    if (conn != null)
+                    {
+                        if (conn.State != ConnectionState.Open)
+                            conn.Open();
+
+                        cmd = GetCommand(conn, storedProc, paramMapper);
+
+                        if (cmd != null)
+                        {
+                            int returnValue = cmd.ExecuteNonQuery();
+
+                            if (conn.State != ConnectionState.Closed)
+                                conn.Close();
+
+                            returnParameters?.Invoke(cmd.Parameters);
+
+                            return returnValue;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (conn != null && conn.State != ConnectionState.Closed)
+                    conn.Close();
+            }
+
+            return -1;
+        }
+
+        #region - Private Methods (Execute, GetCommand) -
+
+        /// <summary>
+        /// Creates a new <see cref="SqlConnection"/> using the provided connection string.
+        /// </summary>
+        /// <returns>An open SQL connection instance.</returns>
+        private SqlConnection GetConnection()
+        {
+            return new SqlConnection(connectionString);
+        }
+
+        /// <summary>
+        /// Creates and configures a <see cref="SqlCommand"/> for a given connection and parameters.
+        /// </summary>
+        /// <param name="conn">The active SQL connection.</param>
+        /// <param name="cmdText">The name of the stored procedure to execute.</param>
+        /// <param name="paramMapper">A delegate to map input parameters for the command.</param>
+        /// <returns>A configured <see cref="SqlCommand"/> instance.</returns>
+        private SqlCommand GetCommand(SqlConnection conn, string cmdText = null, Action<SqlParameterCollection> paramMapper = null)
+        {
+            SqlCommand cmd = conn?.CreateCommand();
+
+            if (cmd != null)
+            {
+                if (!string.IsNullOrEmpty(cmdText))
+                {
+                    cmd.CommandText = cmdText;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                }
+
+                paramMapper?.Invoke(cmd.Parameters);
+            }
+
+            return cmd;
+        }
+
+        #endregion
+    }
+}
+
+
+//****************************************************************** LookUp.cs ******************************************************************//
+namespace SOPSC.Api.Data
+{
+    /// <summary>
+    /// Represents a simple lookup entity with an identifier and a name.
+    /// </summary>
+    public class LookUp
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for the lookup item.
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name or description of the lookup item.
+        /// </summary>
+        public string Name { get; set; }
+    }
+}
+
+
+//****************************************************************** LookUp3Col ******************************************************************//
+namespace SOPSC.Api.Data
+{
+    /// <summary>
+    /// Represents an extended lookup entity with an additional code property.
+    /// Inherits from <see cref="LookUp"/>.
+    /// </summary>
+    public class LookUp3Col : LookUp
+    {
+        /// <summary>
+        /// Gets or sets the code associated with the lookup item.
+        /// </summary>
+        public string Code { get; set; }
+    }
+}
+
+
+//****************************************************************** LookUpService.cs ******************************************************************//
+using System.Data;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using SOPSC.Api.Data.Interfaces;
+
+namespace SOPSC.Api.Data
+{
+    /// <summary>
+    /// Provides methods for retrieving and mapping lookup data, including standard and 3-column lookups.
+    /// </summary>
+    public class LookUpService : ILookUpService
+    {
+        private readonly IDataProvider _data;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LookUpService"/> class with a data provider.
+        /// </summary>
+        /// <param name="data">An instance of <see cref="IDataProvider"/> to interact with the database.</param>
+        public LookUpService(IDataProvider data)
+        {
+            _data = data;
+        }
+
+        /// <summary>
+        /// Retrieves a list of lookups for a specified table.
+        /// </summary>
+        /// <param name="tableName">The name of the database table to fetch lookups from.</param>
+        /// <returns>A list of <see cref="LookUp"/> objects representing lookup data.</returns>
+        public List<LookUp> GetLookUp(string tableName)
+        {
+            List<LookUp> list = null;
+            string procName = $"dbo.{tableName}_SelectAll";
+
+            _data.ExecuteCmd(procName, inputParamMapper: null,
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    LookUp aLookUp = MapSingleLookUp(reader, ref startingIndex);
+
+                    if (list == null)
+                    {
+                        list = new List<LookUp>();
+                    }
+                    list.Add(aLookUp);
+                });
+
+            return list;
+        }
+
+        /// <summary>
+        /// Retrieves a list of 3-column lookups for a specified table.
+        /// </summary>
+        /// <param name="tableName">The name of the database table to fetch 3-column lookups from.</param>
+        /// <returns>A list of <see cref="LookUp3Col"/> objects representing 3-column lookup data.</returns>
+        public List<LookUp3Col> GetLookUp3Col(string tableName)
+        {
+            List<LookUp3Col> list = null;
+            string procName = $"[dbo].[{tableName}_SelectAll]";
+
+            _data.ExecuteCmd(procName, inputParamMapper: null,
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    LookUp3Col aLookUp = MapSingleLookUp3Col(reader, ref startingIndex);
+
+                    if (list == null)
+                    {
+                        list = new List<LookUp3Col>();
+                    }
+                    list.Add(aLookUp);
+                });
+
+            return list;
+        }
+
+        /// <summary>
+        /// Retrieves lookup data for multiple tables and maps them to a dictionary.
+        /// </summary>
+        /// <param name="tablesNames">An array of table names to retrieve lookup data from.</param>
+        /// <returns>
+        /// A dictionary where each key is the table name (camel-cased) and the value is a list of <see cref="LookUp"/> objects.
+        /// </returns>
+        public Dictionary<string, List<LookUp>> GetMany(string[] tablesNames)
+        {
+            Dictionary<string, List<LookUp>> result = null;
+
+            foreach (string table in tablesNames)
+            {
+                List<LookUp> currentList = GetLookUp(table);
+                string nameToUse = ToCamelCase(table);
+
+                if (result == null)
+                {
+                    result = new Dictionary<string, List<LookUp>>();
+                }
+                result.Add(nameToUse, currentList);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieves 3-column lookup data for multiple tables and maps them to a dictionary.
+        /// </summary>
+        /// <param name="tablesNames">An array of table names to retrieve 3-column lookup data from.</param>
+        /// <returns>
+        /// A dictionary where each key is the table name (camel-cased) and the value is a list of <see cref="LookUp3Col"/> objects.
+        /// </returns>
+        public Dictionary<string, List<LookUp3Col>> GetMany3Col(string[] tablesNames)
+        {
+            Dictionary<string, List<LookUp3Col>> result = null;
+
+            foreach (string table in tablesNames)
+            {
+                List<LookUp3Col> currentList = GetLookUp3Col(table);
+                string nameToUse = ToCamelCase(table);
+
+                if (result == null)
+                {
+                    result = new Dictionary<string, List<LookUp3Col>>();
+                }
+                result.Add(nameToUse, currentList);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Converts a string to camel case.
+        /// </summary>
+        /// <param name="str">The string to be converted.</param>
+        /// <returns>A camel-cased version of the input string.</returns>
+        private static string ToCamelCase(string str)
+        {
+            string name = null;
+            if (str.Length > 0)
+            {
+                str = Regex.Replace(str, "([A-Z])([A-Z]+)($|[A-Z])",
+                    m => m.Groups[1].Value + m.Groups[2].Value.ToLower() + m.Groups[3].Value);
+                name = char.ToLower(str[0]) + str.Substring(1);
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// Maps a single row from the data reader to a <see cref="LookUp"/> object.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataReader"/> containing the data.</param>
+        /// <param name="startingIndex">The starting index of the data columns.</param>
+        /// <returns>A <see cref="LookUp"/> object populated with data.</returns>
+        public LookUp MapSingleLookUp(IDataReader reader, ref int startingIndex)
+        {
+            LookUp lookUp = new LookUp
+            {
+                Id = reader.GetSafeInt32(startingIndex++),
+                Name = reader.GetSafeString(startingIndex++)
+            };
+
+            return lookUp;
+        }
+
+        /// <summary>
+        /// Maps a single row from the data reader to a <see cref="LookUp3Col"/> object.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataReader"/> containing the data.</param>
+        /// <param name="startingIndex">The starting index of the data columns.</param>
+        /// <returns>A <see cref="LookUp3Col"/> object populated with data.</returns>
+        public LookUp3Col MapSingleLookUp3Col(IDataReader reader, ref int startingIndex)
+        {
+            LookUp3Col lookUp = new LookUp3Col
+            {
+                Id = reader.GetSafeInt32(startingIndex++),
+                Name = reader.GetSafeString(startingIndex++),
+                Code = reader.GetSafeString(startingIndex++)
+            };
+
+            return lookUp;
+        }
+    }
+}
+
+
+//****************************************************************** Paged.cs ******************************************************************//
+using System;
+using System.Collections.Generic;
+
+namespace SOPSC.Api.Data
+{
+    /// <summary>
+    /// Represents a paginated list of items.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the paginated list.</typeparam>
+    public class Paged<T>
+    {
+        /// <summary>
+        /// Gets the current page index (zero-based).
+        /// </summary>
+        public int PageIndex { get; }
+
+        /// <summary>
+        /// Gets the number of items per page.
+        /// </summary>
+        public int PageSize { get; }
+
+        /// <summary>
+        /// Gets the total number of items across all pages.
+        /// </summary>
+        public int TotalCount { get; }
+
+        /// <summary>
+        /// Gets the total number of pages.
+        /// </summary>
+        public int TotalPages { get; }
+
+        /// <summary>
+        /// Gets the list of items on the current page.
+        /// </summary>
+        public List<T> PagedItems { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Paged{T}"/> class.
+        /// </summary>
+        /// <param name="data">The list of items for the current page.</param>
+        /// <param name="page">The current page index (zero-based).</param>
+        /// <param name="pagesize">The number of items per page.</param>
+        /// <param name="totalCount">The total number of items across all pages.</param>
+        /// <remarks>
+        /// The <paramref name="data"/> parameter is expected to contain only the items for the current page.
+        /// </remarks>
+        public Paged(List<T> data, int page, int pagesize, int totalCount)
+        {
+            PageIndex = page;
+            PageSize = pagesize;
+            PagedItems = data;
+
+            TotalCount = totalCount;
+            TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
+        }
+
+        /// <summary>
+        /// Indicates whether there is a previous page.
+        /// </summary>
+        public bool HasPreviousPage => PageIndex > 0;
+
+        /// <summary>
+        /// Indicates whether there is a next page.
+        /// </summary>
+        public bool HasNextPage => PageIndex + 1 < TotalPages;
+    }
+}

@@ -1,0 +1,1132 @@
+//----------------------------------------------------------------- Services Folder Start -----------------------------------------------------------------//
+//----------------------------------------------------------------- Auth Folder Start -----------------------------------------------------------------//
+//----------------------------------------------------------------- Interfaces Folder Start -----------------------------------------------------------------//
+//***************************************************************** IAuthenticationService.cs *****************************************************************//
+using System.Security.Claims;
+
+namespace SOPSC.Api.Services.Auth.Interfaces
+{
+    public interface IAuthenticationService<T> : IIdentityProvider<T>
+    {
+        /// <summary>Generates a JWT token for the given user with the claims "NameIdentifier, Name, and Roles". Based on user.</summary>
+        /// <remarks>Definition Location: SOPSC.Api.Services.Auth</remarks>
+        /// <param name="user"></param><param name="extraClaims"></param>
+        /// <returns>JSON Web Token as a string</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        Task<string> GenerateJwtToken(IUserAuthData user, string deviceId, params Claim[] extraCliams);
+
+        /// <summary>Logs in the user by generating a JWT token and adding it to the response cookies. Expires in 7 days.</summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <param name="user"></param>
+        /// <param name="extraClaims"></param>
+        /// <returns>No Return Value</returns>
+        Task LogInAsync(IUserAuthData user, string deviceId, params Claim[] extraClaims);
+
+        /// <summary>
+        /// Logs out the user by removing the JWT token from the response cookies.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        Task LogOutAsync();
+
+        /// <summary>
+        /// Checks if the user is logged in by checking if the JWT token is present in the request cookies.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        /// 
+        bool IsLoggedIn();
+        /// <summary>
+        /// Gets the current user from the JWT token in the request cookies.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        IUserAuthData GetCurrentUser();
+    }
+}
+
+
+//***************************************************************** IIdentityProvider.cs *****************************************************************//
+namespace SOPSC.Api.Services.Auth.Interfaces
+{
+    /// <summary>
+    /// Provides a method to retrieve the current authenticated user's identifier.
+    /// </summary>
+    /// <typeparam name="T">The type of the user identifier.</typeparam>
+    public interface IIdentityProvider<T>
+    {
+        /// <summary>
+        /// Retrieves the unique identifier of the currently authenticated user.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the current user as type <typeparamref name="T"/>.
+        /// </returns>
+        T GetCurrentUserId();
+    }
+}
+
+
+//***************************************************************** ITokenService.cs *****************************************************************//
+using SOPSC.Api.Models.Requests.Users;
+
+namespace SOPSC.Api.Services.Auth.Interfaces
+{
+    public interface ITokenService
+    {
+        void CreateToken(string token, int userId, DateTime? expiryDate, string deviceId, bool isNonExpiring = false);
+        UserToken GetTokenByDeviceId(string deviceId);
+        UserToken GetTokenByUserId(int userId);
+        UserToken GetTokenByToken(string token);
+        void DeleteTokenAndDeviceId(string token, string deviceId);
+        void DeleteTokenByToken(string token);
+        void DeleteExpiredTokens(int userId);
+    }
+}
+
+
+//***************************************************************** IUserAuthData.cs *****************************************************************//
+using System.Collections.Generic;
+
+namespace SOPSC.Api.Services.Auth.Interfaces
+{
+    /// <summary>
+    /// Represents the authentication data for a user.
+    /// </summary>
+    public interface IUserAuthData
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier of the user.
+        /// </summary>
+        int UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the user.
+        /// </summary>
+        string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the roles associated with the user.
+        /// </summary>
+        /// <remarks>
+        /// Roles are typically represented as a collection of role names or identifiers.
+        /// </remarks>
+        IEnumerable<string> Roles { get; set; }
+    }
+}
+
+//----------------------------------------------------------------- Interfaces Folder End -----------------------------------------------------------------//
+//***************************************************************** AuthenticationService.cs *****************************************************************//
+using Microsoft.IdentityModel.Tokens;
+using SOPSC.Api.Services.Auth.Interfaces;
+using SOPSC.Api.Models.Domains.Users;
+using System.IdentityModel.Tokens.Jwt;
+using System.Data;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.Data.SqlClient;
+using SOPSC.Api.Data.Interfaces;
+
+namespace SOPSC.Api.Services.Auth
+{
+    /// <summary>
+    /// Provides authentication services, such as generating JWT tokens and managing user sessions.
+    /// Implements <see cref="IAuthenticationService{T}"/> with <c>int</c> as the user identifier type.
+    /// </summary>
+    public class AuthenticationService : IAuthenticationService<int>
+    {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
+        private readonly IDataProvider _dataProvider;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationService"/> class.
+        /// </summary>
+        /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
+        /// <param name="configuration">Provides application configuration values.</param>
+        public AuthenticationService(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IDataProvider dataProvider)
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
+            _dataProvider = dataProvider;
+        }
+
+        /// <summary>
+        /// Generates a JWT token for the given user with the claims "NameIdentifier, Name, and Roles". Based on user.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <param name="user"></param>
+        /// <param name="extraClaims"></param>
+        /// <returns>JSON Web Token as a string</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public async Task<string> GenerateJwtToken(IUserAuthData user, string deviceId, params Claim[] extraClaims)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            // Define user the claims
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Name),
+            };
+
+            // Include roles
+            if (user.Roles != null)
+            {
+                foreach (var role in user.Roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+
+            // Add extra claims
+            if (extraClaims != null && extraClaims.Length > 0)
+            {
+                claims.AddRange(extraClaims);
+            }
+
+            // Generate signing credentials
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            // Create token descriptor
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = credentials,
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"]
+            };
+
+            // Generate token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            // Return the token as a string
+            return await Task.FromResult(tokenHandler.WriteToken(token));
+        }
+
+        /// <summary>
+        /// Logs in the user by generating a JWT token and stores it in cookies. Expires in 7 days.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <param name="user"></param>
+        /// <param name="extraClaims"></param>
+        /// <returns>No Return Value</returns>
+        public async Task LogInAsync(IUserAuthData user, string deviceId, params Claim[] extraClaims)
+        {
+            var token = await GenerateJwtToken(user, deviceId, extraClaims);
+
+            // Add the token to the response cookies (expires in 7 days)
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("AuthToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+        }
+
+        /// <summary>
+        /// Logs out the user by deleting the AuthToken cookie from the response.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        public Task LogOutAsync()
+        {
+            _httpContextAccessor.HttpContext.Response.Cookies.Delete("AuthToken");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Checks if current user is logged in by validating the Authorization header token.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        public bool IsLoggedIn()
+        {
+            var authHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString();
+
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+            {
+                return false;
+            }
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            try
+            {
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Validate the token
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    IssuerSigningKey = key
+                }, out var validatedToken);
+
+                // Check the DeviceId claim
+                var deviceIdClaim = principal.FindFirst("DeviceId")?.Value;
+                if (string.IsNullOrEmpty(deviceIdClaim))
+                {
+                    return false;
+                }
+
+                // Verify the token is valid in the database
+                return IsTokenValid(deviceIdClaim);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return false;
+        }
+        private bool IsTokenValid(string deviceId)
+        {
+            bool isValid = false;
+            string procName = "[dbo].[UserTokens_SelectByDeviceId]";
+
+            _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@DeviceId", deviceId);
+            }, delegate (IDataReader reader, short set)
+            {
+                isValid = true; // Token is valid if the query returns a result
+            });
+            return isValid;
+        }
+
+        /// <summary>
+        /// Gets the current user from the HttpContextAccessor.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        public IUserAuthData GetCurrentUser()
+        {
+            var claims = _httpContextAccessor.HttpContext.User;
+            if (claims.Identity != null && claims.Identity.IsAuthenticated)
+            {
+                var userIdClaim = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var name = claims.Identity.Name;
+
+                // Extract all role claims
+                var roles = claims.FindAll(ClaimTypes.Role)
+                                  .Select(r => r.Value)
+                                  .ToList();
+                if (int.TryParse(userIdClaim, out int userId))
+                {
+                    return new UserBase
+                    {
+                        UserId = userId,
+                        Name = claims.Identity.Name,
+                        Roles = roles
+                    };
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Retrieves the current user's ID.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <returns></returns>
+        public int GetCurrentUserId()
+        {
+            var user = GetCurrentUser();
+            return user?.UserId ?? 0;
+        }
+    }
+}
+
+
+//***************************************************************** SendInBlueEmailService.cs *****************************************************************//
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using SOPSC.Api.Models.Interfaces.Emails;
+using SOPSC.Api.Models.Requests.Emails;
+
+public class SendInBlueEmailService : IEmailService
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+    private readonly string _senderEmail;
+    private readonly string _senderName;
+
+    public SendInBlueEmailService(HttpClient httpClient, IConfiguration configuration)
+    {
+        _httpClient = httpClient;
+        _apiKey = configuration["AppKeys:SendInBlueAppKey"];
+        _senderEmail = configuration["EmailSettings:SenderEmail"];
+        _senderName = configuration["EmailSettings:SenderName"];
+    }
+
+    public async Task SendEmailAsync(string toEmail, string toName, string subject, string htmlContent)
+    {
+        var request = new
+        {
+            sender = new { email = _senderEmail, name = _senderName },
+            to = new[] { new { email = toEmail, name = toName } },
+            subject = subject,
+            htmlContent = htmlContent
+        };
+
+        var jsonRequest = JsonSerializer.Serialize(request);
+        var httpContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+
+        var response = await _httpClient.PostAsync("https://api.sendinblue.com/v3/smtp/email", httpContent);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Error sending email: {response.StatusCode} - {errorContent}");
+        }
+    }
+
+    public async Task SendTestEmail(SendEmailRequest request)
+    {
+        await SendEmailAsync(request.To.Email, request.To.Name, request.Subject, "This is a test email.");
+    }
+
+    public async Task SendAdminMessage(SendEmailRequest request)
+    {
+        string adminEmail = "admin@example.com"; // Replace with your admin email
+        await SendEmailAsync(adminEmail, "Admin", request.Subject, request.HtmlContent);
+    }
+
+    public async Task NewUserEmail(SendEmailRequest request, string confirmUrl)
+    {
+        string htmlContent = $"Welcome! Please confirm your account by clicking <a href='{confirmUrl}'>here</a>.";
+        await SendEmailAsync(request.To.Email, request.To.Name, request.Subject, htmlContent);
+    }
+}
+
+
+//***************************************************************** TokenService.cs *****************************************************************//
+using Microsoft.Data.SqlClient;
+using System.Data;
+using SOPSC.Api.Models.Requests.Users;
+using SOPSC.Api.Services.Auth.Interfaces;
+using SOPSC.Api.Data.Interfaces;
+
+namespace SOPSC.Api.Services.Auth
+{
+    public class TokenService :ITokenService
+    {
+        private readonly IAuthenticationService<int> _authenticationService;
+        private readonly IDataProvider _dataProvider;
+        private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
+        public TokenService(
+            IAuthenticationService<int> authService,
+            IDataProvider dataProvider,
+            IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _authenticationService = authService;
+            _dataProvider = dataProvider;
+        }
+        public void CreateToken(string token, int userId, DateTime? expiryDate, string deviceId, bool isNonExpiring = false)
+        {
+            string procName = "[dbo].[UserTokens_Insert]";
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+                paramCollection.AddWithValue("@Token", token);
+                paramCollection.AddWithValue("@DeviceId", deviceId);
+                paramCollection.AddWithValue("@ExpiryDate", expiryDate);
+                paramCollection.AddWithValue("@IsNonExpiring", isNonExpiring);
+            });
+        }
+        public UserToken GetTokenByDeviceId(string deviceId)
+        {
+            UserToken token = null;
+            string procName = "[dbo].[UserTokens_SelectByDeviceId]";
+            _dataProvider.ExecuteCmd(
+                storedProc: procName,
+                inputParamMapper: delegate (SqlParameterCollection inputParamCollection)
+                {
+                    inputParamCollection.AddWithValue("@DeviceId", deviceId);
+                }, delegate (IDataReader reader, short set)
+                {
+                    token = new UserToken
+                    {
+                        TokenId = reader.GetSafeInt32(0),
+                        UserId = reader.GetSafeInt32(1),
+                        Token = reader.GetSafeString(2),
+                        DeviceId = reader.GetSafeString(3),
+                        ExpiryDate = reader.GetSafeDateTimeNullable(4),
+                        IsNonExpiring = reader.GetSafeBool(6)
+                    };
+                });
+            return token;
+        }
+        public UserToken GetTokenByUserId(int userId)
+        {
+            UserToken validToken = null;
+            string procName = "[dbo].[UserTokens_SelectValidByUserId]";
+
+            _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+                paramCollection.AddWithValue("@CurrentDate", DateTime.UtcNow);
+            }, delegate (IDataReader reader, short set)
+            {
+                int startingIndex = 0;
+                validToken = new UserToken
+                {
+                    TokenId = reader.GetSafeInt32(startingIndex++),
+                    UserId = reader.GetSafeInt32(startingIndex++),
+                    Token = reader.GetSafeString(startingIndex++),
+                    DateCreated = reader.GetSafeDateTime(startingIndex++),
+                    ExpiryDate = reader.GetSafeDateTimeNullable(startingIndex++),
+                    IsNonExpiring = reader.GetSafeBool(startingIndex++)
+                };
+            });
+            return validToken;
+        }
+        public UserToken GetTokenByToken(string token)
+        {
+            UserToken thisToken = null;
+            string procName = "[dbo].[UserTokens_SelectByToken]";
+            
+            _dataProvider.ExecuteCmd(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@Token", token);
+            }, delegate (IDataReader reader, short set)
+            {
+                int startingIndex = 0;
+                thisToken = new UserToken
+                {
+                    TokenId = reader.GetSafeInt32(startingIndex++),
+                    UserId = reader.GetSafeInt32(startingIndex++),
+                    Token = reader.GetSafeString(startingIndex++),
+                    DeviceId = reader.GetSafeString(startingIndex++),
+                    ExpiryDate = reader.GetSafeDateTimeNullable(startingIndex++),
+                };
+            });
+            return thisToken;
+        }
+        public void DeleteTokenAndDeviceId(string token, string deviceId)
+        {
+            token = token.Trim();
+            deviceId = deviceId.Trim();
+
+            string procName = "[dbo].[UserTokens_DeleteByTokenAndDeviceId]";
+
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.Add("@Token", SqlDbType.NVarChar, -1).Value = token;
+                paramCollection.Add("@DeviceId", SqlDbType.NVarChar, -1).Value = deviceId;
+            });
+        }
+        public void DeleteTokenByToken(string token)
+        {
+            string procName = "[dbo].[UserTokens_DeleteByToken]";
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@Token", token);
+            }, null);
+        }
+        public void DeleteExpiredTokens(int userId)
+        {
+            string procName = "[dbo].[UserTokens_DeleteExpiredByUserId]";
+            _dataProvider.ExecuteNonQuery(procName, delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+                paramCollection.AddWithValue("@CurrentDate", DateTime.UtcNow);
+            });
+        }
+    }
+}
+
+
+//***************************************************************** TokenValidationMiddleware.cs *****************************************************************//
+using Microsoft.Data.SqlClient;
+using SOPSC.Api.Models.Interfaces.Users;
+using SOPSC.Api.Services.Auth.Interfaces;
+using System.Security.Claims;
+using System.Data;
+using Microsoft.AspNetCore.Authorization;
+using SOPSC.Api.Data.Interfaces;
+public class TokenValidationMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly IServiceScopeFactory _scopeFactory;
+    public TokenValidationMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
+    {
+        _next = next;
+        _scopeFactory = scopeFactory;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint();
+        if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+        {
+            await _next(context);
+            return;
+        }
+
+        var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        var deviceId = context.Request.Headers["DeviceId"].ToString();
+
+        if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(deviceId))
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dataProvider = scope.ServiceProvider.GetRequiredService<IDataProvider>();
+                bool isValidSession = false;
+
+                // Validate both token and deviceId
+                dataProvider.ExecuteCmd(
+                    "[dbo].[UserTokens_CheckIfValid]", 
+                    delegate (SqlParameterCollection paramCollection)
+                    {
+                        paramCollection.AddWithValue("@Token", token);
+                        paramCollection.AddWithValue("@DeviceId", deviceId);
+                    }, delegate (IDataReader reader, short set)
+                    {
+                        if (reader.Read())
+                        {
+                            isValidSession = reader.GetSafeBool(0);
+                        }
+                    });
+
+                if (isValidSession)
+                {
+                    var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
+                    var userToken = tokenService.GetTokenByToken(token);
+
+                    // Ensure the token is not expired
+                    if (userToken != null && userToken.ExpiryDate > DateTime.UtcNow)
+                    {
+                        // Add user claims to HttpContext for authorization
+                        var claims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, userToken.UserId.ToString())
+                        };
+
+                        var identity = new ClaimsIdentity(claims, "Token");
+                        context.User = new ClaimsPrincipal(identity);
+                    }
+                } else
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Unauthorized");
+                    return;
+                }
+            }
+        }
+        else
+        {
+            // If token or deviceId is missing, return Unauthorized
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized");
+            return;
+        }
+    }
+}
+
+//----------------------------------------------------------------- Auth Folder End -----------------------------------------------------------------//
+
+//----------------------------------------------------------------- Extensions Folder Start -----------------------------------------------------------------//
+//***************************************************************** ServiceExtensions.cs *****************************************************************//
+using SOPSC.Api.Data;
+using SOPSC.Api.Data.Interfaces;
+using SOPSC.Api.Models.Interfaces.Emails;
+using SOPSC.Api.Models.Interfaces.Users;
+using SOPSC.Api.Services.Auth;
+using SOPSC.Api.Services.Auth.Interfaces;
+
+namespace SOPSC.Api.Services.Extensions
+{
+    /// <summary>
+    /// Provides extension methods for registering custom services in the dependency injection container.
+    /// </summary>
+    public static class ServiceExtensions
+    {
+        /// <summary>
+        /// Registers custom services required by the application into the dependency injection container.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <param name="configuration">The application configuration to retrieve settings like connection strings.</param>
+        /// <returns>The updated <see cref="IServiceCollection"/> with custom services registered.</returns>
+        public static IServiceCollection RegisterCustomServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Retrieve the default connection string from app configuration
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            // Register services
+            services.AddHttpClient<IEmailService, SendInBlueEmailService>();
+            /// <summary>
+            /// Registers authentication service with user identifier as <c>int</c>.
+            /// </summary>
+            services.AddScoped<IAuthenticationService<int>, AuthenticationService>();
+
+            /// <summary>
+            /// Registers the data provider with a scoped lifetime and passes the connection string.
+            /// </summary>
+            services.AddScoped<IDataProvider, DataProvider>(provider => new DataProvider(connectionString));
+
+            /// <summary>
+            /// Registers user service to manage user-related operations.
+            /// </summary>
+            services.AddScoped<IUserService, UserService>();
+
+            /// <summary>
+            /// Registers lookup service to handle lookup operations.
+            /// </summary>
+            services.AddScoped<ILookUpService, LookUpService>();
+            // Creates a new instance of the <see cref="TokenService"/> class. 
+            services.AddScoped<ITokenService, TokenService>();
+
+            /// <summary>
+            /// Adds HTTP context accessor for accessing the current HTTP context.
+            /// </summary>
+            services.AddHttpContextAccessor();
+
+            // Placeholder for registering the email service
+            // services.AddScoped<IEmailService, IEmailService>();
+
+            return services;
+        }
+    }
+}
+
+//----------------------------------------------------------------- Extensions Folder End -----------------------------------------------------------------//
+
+//***************************************************************** UserService.cs *****************************************************************//
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using SOPSC.Api.Models.Requests;
+using System.Data;
+using SOPSC.Api.Data;
+using System.Security.Claims;
+using BCrypt.Net;
+using SOPSC.Api.Models.Interfaces.Users;
+using SOPSC.Api.Services.Auth.Interfaces;
+using SOPSC.Api.Models.Requests.Emails;
+using SOPSC.Api.Models.Requests.Users;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using SOPSC.Api.Models.Domains.Users;
+using SOPSC.Api.Models.Interfaces.Emails;
+using SOPSC.Api.Data.Interfaces;
+
+namespace SOPSC.Api.Services
+{
+    /// <summary>
+    /// Provides services related to user management, including CRUD operations, login, and authentication.
+    /// </summary>
+    public class UserService : IUserService
+    {
+        private readonly IAuthenticationService<int> _authenticationService;
+        private readonly IDataProvider _dataProvider;
+        private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
+        private readonly IEmailService _emailService;
+        private readonly string _connectionString;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class.
+        /// </summary>
+        /// <param name="authService">The authentication service for managing user login.</param>
+        /// <param name="dataProvider">The data provider for interacting with the database.</param>
+        /// <param name="configuration">The application configuration for retrieving the connection string.</param>
+        public UserService(
+            IAuthenticationService<int> authService, 
+            IDataProvider dataProvider, 
+            IConfiguration configuration,
+            ITokenService tokenService,
+            IEmailService emailService)
+        {
+            _authenticationService = authService;
+            _dataProvider = dataProvider;
+            _configuration = configuration;
+            _tokenService = tokenService;
+            _emailService = emailService;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
+#region CREATE
+        
+        /// <summary>
+        /// Creates a new user in the database.
+        /// </summary>
+        /// <param name="userModel">The <see cref="UserAddRequest"/> containing user data.</param>
+        /// <returns>The ID of the newly created user.</returns>
+        public int Create(UserAddRequest userModel)
+        {
+            int userId = 0;
+            string procName = "[dbo].[Users_Insert]";
+
+            string password = userModel.Password;
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@FirstName", userModel.FirstName);
+                paramCollection.AddWithValue("@LastName", userModel.LastName);
+                paramCollection.AddWithValue("@Email", userModel.Email);
+                paramCollection.AddWithValue("@Password", hashedPassword);
+                paramCollection.AddWithValue("@IsActive", true);
+                paramCollection.AddWithValue("@RoleId", 3);
+
+                SqlParameter idOut = new SqlParameter("@UserId", SqlDbType.Int);
+                idOut.Direction = ParameterDirection.Output;
+
+                paramCollection.Add(idOut);
+            }, returnParameters: delegate (SqlParameterCollection returnCollection)
+            {
+                object oId = returnCollection["@UserId"].Value;
+                int.TryParse(oId.ToString(), out userId);
+            });
+            return userId;
+        }
+
+#endregion
+
+#region READ
+        public async Task LogOutAsync(UserLogOutRequest request)
+        {
+            if (!string.IsNullOrEmpty(request.Token) && !string.IsNullOrEmpty(request.DeviceId))
+            {
+                // Delete the token from the database
+                _tokenService.DeleteTokenAndDeviceId(request.Token, request.DeviceId);
+            }
+
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Logs in a user by validating their credentials and generating a token.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <param name="password">The user's password.</param>
+        /// <returns>Returns <c>true</c> if login is successful; otherwise, <c>false</c>.</returns>
+        //public async Task<string> LogInAsync(string email, string password, string deviceId)
+        //{
+        //    IUserAuthData user = Get(email, password);
+        //    if (user != null)
+        //    {
+        //        // Generate a new token for the device
+        //        string newToken = await _authenticationService.GenerateJwtToken(user, deviceId);
+
+        //        // Store the token in the database
+        //        _tokenService.CreateToken(newToken, user.UserId, DateTime.UtcNow.AddDays(7), deviceId);
+
+        //        _tokenService.DeleteExpiredTokens(user.UserId);
+
+        //        return newToken;
+        //    }
+        //    return null;
+        //}
+        public async Task<string> LogInAsync(string email, string password, string deviceId)
+        {
+            // Step 1: Get user data from the database (including hashed password)
+            UserBase user = null;
+            string hashedPassword = null;
+            _dataProvider.ExecuteCmd("[dbo].[Users_Select_AuthData]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@Email", email);
+                },
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    hashedPassword = reader.GetSafeString(startingIndex++);
+                    user = new UserBase
+                    {
+                        UserId = reader.GetSafeInt32(startingIndex++),
+                        Name = email
+                    };
+                });
+
+            // Step 2: Verify the password using BCrypt
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
+            {
+                return null; // Invalid credentials
+            }
+
+            // Step 3: Generate a new token for the device
+            string newToken = await _authenticationService.GenerateJwtToken(user, deviceId);
+
+            // Step 4: Store the token in the database
+            _tokenService.CreateToken(newToken, user.UserId, DateTime.UtcNow.AddDays(7), deviceId);
+
+            // Update `IsActive` to true
+            _dataProvider.ExecuteNonQuery("[dbo].[Users_SetIsActive]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@UserId", user.UserId);
+                    paramCollection.AddWithValue("@IsActive", true);
+                });
+
+            _tokenService.DeleteExpiredTokens(user.UserId);
+
+            return newToken;
+        }
+
+        /// <summary>
+        /// Retrieves a user by their unique ID.
+        /// </summary>
+        /// <param name="userId">The ID of the user to retrieve.</param>
+        /// <returns>A <see cref="User"/> object containing user details.</returns>
+        public User GetById(int userId)
+        {
+            User user = null;
+            string procName = "[dbo].[Users_SelectById]";
+
+            _dataProvider.ExecuteCmd(
+                storedProc: procName,
+                inputParamMapper: delegate (SqlParameterCollection inColl)
+                {
+                    inColl.AddWithValue("@UserId", userId);
+                }, delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    user = MapSingleUser(reader, ref startingIndex);
+                });
+            return user;
+        }
+        public UserWithRole GetUserWithRoleById(int userId)
+        {
+            UserWithRole thisUser = null;
+            string procName = "[dbo].[Users_SelectWithRoles_ByUserId]";
+
+            _dataProvider.ExecuteCmd(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+            }, delegate (IDataReader reader, short set)
+            {
+                int startingIndex = 0;
+
+                thisUser = new UserWithRole
+                {
+                    UserId = reader.GetSafeInt32(startingIndex++),
+                    FirstName = reader.GetSafeString(startingIndex++),
+                    LastName = reader.GetSafeString(startingIndex++),
+                    Email = reader.GetSafeString(startingIndex++),
+                    ProfilePicturePath = reader.GetSafeString(startingIndex++),
+                    IsActive = reader.GetSafeBool(startingIndex++),
+                    RoleName = reader.GetSafeString(startingIndex++)
+                };
+            });
+            return thisUser;
+        }
+        /// <summary>
+        /// Retrieves all users with pagination support.
+        /// </summary>
+        /// <param name="pageIndex">The current page index.</param>
+        /// <param name="pageSize">The number of users per page.</param>
+        /// <returns>A paginated list of users.</returns>
+        public Paged<User> GetAllUsers(int pageIndex, int pageSize)
+        {
+            Paged<User> pagedUserList = null;
+            List<User> userList = null;
+            int totalCount = 0;
+            string procName = "[dbo].[Users_SelectAll]";
+
+            _dataProvider.ExecuteCmd(
+                storedProc: procName,
+                inputParamMapper: delegate (SqlParameterCollection inColl)
+                {
+                    inColl.AddWithValue("@PageIndex", pageIndex);
+                    inColl.AddWithValue("@PageSize", pageSize);
+                },
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    User user = new User();
+                    int startingIndex = 0;
+                    user = MapSingleUser(reader, ref startingIndex);
+                    totalCount = reader.GetSafeInt32(startingIndex++);
+                    if (userList == null)
+                        userList = new List<User>();
+                    userList.Add(user);
+                });
+
+            if (userList != null && userList.Count > 0)
+                pagedUserList = new Paged<User>(userList, pageIndex, pageSize, totalCount);
+
+            return pagedUserList;
+        }
+#endregion
+
+#region UPDATE
+
+        public void ConfirmUser(int userId)
+        {
+            string procName = "[dbo].[Users_Confirm]";
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+            }, null);
+        }
+
+        /// <summary>
+        /// Updates the active status of a user by their ID.
+        /// </summary>
+        /// <param name="userId">The ID of the user to update.</param>
+        public void UpdateActiveStatus(int userId)
+        {
+            string procName = "[dbo].[Users_UpdateIsActive]";
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+            }, null);
+        }
+
+        #endregion
+
+#region DELETE
+
+#endregion
+
+#region Private Methods
+
+        /// <summary>Generates a JWT for the specified user.</summary>
+        /// <returns>The generated JWT as a string.</returns>
+        /// <param name="userId">The ID of the user for whom the token is generated.</param>
+        /// <param name="isNonExpiring">Whether the token should expire.</param>
+        public string CreateJwt(int userId, bool isNonExpiring = false)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["JWT:Key"]);
+
+            // Define the token descriptor
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        }),
+                Expires = isNonExpiring ? (DateTime?)null : DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JWT:ExpiryMinutes"])),
+                Issuer = _configuration["JWT:Issuer"],
+                Audience = _configuration["JWT:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            // Create and write the token
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+        
+        public void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl, bool isNonExpiring = false)
+        {
+            string guid = Guid.NewGuid().ToString();
+            string deviceId = "DefaultDevice";
+
+            // Set an expiry date for the token
+            DateTime? expiryDate = isNonExpiring ? null : DateTime.UtcNow.AddDays(14);
+
+            _tokenService.CreateToken(guid, id, expiryDate, deviceId);
+
+            SendEmailRequest firstEmail = new SendEmailRequest()
+            {
+                To = new EmailInfo()
+                {
+                    Email = newUser.Email,
+                    Name = $"{newUser.FirstName} {newUser.LastName}"
+                },
+                Subject = "Account Confirmation"
+            };
+            string confirmationUrl = $"{requestUrl}confirm?token={guid}";
+
+            _emailService.NewUserEmail(firstEmail, confirmationUrl);
+        }
+
+        /// <summary>
+        /// Maps a data reader to a <see cref="User"/> object.
+        /// </summary>
+        private static User MapSingleUser(IDataReader reader, ref int startingIndex)
+        {
+            User user = new User
+            {
+                UserId = reader.GetSafeInt32(startingIndex++),
+                FirstName = reader.GetSafeString(startingIndex++),
+                LastName = reader.GetSafeString(startingIndex++),
+                Email = reader.GetSafeString(startingIndex++),
+                DateCreated = reader.GetSafeDateTime(startingIndex++),
+                LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
+                ProfilePicturePath = reader.GetSafeString(startingIndex++),
+                IsActive = reader.GetSafeBool(startingIndex++),
+                HoursServed = reader.GetSafeDecimal(startingIndex++),
+                RoleId = reader.GetSafeInt32(startingIndex++)
+            };
+
+            return user;
+        }
+
+        private IUserAuthData Get(string email, string password)
+        {
+            UserBase user = null;
+            string passwordFromDb = "";
+            string procName = "[dbo].[Users_Select_AuthData]";
+            List<string> roles = new List<string>();
+
+            bool userConfirmed = false;
+            _dataProvider.ExecuteCmd(
+                storedProc: procName,
+                inputParamMapper: delegate (SqlParameterCollection inColl)
+                {
+                    inColl.AddWithValue("@Email", email);
+                }, singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    switch (set)
+                    {
+                        case (0):
+                            passwordFromDb = reader.GetSafeString(startingIndex++);
+
+                            user = new UserBase
+                            {
+                                UserId = reader.GetSafeInt32(startingIndex++),
+                                Name = email
+                            };
+                            break;
+                        case (1):
+                            roles.Add(reader.GetSafeString(startingIndex++));
+                            break;
+                    }
+                });
+            return user;
+        }
+
+#endregion
+    }
+}

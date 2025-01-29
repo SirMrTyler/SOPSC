@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "YA0uFR1bcoLh0d4ASx7bFVjlRiIBu/nxAvUbgSpy4io=",
+  "Source": "SOPSC.Api",
+  "BasePath": "_content/SOPSC.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

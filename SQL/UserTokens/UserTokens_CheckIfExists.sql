@@ -1,0 +1,12 @@
+ALTER PROC [dbo].[UserTokens_CheckIfExists]
+	@Token NVARCHAR(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT CASE WHEN EXISTS
+		(SELECT 1 FROM dbo.UserTokens WHERE Token = @Token)
+		THEN CAST(1 AS BIT)
+		ELSE CAST(0 AS BIT)
+	END;
+END;
