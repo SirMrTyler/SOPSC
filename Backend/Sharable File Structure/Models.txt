@@ -1,0 +1,723 @@
+//------------------------------------------------------------------ Models Folder Start ------------------------------------------------------------------//
+//------------------------------------------------------------------ Domains Folder Start ------------------------------------------------------------------//
+//------------------------------------------------------------------ Users Folder Start ------------------------------------------------------------------//
+//****************************************************************** BaseUser.cs ******************************************************************//
+namespace SOPSC.Api.Models.Domains.Users
+{
+    /// <summary>
+    /// Represents a base user within the application.
+    /// </summary>
+    public class BaseUser
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for the user.
+        /// </summary>
+        public int UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email address of the user.
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password of the user.
+        /// </summary>
+        /// <remarks>
+        /// Ensure passwords are stored securely using hashing algorithms.
+        /// </remarks>
+        public string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first name of the user.
+        /// </summary>
+        public string FirstName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last name of the user.
+        /// </summary>
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the file path to the user's profile picture.
+        /// </summary>
+        public string ProfilePicturePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the role identifier associated with the user.
+        /// </summary>
+        /// <remarks>
+        /// The <c>RoleId</c> determines the user's access level or permissions within the system.
+        /// </remarks>
+        public int RoleId { get; set; }
+    }
+}
+
+
+//****************************************************************** User.cs ******************************************************************//
+namespace SOPSC.Api.Models.Domains.Users
+{
+    /// <summary>
+    /// Represents a user within the application, inheriting from <see cref="BaseUser"/>.
+    /// </summary>
+    public class User : BaseUser
+    {
+        /// <summary>
+        /// Gets or sets the date and time when the user was created.
+        /// </summary>
+        public DateTime DateCreated { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time of the user's last login.
+        /// </summary>
+        /// <remarks>
+        /// This property is nullable and will remain null if the user has never logged in.
+        /// </remarks>
+        public DateTime? LastLoginDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user is currently active.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the user is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total hours served by the user.
+        /// </summary>
+        /// <remarks>
+        /// This property is nullable. If no hours are recorded, the value will remain null.
+        /// </remarks>
+        public decimal? HoursServed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user has been confirmed.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the user is confirmed; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsConfirmed { get; set; }
+    }
+}
+
+
+//****************************************************************** UserBase.cs ******************************************************************//
+using SOPSC.Api.Services.Auth.Interfaces;
+using System.Collections.Generic;
+
+namespace SOPSC.Api.Models.Domains.Users
+{
+    /// <summary>
+    /// Represents the base user data for authentication and authorization purposes.
+    /// Implements the <see cref="IUserAuthData"/> interface.
+    /// </summary>
+    public class UserBase : IUserAuthData
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for the user.
+        /// </summary>
+        public int UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the user.
+        /// </summary>
+        /// <remarks>
+        /// This is typically the user's full name or display name.
+        /// </remarks>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the roles assigned to the user.
+        /// </summary>
+        /// <remarks>
+        /// Roles determine the user's permissions and access levels within the system.
+        /// </remarks>
+        public IEnumerable<string> Roles { get; set; }
+    }
+}
+
+
+//****************************************************************** UserWithRole.cs ******************************************************************//
+namespace SOPSC.Api.Models.Domains.Users
+{
+    public class UserWithRole : User
+    {
+        public string RoleName { get; set; }
+    }
+}
+
+
+//------------------------------------------------------------------ Users Folder End ------------------------------------------------------------------//
+//------------------------------------------------------------------ Domains Folder End ------------------------------------------------------------------//
+
+//------------------------------------------------------------------ Interfaces Folder Start ------------------------------------------------------------------//
+//------------------------------------------------------------------ Emails Folder Start ------------------------------------------------------------------//
+//****************************************************************** IEmailService.cs ******************************************************************//
+using SOPSC.Api.Models.Requests.Emails;
+using System.Threading.Tasks;
+
+namespace SOPSC.Api.Models.Interfaces.Emails
+{
+    /// <summary>
+    /// Provides methods for sending various types of emails.
+    /// </summary>
+    public interface IEmailService
+    {
+        /// <summary>
+        /// Sends a test email to verify email functionality.
+        /// </summary>
+        /// <param name="request">
+        /// The <see cref="SendEmailRequest"/> object containing the email recipient, subject, and body.
+        /// </param>
+        Task SendTestEmail(SendEmailRequest request);
+
+        /// <summary>
+        /// Sends an administrative message email.
+        /// </summary>
+        /// <param name="request">
+        /// The <see cref="SendEmailRequest"/> object containing the email recipient, subject, and body.
+        /// </param>
+        Task SendAdminMessage(SendEmailRequest request);
+
+        /// <summary>
+        /// Sends a new user confirmation email with a confirmation URL.
+        /// </summary>
+        /// <param name="request">
+        /// The <see cref="SendEmailRequest"/> object containing the email recipient, subject, and body.
+        /// </param>
+        /// <param name="confirmUrl">
+        /// The confirmation URL to be included in the email for user account verification.
+        /// </param>
+        Task NewUserEmail(SendEmailRequest request, string confirmUrl);
+    }
+}
+
+
+//------------------------------------------------------------------ Emails Folder End ------------------------------------------------------------------//
+
+//------------------------------------------------------------------ Users Folder Start ------------------------------------------------------------------//
+//****************************************************************** IBaseUserMapper.cs ******************************************************************//
+using System.Data;
+
+namespace SOPSC.Api.Models.Interfaces.Users
+{
+    /// <summary>
+    /// Defines a contract for mapping user data from a data reader to a base user object.
+    /// </summary>
+    public interface IBaseUserMapper
+    {
+        /// <summary>
+        /// Maps the base user properties from the provided <see cref="IDataReader"/>.
+        /// </summary>
+        /// <param name="reader">The data reader containing user data.</param>
+        /// <param name="startingIndex">
+        /// A reference to the starting index in the data reader.
+        /// This index is incremented as data fields are read.
+        /// </param>
+        /// <returns>
+        /// Returns the current instance of <see cref="IBaseUserMapper"/> with the mapped data.
+        /// </returns>
+        IBaseUserMapper MapBaseUser(IDataReader reader, ref int startingIndex);
+    }
+}
+
+
+//****************************************************************** IUserService.cs ******************************************************************//
+using Microsoft.AspNetCore.Mvc;
+using SOPSC.Api.Data;
+using SOPSC.Api.Models.Domains.Users;
+using SOPSC.Api.Models.Requests;
+using SOPSC.Api.Models.Requests.Users;
+
+namespace SOPSC.Api.Models.Interfaces.Users
+{
+    /// <summary>
+    /// Provides methods for managing and retrieving user-related data.
+    /// </summary>
+    public interface IUserService
+    {
+        int Create(UserAddRequest userModel);
+        
+        /// <summary>
+        /// Retrieves a user by their unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <returns>
+        /// Returns a <see cref="User"/> object representing the user with the specified ID.
+        /// If the user is not found, returns <c>null</c>.
+        /// </returns>
+        User GetById(int id);
+
+        /// <summary>
+        /// Retrieves a paginated list of users.
+        /// </summary>
+        /// <param name="pageIndex">The index of the current page (zero-based).</param>
+        /// <param name="pageSize">The number of users to include per page.</param>
+        /// <returns>
+        /// Returns a <see cref="Paged{User}"/> object containing the paginated list of users
+        /// along with pagination metadata.
+        /// </returns>
+        Paged<User> GetAllUsers(int pageIndex, int pageSize);
+        Task<string> LogInAsync(string email, string password, string? deviceId);
+        
+        void ConfirmUser(int userId);
+        void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl, bool isNonExpiring);
+
+        UserWithRole GetUserWithRoleById(int userId);
+    }
+}
+
+
+//****************************************************************** IUserService.cs ******************************************************************//
+//------------------------------------------------------------------ Users Folder End ------------------------------------------------------------------//
+//****************************************************************** IItemResponse.cs ******************************************************************//
+namespace SOPSC.Api.Models
+{
+    /// <summary>
+    /// Represents a response containing a single item, along with metadata about the response status.
+    /// </summary>
+    public interface IItemResponse
+    {
+        /// <summary>
+        /// Gets or sets a value indicating whether the response is successful.
+        /// </summary>
+        bool IsSuccessful { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique transaction identifier for tracking the response.
+        /// </summary>
+        string TransactionId { get; set; }
+
+        /// <summary>
+        /// Gets the item returned in the response.
+        /// </summary>
+        object Item { get; }
+    }
+}
+
+
+//------------------------------------------------------------------ Interfaces Folder End ------------------------------------------------------------------//
+//------------------------------------------------------------------ Requests Folder Start ------------------------------------------------------------------//
+//------------------------------------------------------------------ Emails Folder Start ------------------------------------------------------------------//
+//****************************************************************** EmailInfo.cs.cs ******************************************************************//
+namespace SOPSC.Api.Models.Requests.Emails
+{
+    /// <summary>
+    /// Represents the basic information required to send an email.
+    /// </summary>
+    public class EmailInfo
+    {
+        /// <summary>
+        /// Gets or sets the recipient's email address.
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recipient's name.
+        /// </summary>
+        public string Name { get; set; }
+    }
+}
+
+
+//****************************************************************** SendEmailRequest.cs ******************************************************************//
+using System.ComponentModel.DataAnnotations;
+
+namespace SOPSC.Api.Models.Requests.Emails
+{
+    /// <summary>
+    /// Represents a request to send an email, containing sender and recipient details, 
+    /// along with the email subject and body.
+    /// </summary>
+    public class SendEmailRequest
+    {
+        /// <summary>
+        /// Gets or sets the sender's information.
+        /// </summary>
+        /// <remarks>
+        /// This property is required and must include the sender's email and name.
+        /// </remarks>
+        [Required]
+        public EmailInfo Sender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recipient's information.
+        /// </summary>
+        /// <remarks>
+        /// This property is required and must include the recipient's email and name.
+        /// </remarks>
+        [Required]
+        public EmailInfo To { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subject of the email.
+        /// </summary>
+        /// <remarks>
+        /// This property is required and should describe the purpose of the email.
+        /// </remarks>
+        [Required]
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the body content of the email.
+        /// </summary>
+        /// <remarks>
+        /// This property is required and contains the main message to be sent.
+        /// </remarks>
+        [Required]
+        public string Body { get; set; }
+        public string HtmlContent { get; set; }
+    }
+}
+
+
+//------------------------------------------------------------------ Emails Folder End ------------------------------------------------------------------//
+
+//------------------------------------------------------------------ Users Folder Start ------------------------------------------------------------------//
+//****************************************************************** UserAddRequest.cs ******************************************************************//
+using System.ComponentModel.DataAnnotations;
+
+namespace SOPSC.Api.Models.Requests.Users
+{
+    /// <summary>
+    /// Represents a request to add a new user, including personal details, email, and password.
+    /// </summary>
+    public class UserAddRequest
+    {
+        /// <summary>
+        /// Gets or sets the first name of the user.
+        /// </summary>
+        /// <remarks>
+        /// This property is required and cannot exceed 100 characters.
+        /// </remarks>
+        [Required]
+        [StringLength(100, ErrorMessage = "First name cannot exceed 100 characters.")]
+        public string FirstName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last name of the user.
+        /// </summary>
+        /// <remarks>
+        /// This property is required and cannot exceed 100 characters.
+        /// </remarks>
+        [Required]
+        [StringLength(100, ErrorMessage = "Last name cannot exceed 100 characters.")]
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email address of the user.
+        /// </summary>
+        /// <remarks>
+        /// This property is required, must be a valid email address, and cannot exceed 255 characters.
+        /// </remarks>
+        [Required]
+        [EmailAddress(ErrorMessage = "Invalid Email Address")]
+        [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters.")]
+        public string Email { get; set; }
+
+        /// <summary>
+        /// The Password field for user registration.
+        /// </summary>
+        /// <remarks>
+        /// The password must meet the following criteria:
+        /// <list type="bullet">
+        ///   <item>Contain at least one uppercase letter</item>
+        ///   <item>Contain at least one lowercase letter</item>
+        ///   <item>Contain at least one number</item>
+        ///   <item>Contain at least one special character (#?!@$%^&*-)</item>
+        ///   <item>Be at least 8 characters long</item>
+        /// </list>
+        /// </remarks>
+        [Required]
+        [StringLength(100, ErrorMessage = "Password cannot exceed 100 characters.")]
+        [RegularExpression("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", ErrorMessage = "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character (#?!@$%^&*-).")]
+        public string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation password.
+        /// </summary>
+        /// <remarks>
+        /// This property must match the <see cref="Password"/> field.
+        /// </remarks>
+        [Required]
+        [StringLength(100, ErrorMessage = "Password confirmation cannot exceed 100 characters.")]
+        [Compare("Password", ErrorMessage = "Passwords do not match.")]
+        public string PasswordConfirm { get; set; }
+    }
+}
+
+
+//****************************************************************** UserLogInRequest.cs ******************************************************************//
+using System.ComponentModel.DataAnnotations;
+
+namespace SOPSC.Api.Models.Requests.Users
+{
+    public class UserLogInRequest
+    {
+        [Required]
+        [EmailAddress(ErrorMessage = "Invalid Email Address")]
+        [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters.")]
+        public string Email { get; set; }
+        [Required]
+        [StringLength(100, ErrorMessage = "Password cannot exceed 100 characters.")]
+        public string Password { get; set; }
+    }
+}
+
+
+//****************************************************************** UserLogOutRequest.cs ******************************************************************//
+using System.ComponentModel.DataAnnotations;
+
+namespace SOPSC.Api.Models.Requests.Users
+{
+    public class UserLogOutRequest
+    {
+        /// <summary>
+        /// The authentication token for the user who is logging out.
+        /// </summary>
+        [Required]
+        [StringLength(255)]
+        public string Token { get; set; }
+
+        /// <summary>
+        /// The device ID associated with the user's session.
+        /// </summary>
+        [Required]
+        [StringLength(255)]
+        public string DeviceId { get; set; }
+
+    }
+}
+
+
+//****************************************************************** UserToken.cs ******************************************************************//
+namespace SOPSC.Api.Models.Requests.Users
+{
+    public class UserToken
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for the token.
+        /// </summary>
+        public int TokenId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user associated with the token.
+        /// </summary>
+        public int UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token string.
+        /// </summary>
+        public string Token { get; set; }
+        public string DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time the token was created.
+        /// </summary>
+        public DateTime DateCreated { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiry date and time of the token. Null if the token does not expire.
+        /// </summary>
+        public DateTime? ExpiryDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the token does not expire.
+        /// </summary>
+        public bool IsNonExpiring { get; set; }
+
+    }
+}
+
+
+//------------------------------------------------------------------ Users Folder End ------------------------------------------------------------------//
+//------------------------------------------------------------------ Requests Folder End ------------------------------------------------------------------//
+
+//------------------------------------------------------------------ Responses Folder Start ------------------------------------------------------------------//
+//****************************************************************** BaseResponse.cs ******************************************************************//
+using System;
+
+namespace SOPSC.Api.Models.Responses
+{
+    /// <summary>
+    /// The base class for all API response models. 
+    /// </summary>
+    /// <remarks>
+    /// Any response being returned from the API must inherit from this class. 
+    /// It provides a standard structure for responses, including a success flag and a unique transaction ID.
+    /// </remarks>
+    public abstract class BaseResponse
+    {
+        /// <summary>
+        /// Gets or sets a value indicating whether the request was successful.
+        /// </summary>
+        /// <remarks>
+        /// This property indicates the success state of the response.
+        /// </remarks>
+        public bool IsSuccessful { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique transaction identifier for the response.
+        /// </summary>
+        /// <remarks>
+        /// A new transaction ID is generated each time a response is created, providing a unique identifier
+        /// for logging, debugging, and tracing requests.
+        /// </remarks>
+        public string TransactionId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseResponse"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This constructor generates a new unique transaction ID for each response instance.
+        /// </remarks>
+        public BaseResponse()
+        {
+            // Generate a new transaction ID
+            TransactionId = Guid.NewGuid().ToString();
+        }
+    }
+}
+
+
+//****************************************************************** ErrorResponse.cs ******************************************************************//
+using System;
+using System.Collections.Generic;
+
+namespace SOPSC.Api.Models.Responses
+{
+    /// <summary>
+    /// Represents an error response returned from the API.
+    /// </summary>
+    /// <remarks>
+    /// Inherits from <see cref="BaseResponse"/> and adds a list of error messages.
+    /// This class is used to provide detailed error information in API responses.
+    /// </remarks>
+    public class ErrorResponse : BaseResponse
+    {
+        /// <summary>
+        /// Gets or sets a list of error messages.
+        /// </summary>
+        /// <remarks>
+        /// This property contains one or more error messages describing what went wrong during the request.
+        /// </remarks>
+        public List<string> Errors { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorResponse"/> class with a single error message.
+        /// </summary>
+        /// <param name="errMsg">A single error message to be added to the response.</param>
+        /// <remarks>
+        /// The <see cref="IsSuccessful"/> property is automatically set to <c>false</c> in this constructor.
+        /// </remarks>
+        public ErrorResponse(string errMsg)
+        {
+            Errors = new List<string>();
+            Errors.Add(errMsg);
+            IsSuccessful = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorResponse"/> class with multiple error messages.
+        /// </summary>
+        /// <param name="errMsg">A collection of error messages to be added to the response.</param>
+        /// <remarks>
+        /// The <see cref="IsSuccessful"/> property is automatically set to <c>false</c> in this constructor.
+        /// </remarks>
+        public ErrorResponse(IEnumerable<string> errMsg)
+        {
+            Errors = new List<string>();
+            Errors.AddRange(errMsg);
+            IsSuccessful = false;
+        }
+    }
+}
+
+
+//****************************************************************** ItemResponse.cs ******************************************************************//
+namespace SOPSC.Api.Models.Responses
+{
+    /// <summary>
+    /// Represents a response containing a single item of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the item included in the response.</typeparam>
+    /// <remarks>
+    /// Inherits from <see cref="SuccessResponse"/> and implements the <see cref="IItemResponse"/> interface.
+    /// This class is used for successful API responses that return a single item.
+    /// </remarks>
+    public class ItemResponse<T> : SuccessResponse, IItemResponse
+    {
+        /// <summary>
+        /// Gets or sets the item returned in the response.
+        /// </summary>
+        /// <value>
+        /// The item of type <typeparamref name="T"/> included in the response.
+        /// </value>
+        public T Item { get; set; }
+
+        /// <summary>
+        /// Explicit implementation of the <see cref="IItemResponse.Item"/> property.
+        /// </summary>
+        /// <remarks>
+        /// This allows the <see cref="ItemResponse{T}"/> class to be used polymorphically as an <see cref="IItemResponse"/>.
+        /// </remarks>
+        object IItemResponse.Item => Item;
+    }
+}
+
+
+//****************************************************************** ItemsResponse.cs ******************************************************************//
+using System.Collections.Generic;
+
+namespace SOPSC.Api.Models.Responses
+{
+    /// <summary>
+    /// Represents a response containing a list of items. Inherits from <see cref="SuccessResponse"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of items contained in the response.</typeparam>
+    public class ItemsResponse<T> : SuccessResponse
+    {
+        /// <summary>
+        /// Gets or sets the list of items returned in the response.
+        /// </summary>
+        /// <value>
+        /// A <see cref="List{T}"/> containing the items of type <typeparamref name="T"/>.
+        /// </value>
+        public List<T> Items { get; set; }
+    }
+}
+
+
+//****************************************************************** SuccessResponse.cs ******************************************************************//
+namespace SOPSC.Api.Models.Responses
+{
+    /// <summary>
+    /// Represents a successful response. Inherits from <see cref="BaseResponse"/>.
+    /// </summary>
+    public class SuccessResponse : BaseResponse
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SuccessResponse"/> class.
+        /// Sets the <see cref="BaseResponse.IsSuccessful"/> property to <c>true</c>.
+        /// </summary>
+        public SuccessResponse()
+        {
+            IsSuccessful = true;
+        }
+    }
+}
+
+
+//****************************************************************** UserTokenResponse.cs ******************************************************************//
+namespace SOPSC.Api.Models.Responses
+{
+    public class UserTokenResponse
+    {
+        public string Token { get; set; }
+        public string DeviceId { get; set; }
+    }
+}
+
+
+//------------------------------------------------------------------ Responses Folder End ------------------------------------------------------------------//
+//------------------------------------------------------------------ Models Folder End ------------------------------------------------------------------//
