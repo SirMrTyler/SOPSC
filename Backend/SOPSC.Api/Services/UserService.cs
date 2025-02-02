@@ -48,7 +48,7 @@ namespace SOPSC.Api.Services
             _configuration = configuration;
             _tokenService = tokenService;
             _emailService = emailService;
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _connectionString = configuration.GetConnectionString("DefaultConnection"); 
         }
 
 #region CREATE
