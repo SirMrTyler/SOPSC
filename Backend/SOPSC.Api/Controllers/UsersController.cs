@@ -52,30 +52,60 @@ public class UsersController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<ItemResponse<UserTokenResponse>>> Login(UserLogInRequest tryUser)
     {
-        // Get deviceId from the request headers
-        string deviceId = HttpContext.Request.Headers["DeviceId"].ToString();
-        Console.WriteLine($"UsersController Line 57: DeviceId: {deviceId}");
-        if (string.IsNullOrEmpty(deviceId))
+        int iCode = 200;
+        BaseResponse response = null;
+        try
         {
-            deviceId = Guid.NewGuid().ToString();
-            Console.WriteLine($"UsersController Line 61: deviceId was null: Generated New DeviceId: {deviceId}");
+            // Get deviceId from the request headers
+            string deviceId = HttpContext.Request.Headers["DeviceId"].ToString();
+            Console.WriteLine($"UsersController Line 61: DeviceId: {deviceId}");
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                deviceId = Guid.NewGuid().ToString();
+                Console.WriteLine($"UsersController Line 61: deviceId was null: Generated New DeviceId: {deviceId}");
+            }
+
+            // Check if the DeviceId is already in use.
+            UserToken existingToken = _tokenService.GetTokenByDeviceId(deviceId);
+            if (existingToken != null && existingToken.ExpiryDate.HasValue && existingToken.ExpiryDate > DateTime.UtcNow)
+            {
+                response = new ItemResponse<UserTokenResponse>
+                {
+                    Item = new UserTokenResponse
+                    {
+                        Token = existingToken.Token,
+                        DeviceId = deviceId
+                    }
+                };
+                return StatusCode(iCode, response);
+            }
+
+            // If no valid token is found, attempt to log in the user
+            var token = await _userService.LogInAsync(tryUser.Email, tryUser.Password, deviceId);
+            if (string.IsNullOrEmpty(token))
+            {
+                iCode = 401;
+                response = new ErrorResponse("Invalid credentials.");
+            }
+            else
+            {
+                response = new ItemResponse<UserTokenResponse>
+                {
+                    Item = new UserTokenResponse
+                    {
+                        Token = token,
+                        DeviceId = deviceId
+                    }
+                };
+            }
         }
-        
-        var token = await _userService.LogInAsync(tryUser.Email, tryUser.Password, deviceId);
-        Console.WriteLine($"DeviceId: {deviceId}");
-
-        if (string.IsNullOrEmpty(token))
+        catch (Exception ex)
         {
-            return Unauthorized(new ErrorResponse("Invalid credentials."));
+            base.Logger.LogError(ex.ToString());
+            iCode = 500; // Internal Server Error
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
         }
-
-        var response = new UserTokenResponse
-        {
-            Token = token,
-            DeviceId = deviceId
-        };
-
-        return Ok(new ItemResponse<UserTokenResponse> { Item = response });
+        return StatusCode(iCode, response);
     }
 
 
@@ -163,54 +193,25 @@ public class UsersController : BaseApiController
 
         try
         {
-            // Log the incoming request headers for debugging)
-            string authHeader = HttpContext.Request.Headers["Authorization"];
-            string token = authHeader.Replace("Bearer ", "");
-            string deviceId = HttpContext.Request.Headers["deviceId"];
-
-            Console.WriteLine($"UsersController Line 171: Token: {token}");
-            Console.WriteLine($"\nUsersController Line 172: DeviceId: {deviceId}");
-
-            if (string.IsNullOrEmpty(authHeader))
-            {
-                Console.WriteLine("Token or DeviceId missing.");
-                statusCode = 401; // Unauthorized
-                response = new ErrorResponse("Unauthorized");
-                return StatusCode(statusCode, response);
-            }
-
-            // Retrieve the token from the database
-            UserToken userToken = _tokenService.GetTokenByToken(token);
-            Console.WriteLine($"[UsersController: 184] tokenService: {userToken.Token}");
-            if (userToken == null || (userToken.ExpiryDate.HasValue && userToken.ExpiryDate < DateTime.UtcNow))
-            {
-                Console.WriteLine("Invalid or expired token.");
-                statusCode = 401; // Unauthorized
-                response = new ErrorResponse("Token expired or invalid.");
-                return StatusCode(statusCode, response);
-            }
-
-            // Check if the DeviceId matches the one in the database
-            if (userToken.DeviceId != deviceId)
-            {
-                Console.WriteLine("DeviceId mismatch.");
-                statusCode = 401; // Unauthorized
-                response = new ErrorResponse("Unauthorized: DeviceId mismatch.");
-                return StatusCode(statusCode, response);
-            }
-
-            // Get current user info
             IUserAuthData currentUser = _authenticationService.GetCurrentUser();
             if (currentUser == null)
             {
-                Console.WriteLine("[UsersController: 206] User not authenticated.");
-                statusCode = 401;
-                response = new ErrorResponse("[UsersController: 208] Unauthorized: CurrentUser is Null.");
+                Console.WriteLine("[UsersController: 57]: Current User is null");
+                statusCode = 404; // Not found
+                response = new ErrorResponse("Unauthorized: Current User not found.");
+                return StatusCode(statusCode, response);
             }
-            else
+
+            UserWithRole user = _userService.GetUserWithRoleById(currentUser.UserId);
+            if (user == null)
             {
-                Console.WriteLine($"[UsersController: 212] Authenticated UserId: {currentUser.UserId}");
-                UserWithRole user = _userService.GetUserWithRoleById(currentUser.UserId);
+                Console.WriteLine("[UsersController: 178]: User not found");
+                statusCode = 404; // Not found
+                response = new ErrorResponse("User not found.");
+                return StatusCode(statusCode, response);
+            }
+            else 
+            { 
                 response = new ItemResponse<UserWithRole>() { Item = user };
             }
         }
@@ -219,6 +220,7 @@ public class UsersController : BaseApiController
             base.Logger.LogError(ex.ToString());
             statusCode = 500; // Internal Server Error
             response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            return StatusCode(statusCode, response);
         }
         return StatusCode(statusCode, response);
     }
@@ -227,7 +229,7 @@ public class UsersController : BaseApiController
     [HttpGet("logout")]
     public ActionResult<ItemResponse<bool>> LogOut()
     {
-        int iCode = 200;
+        int statusCode = 200;
         BaseResponse response = null;
 
         try
@@ -251,10 +253,10 @@ public class UsersController : BaseApiController
         catch (Exception ex)
         {
             base.Logger.LogError(ex.ToString());
-            iCode = 500;
+            statusCode = 500;
             response = new ErrorResponse($"Generic Error: {ex.Message}.");
         }
-        return StatusCode(iCode, response);
+        return StatusCode(statusCode, response);
     }
 
     /// <summary>

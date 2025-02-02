@@ -1,0 +1,17 @@
+# Ignore Visual Studio cache & workspace files
+.vs/
+*.vsidx
+
+# Ignore compiled binaries
+bin/
+obj/
+
+# Ignore user-specific settings
+.idea/
+*.user
+*.suo
+*.vscode
+
+# Ignore environment files
+.env
+jwt_key.txt
