@@ -100,6 +100,24 @@ namespace SOPSC.Api.Services.Auth
             Console.WriteLine($"[TokenService: 116] Token: {thisToken.Token}");
             return thisToken;
         }
+        public void UpdateTokenExpiry(string token, DateTime? newExpiryDate)
+        {
+            string procName = "[dbo].[UserTokens_UpdateExpiryByToken]";
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@Token", token);
+                paramCollection.AddWithValue("@ExpiryDate", newExpiryDate);
+            });
+        }
+        public void DeleteUnneededTokens(int userId)
+        {
+            string procName = "[dbo].[UserTokens_DeleteOldTokensByUserId]";
+            _dataProvider.ExecuteNonQuery(procName, delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+            });
+        }
+
         public void DeleteTokenAndDeviceId(string token, string deviceId)
         {
             token = token.Trim();

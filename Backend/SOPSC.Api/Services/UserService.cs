@@ -107,9 +107,26 @@ namespace SOPSC.Api.Services
         /// <param name="email">The user's email address.</param>
         /// <param name="password">The user's password.</param>
         /// <returns>Returns <c>true</c> if login is successful; otherwise, <c>false</c>.</returns>
-        public async Task<string> LogInAsync(string email, string password, string deviceId)
+        public async Task<string> LogInAsync(string email, string password, string? deviceId)
         {
             // Step 1: Get user data from the database (including hashed password)
+            UserToken existingToken = _tokenService.GetTokenByDeviceId(deviceId);
+            if (existingToken != null)
+            {
+                if (existingToken.ExpiryDate.HasValue && existingToken.ExpiryDate > DateTime.UtcNow || existingToken.IsNonExpiring == true)
+                {
+                    // Token is valid, return it without requiring credentials
+                    return existingToken.Token;
+                }
+                else
+                {
+                    // Expired token, require re-authentication
+                    Console.WriteLine("[UserService: 124] Token expired. Credentials required");
+                    return null;
+                }
+            }
+
+            // Step 2: Authenticate user credentials
             UserBase user = null;
             string hashedPassword = null;
             _dataProvider.ExecuteCmd("[dbo].[Users_Select_AuthData]",
@@ -128,7 +145,6 @@ namespace SOPSC.Api.Services
                     };
                 });
 
-            // Step 2: Verify the password using BCrypt
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
             {
                 return null; // Invalid credentials
@@ -138,7 +154,7 @@ namespace SOPSC.Api.Services
             string newToken = await _authenticationService.GenerateJwtToken(user, deviceId);
 
             // Step 4: Store the token in the database
-            _tokenService.CreateToken(newToken, user.UserId, DateTime.UtcNow.AddDays(7), deviceId);
+            _tokenService.CreateToken(newToken, user.UserId, DateTime.UtcNow.AddDays(14), deviceId);
 
             // Update `IsActive` to true
             _dataProvider.ExecuteNonQuery("[dbo].[Users_SetIsActive]",
@@ -148,7 +164,7 @@ namespace SOPSC.Api.Services
                     paramCollection.AddWithValue("@IsActive", true);
                 });
 
-            _tokenService.DeleteExpiredTokens(user.UserId);
+            _tokenService.DeleteUnneededTokens(user.UserId);
 
             return newToken;
         }
