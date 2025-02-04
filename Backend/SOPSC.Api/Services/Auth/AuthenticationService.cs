@@ -94,42 +94,6 @@ namespace SOPSC.Api.Services.Auth
         }
 
         /// <summary>
-        /// Logs in the user by generating a JWT token and stores it in cookies. Expires in 7 days.
-        /// </summary>
-        /// <remarks>
-        /// Definition Location: SOPSC.Api.Services.Auth
-        /// </remarks>
-        /// <param name="user"></param>
-        /// <param name="extraClaims"></param>
-        /// <returns>No Return Value</returns>
-        public async Task LogInAsync(IUserAuthData user, string deviceId, params Claim[] extraClaims)
-        {
-            var token = await GenerateJwtToken(user, deviceId, extraClaims);
-
-            // Add the token to the response cookies (expires in 7 days)
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("AuthToken", token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7)
-            });
-        }
-
-        /// <summary>
-        /// Logs out the user by deleting the AuthToken cookie from the response.
-        /// </summary>
-        /// <remarks>
-        /// Definition Location: SOPSC.Api.Services.Auth
-        /// </remarks>
-        /// <returns></returns>
-        public Task LogOutAsync()
-        {
-            _httpContextAccessor.HttpContext.Response.Cookies.Delete("AuthToken");
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
         /// Checks if current user is logged in by validating the Authorization header token.
         /// </summary>
         /// <remarks>

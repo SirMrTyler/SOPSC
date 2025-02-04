@@ -23,15 +23,5 @@
         /// </summary>
         public DateTime DateCreated { get; set; }
 
-        /// <summary>
-        /// Gets or sets the expiry date and time of the token. Null if the token does not expire.
-        /// </summary>
-        public DateTime? ExpiryDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the token does not expire.
-        /// </summary>
-        public bool IsNonExpiring { get; set; }
-
     }
 }
