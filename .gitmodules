@@ -1,0 +1,6 @@
+[submodule "Frontend/sopsc-mobile-app"]
+	path = Frontend/sopsc-mobile-app
+	url = https://github.com/SirMrTyler/sopsc-mobile-app
+[submodule "Front/sopsc-mobile-app"]
+	path = Front/sopsc-mobile-app
+	url = https://github.com/SirMrTyler/sopsc-mobile-app.git
