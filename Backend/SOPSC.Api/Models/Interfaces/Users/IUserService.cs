@@ -34,9 +34,9 @@ namespace SOPSC.Api.Models.Interfaces.Users
         /// </returns>
         Paged<User> GetAllUsers(int pageIndex, int pageSize);
         Task<string> LogInAsync(string email, string password, string? deviceId);
-        
+        Task LogOutAsync(UserLogOutRequest request);
         void ConfirmUser(int userId);
-        void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl, bool isNonExpiring);
+        void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl);
 
         UserWithRole GetUserWithRoleById(int userId);
     }

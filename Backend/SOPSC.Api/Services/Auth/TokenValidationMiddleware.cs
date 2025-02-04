@@ -24,7 +24,7 @@ public class TokenValidationMiddleware
         var endpoint = context.GetEndpoint();
         if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
         {
-            Console.WriteLine("[Middleware: 27] Anon endpoint detected. Skipping token validation.");
+            Console.WriteLine("[Middleware: 27] Endpoint is marked as AllowAnonymous. Proceeding to next middleware.");
             await _next(context);
             return;
         }
@@ -46,7 +46,7 @@ public class TokenValidationMiddleware
                 {
                     Console.WriteLine("[Middleware: 47] Token not found. Returning Unauthorized.");
                     context.Response.StatusCode = 401;
-                    await context.Response.WriteAsync("[Middleware: 49] Unauthorized: Invalid token.");
+                    await context.Response.WriteAsync("Unauthorized: Invalid Token.");
                     return;
                 }
 
@@ -54,19 +54,9 @@ public class TokenValidationMiddleware
                 {
                     Console.WriteLine("[Middleware: 55] DeviceId mismatch. Returning Unauthorized.");
                     context.Response.StatusCode = 401;
-                    await context.Response.WriteAsync("[Middleware: 57] Unauthorized: DeviceId mismatch.");
+                    await context.Response.WriteAsync("Unauthorized: DeviceId mismatch.");
                     return;
                 }
-                if (userToken.ExpiryDate <= DateTime.UtcNow)
-                {
-                    Console.WriteLine("[Middleware: 62] Token expired. Updating expiry date.");
-                    userToken.ExpiryDate = DateTime.UtcNow.AddDays(14);
-                    tokenService.UpdateTokenExpiry(userToken.Token, userToken.ExpiryDate);
-                    Console.WriteLine("[Middleware: 65] Expiry date updated. Continuing.");
-                }
-
-                Console.WriteLine("[Middleware: 68] Validating other tokens.");
-                tokenService.DeleteUnneededTokens(userToken.UserId);
 
                 // Add user claims to HttpContext for authorization
                 var claims = new List<Claim>
@@ -77,14 +67,14 @@ public class TokenValidationMiddleware
                 var identity = new ClaimsIdentity(claims, "Token");
                 context.User = new ClaimsPrincipal(identity);
 
-                Console.WriteLine("[Middleware: 80] Claims added to HttpContext successfully.");
+                Console.WriteLine("[Middleware: 70] Claims added to HttpContext successfully.");
             }
         }
         else
         {
-            Console.WriteLine("[Middleware: 80] Token or DeviceId is missing. Returning Unauthroized.");
+            Console.WriteLine("[Middleware: 75] Token or DeviceId is missing. Returning Unauthroized.");
             context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("[Middleware: 101] Unauthorized: Missing Token/DeviceId.");
+            await context.Response.WriteAsync("Unauthorized: Missing Token/DeviceId.");
             return;
         }
 

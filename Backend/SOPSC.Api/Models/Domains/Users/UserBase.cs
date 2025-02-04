@@ -9,25 +9,13 @@ namespace SOPSC.Api.Models.Domains.Users
     /// </summary>
     public class UserBase : IUserAuthData
     {
-        /// <summary>
-        /// Gets or sets the unique identifier for the user.
-        /// </summary>
+        // Gets or sets the unique identifier for the user.
         public int UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the name of the user.
-        /// </summary>
-        /// <remarks>
-        /// This is typically the user's full name or display name.
-        /// </remarks>
+        // Gets or sets the name of the user.
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the roles assigned to the user.
-        /// </summary>
-        /// <remarks>
-        /// Roles determine the user's permissions and access levels within the system.
-        /// </remarks>
+        // Gets or sets the roles assigned to the user.
         public IEnumerable<string> Roles { get; set; }
     }
 }

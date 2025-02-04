@@ -47,7 +47,6 @@ public class UsersController : BaseApiController
 
 #region POST
 
-
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<ActionResult<ItemResponse<UserTokenResponse>>> Login(UserLogInRequest tryUser)
@@ -58,26 +57,16 @@ public class UsersController : BaseApiController
         {
             // Get deviceId from the request headers
             string deviceId = HttpContext.Request.Headers["DeviceId"].ToString();
-            Console.WriteLine($"UsersController Line 61: DeviceId: {deviceId}");
             if (string.IsNullOrEmpty(deviceId))
             {
                 deviceId = Guid.NewGuid().ToString();
-                Console.WriteLine($"UsersController Line 61: deviceId was null: Generated New DeviceId: {deviceId}");
             }
 
-            // Check if the DeviceId is already in use.
+            // Delete any existing tokens for this user and device
             UserToken existingToken = _tokenService.GetTokenByDeviceId(deviceId);
-            if (existingToken != null && existingToken.ExpiryDate.HasValue && existingToken.ExpiryDate > DateTime.UtcNow)
+            if (existingToken != null)
             {
-                response = new ItemResponse<UserTokenResponse>
-                {
-                    Item = new UserTokenResponse
-                    {
-                        Token = existingToken.Token,
-                        DeviceId = deviceId
-                    }
-                };
-                return StatusCode(iCode, response);
+                _tokenService.DeleteTokenByToken(existingToken.Token); // Delete the token
             }
 
             // If no valid token is found, attempt to log in the user
@@ -130,7 +119,7 @@ public class UsersController : BaseApiController
             response.Item = id;
 
             var requestUrl = HttpContext.Request.Headers["Referer"].ToString();
-            _userService.UserAccountValidation(id, model, requestUrl, false);
+            _userService.UserAccountValidation(id, model, requestUrl);
 
             result = Ok200(response);
         }
@@ -158,16 +147,10 @@ public class UsersController : BaseApiController
                 iCode = 404;
                 response = new ErrorResponse("Token not found.");
             }
-            else if (userToken.ExpiryDate.HasValue && userToken.ExpiryDate.Value < DateTime.UtcNow && !userToken.IsNonExpiring)
-            {
-                iCode = 404;
-                response = new ErrorResponse("Token has expired!");
-            }
-            else if (userToken.IsNonExpiring == false && userToken.ExpiryDate.HasValue && userToken.ExpiryDate.Value > DateTime.UtcNow)
+            else
             {
                 _userService.ConfirmUser(userToken.UserId);
                 _tokenService.DeleteTokenByToken(token);
-
                 response = new SuccessResponse();
             }
         }
@@ -183,6 +166,39 @@ public class UsersController : BaseApiController
 #endregion
 
 #region GET    
+    [AllowAnonymous]
+    [HttpGet("logout")]
+    public async Task<ActionResult<ItemResponse<bool>>> LogOut()
+    {
+        int statusCode = 200;
+        BaseResponse response = null;
+
+        try
+        {
+            string token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            string deviceId = HttpContext.Request.Headers["DeviceId"];
+
+            if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(deviceId))
+            {
+                UserLogOutRequest logOutRequest = new UserLogOutRequest
+                {
+                    Token = token,
+                    DeviceId = deviceId
+                };
+
+                // Call the logout function from UserService
+                await _userService.LogOutAsync(logOutRequest);
+            }
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            statusCode = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+        return StatusCode(statusCode, response);
+    }
 
     [Authorize]
     [HttpGet("current")]
@@ -221,40 +237,6 @@ public class UsersController : BaseApiController
             statusCode = 500; // Internal Server Error
             response = new ErrorResponse($"Generic Error: {ex.Message}.");
             return StatusCode(statusCode, response);
-        }
-        return StatusCode(statusCode, response);
-    }
-
-    [AllowAnonymous]
-    [HttpGet("logout")]
-    public ActionResult<ItemResponse<bool>> LogOut()
-    {
-        int statusCode = 200;
-        BaseResponse response = null;
-
-        try
-        {
-            string token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            string deviceId = HttpContext.Request.Headers["DeviceId"];
-
-
-            // Log both values for debugging
-            Console.WriteLine($"UsersController Line 57: Token: {token}");
-            Console.WriteLine($"UsersController Line 58: DeviceId: {deviceId}");
-
-            if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(deviceId))
-            {
-                _tokenService.DeleteTokenAndDeviceId(token, deviceId);
-            }
-
-            _authenticationService.LogOutAsync();
-            response = new SuccessResponse();
-        }
-        catch (Exception ex)
-        {
-            base.Logger.LogError(ex.ToString());
-            statusCode = 500;
-            response = new ErrorResponse($"Generic Error: {ex.Message}.");
         }
         return StatusCode(statusCode, response);
     }

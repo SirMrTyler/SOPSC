@@ -15,6 +15,7 @@ using System.Text;
 using SOPSC.Api.Models.Domains.Users;
 using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Data.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 
 namespace SOPSC.Api.Services
 {
@@ -29,6 +30,7 @@ namespace SOPSC.Api.Services
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly string _connectionString;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService"/> class.
@@ -41,18 +43,82 @@ namespace SOPSC.Api.Services
             IDataProvider dataProvider, 
             IConfiguration configuration,
             ITokenService tokenService,
-            IEmailService emailService)
+            IEmailService emailService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _authenticationService = authService;
             _dataProvider = dataProvider;
             _configuration = configuration;
             _tokenService = tokenService;
             _emailService = emailService;
-            _connectionString = configuration.GetConnectionString("DefaultConnection"); 
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _httpContextAccessor = httpContextAccessor;
         }
 
 #region CREATE
-        
+        public async Task<string> LogInAsync(string email, string password, string? deviceId)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                return "Device ID is required.";
+            }
+
+            // Step 1: Get user data from the database (including hashed password)
+            UserToken existingToken = _tokenService.GetTokenByDeviceId(deviceId);
+            
+            if (existingToken != null)
+            {
+                // Ensure the token is still valid in the database
+                UserToken checkToken = _tokenService.GetTokenByToken(existingToken.Token);
+
+                if (checkToken != null)
+                {
+                    return "Already logged in"; // Token is still valid, deny login
+                }
+                else
+                {
+                    // The token is invalid but still in memory, remove it
+                    _tokenService.DeleteTokenAndDeviceId(existingToken.Token, deviceId);
+                }
+            }
+
+            // Step 2: Authenticate user credentials
+            UserBase user = null;
+            string hashedPassword = null;
+
+            _dataProvider.ExecuteCmd("[dbo].[Users_Select_AuthData]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@Email", email);
+                },
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    hashedPassword = reader.GetSafeString(startingIndex++);
+                    user = new UserBase
+                    {
+                        UserId = reader.GetSafeInt32(startingIndex++),
+                        Name = email
+                    };
+                });
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
+            {
+                return null; // Invalid credentials
+            }
+
+            // Step 3: Generate a new token for the device
+            string newToken = await _authenticationService.GenerateJwtToken(user, deviceId);
+
+            // Step 4: Store the token in the database
+            _tokenService.CreateToken(newToken, user.UserId, deviceId);
+
+            // Update `IsActive` to true
+            SetActiveStatus(true, user.UserId, _dataProvider);
+
+            return newToken;
+        }
+
         /// <summary>
         /// Creates a new user in the database.
         /// </summary>
@@ -92,10 +158,26 @@ namespace SOPSC.Api.Services
 #region READ
         public async Task LogOutAsync(UserLogOutRequest request)
         {
-            if (!string.IsNullOrEmpty(request.Token) && !string.IsNullOrEmpty(request.DeviceId))
+            UserToken userToken = _tokenService.GetTokenByToken(request.Token);
+            if (userToken != null)
             {
+                // Update "IsActive" to false
+                SetActiveStatus(false, userToken.UserId, _dataProvider);
+
                 // Delete the token from the database
                 _tokenService.DeleteTokenAndDeviceId(request.Token, request.DeviceId);
+
+                // Ensure the token is actually removed
+                UserToken checkToken = _tokenService.GetTokenByToken(request.Token);
+                if(checkToken != null)
+                {
+                    throw new Exception("Logout failed: Token still exists in DB.");
+                }
+
+                // Remove the authentication cookie
+                var httpContext = _httpContextAccessor.HttpContext;
+                httpContext.Response.Cookies.Delete("AuthToken");
+                await httpContext.SignOutAsync();
             }
 
             await Task.CompletedTask;
@@ -107,67 +189,7 @@ namespace SOPSC.Api.Services
         /// <param name="email">The user's email address.</param>
         /// <param name="password">The user's password.</param>
         /// <returns>Returns <c>true</c> if login is successful; otherwise, <c>false</c>.</returns>
-        public async Task<string> LogInAsync(string email, string password, string? deviceId)
-        {
-            // Step 1: Get user data from the database (including hashed password)
-            UserToken existingToken = _tokenService.GetTokenByDeviceId(deviceId);
-            if (existingToken != null)
-            {
-                if (existingToken.ExpiryDate.HasValue && existingToken.ExpiryDate > DateTime.UtcNow || existingToken.IsNonExpiring == true)
-                {
-                    // Token is valid, return it without requiring credentials
-                    return existingToken.Token;
-                }
-                else
-                {
-                    // Expired token, require re-authentication
-                    Console.WriteLine("[UserService: 124] Token expired. Credentials required");
-                    return null;
-                }
-            }
-
-            // Step 2: Authenticate user credentials
-            UserBase user = null;
-            string hashedPassword = null;
-            _dataProvider.ExecuteCmd("[dbo].[Users_Select_AuthData]",
-                inputParamMapper: delegate (SqlParameterCollection paramCollection)
-                {
-                    paramCollection.AddWithValue("@Email", email);
-                },
-                singleRecordMapper: delegate (IDataReader reader, short set)
-                {
-                    int startingIndex = 0;
-                    hashedPassword = reader.GetSafeString(startingIndex++);
-                    user = new UserBase
-                    {
-                        UserId = reader.GetSafeInt32(startingIndex++),
-                        Name = email
-                    };
-                });
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
-            {
-                return null; // Invalid credentials
-            }
-
-            // Step 3: Generate a new token for the device
-            string newToken = await _authenticationService.GenerateJwtToken(user, deviceId);
-
-            // Step 4: Store the token in the database
-            _tokenService.CreateToken(newToken, user.UserId, DateTime.UtcNow.AddDays(14), deviceId);
-
-            // Update `IsActive` to true
-            _dataProvider.ExecuteNonQuery("[dbo].[Users_SetIsActive]",
-                inputParamMapper: delegate (SqlParameterCollection paramCollection)
-                {
-                    paramCollection.AddWithValue("@UserId", user.UserId);
-                    paramCollection.AddWithValue("@IsActive", true);
-                });
-
-            _tokenService.DeleteUnneededTokens(user.UserId);
-
-            return newToken;
-        }
+        
 
         /// <summary>
         /// Retrieves a user by their unique ID.
@@ -191,6 +213,7 @@ namespace SOPSC.Api.Services
                 });
             return user;
         }
+        
         public UserWithRole GetUserWithRoleById(int userId)
         {
             UserWithRole thisUser = null;
@@ -211,17 +234,24 @@ namespace SOPSC.Api.Services
                     Email = reader.GetSafeString(startingIndex++),
                     ProfilePicturePath = reader.GetSafeString(startingIndex++),
                     IsActive = reader.GetSafeBool(startingIndex++),
+                    RoleId = reader.GetSafeInt32(startingIndex++),
+                    HoursServed = reader.GetSafeDecimalNullable(startingIndex++),
+                    DateCreated = reader.GetSafeDateTime(startingIndex++),
+                    LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
+                    IsConfirmed = reader.GetSafeBool(startingIndex++),
                     RoleName = reader.GetSafeString(startingIndex++)
                 };
             });
             return thisUser;
         }
+        
         /// <summary>
         /// Retrieves all users with pagination support.
         /// </summary>
         /// <param name="pageIndex">The current page index.</param>
         /// <param name="pageSize">The number of users per page.</param>
         /// <returns>A paginated list of users.</returns>
+        
         public Paged<User> GetAllUsers(int pageIndex, int pageSize)
         {
             Paged<User> pagedUserList = null;
@@ -255,7 +285,6 @@ namespace SOPSC.Api.Services
 #endregion
 
 #region UPDATE
-
         public void ConfirmUser(int userId)
         {
             string procName = "[dbo].[Users_Confirm]";
@@ -278,51 +307,19 @@ namespace SOPSC.Api.Services
             }, null);
         }
 
-        #endregion
+#endregion
 
 #region DELETE
 
 #endregion
 
 #region Private Methods
-
-        /// <summary>Generates a JWT for the specified user.</summary>
-        /// <returns>The generated JWT as a string.</returns>
-        /// <param name="userId">The ID of the user for whom the token is generated.</param>
-        /// <param name="isNonExpiring">Whether the token should expire.</param>
-        public string CreateJwt(int userId, bool isNonExpiring = false)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["JWT:Key"]);
-
-            // Define the token descriptor
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        }),
-                Expires = isNonExpiring ? (DateTime?)null : DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JWT:ExpiryMinutes"])),
-                Issuer = _configuration["JWT:Issuer"],
-                Audience = _configuration["JWT:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            // Create and write the token
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-        
-        public void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl, bool isNonExpiring = false)
+        public void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl)
         {
             string guid = Guid.NewGuid().ToString();
             string deviceId = "DefaultDevice";
 
-            // Set an expiry date for the token
-            DateTime? expiryDate = isNonExpiring ? null : DateTime.UtcNow.AddDays(14);
-
-            _tokenService.CreateToken(guid, id, expiryDate, deviceId);
+            _tokenService.CreateToken(guid, id, deviceId);
 
             SendEmailRequest firstEmail = new SendEmailRequest()
             {
@@ -360,41 +357,15 @@ namespace SOPSC.Api.Services
             return user;
         }
 
-        private IUserAuthData Get(string email, string password)
+        private static void SetActiveStatus(bool isActive, int userId, IDataProvider dataProvider)
         {
-            UserBase user = null;
-            string passwordFromDb = "";
-            string procName = "[dbo].[Users_Select_AuthData]";
-            List<string> roles = new List<string>();
-
-            bool userConfirmed = false;
-            _dataProvider.ExecuteCmd(
-                storedProc: procName,
-                inputParamMapper: delegate (SqlParameterCollection inColl)
+            dataProvider.ExecuteNonQuery("[dbo].[Users_SetIsActive]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
                 {
-                    inColl.AddWithValue("@Email", email);
-                }, singleRecordMapper: delegate (IDataReader reader, short set)
-                {
-                    int startingIndex = 0;
-                    switch (set)
-                    {
-                        case (0):
-                            passwordFromDb = reader.GetSafeString(startingIndex++);
-
-                            user = new UserBase
-                            {
-                                UserId = reader.GetSafeInt32(startingIndex++),
-                                Name = email
-                            };
-                            break;
-                        case (1):
-                            roles.Add(reader.GetSafeString(startingIndex++));
-                            break;
-                    }
+                    paramCollection.AddWithValue("@UserId", userId);
+                    paramCollection.AddWithValue("@IsActive", isActive);
                 });
-            return user;
         }
-
 #endregion
     }
 }
