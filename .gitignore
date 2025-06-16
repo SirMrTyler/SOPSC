@@ -15,3 +15,4 @@ obj/
 # Ignore environment files
 .env
 jwt_key.txt
+sopsc-mobile-app/
