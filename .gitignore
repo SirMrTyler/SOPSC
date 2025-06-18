@@ -63,3 +63,7 @@ Builds/
 
 # Mac specific
 __MACOSX
+
+# Yarn PlugnPlay
+.yarn/
+.pnp.*
