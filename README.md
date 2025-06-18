@@ -28,7 +28,7 @@ Each user is assigned a role (integer-based) with escalating privileges:
 | Admin     | 4     | Full system control                    |
 | Developer | 5     | Full CRUD access to all endpoints      |
 
-Endpoints and permissions are strictly enforced per `UserAccessRules.md`. Chaplains serve as intermediaries—approving requests for contact with Admins, verifying reports, and managing events.
+Endpoints and permissions are strictly enforced per [`UserAccessRules.md`](./UserAccessRules.md). Chaplains serve as intermediaries—approving requests for contact with Admins, verifying reports, and managing events.
 
 ---
 
@@ -39,23 +39,19 @@ Endpoints and permissions are strictly enforced per `UserAccessRules.md`. Chapla
 - **Token Management:** JWT + SecureStore (mobile), expiring sessions
 - **User Verification:** Email confirmation + approval pipeline
 - **Sensitive Flow:** Admin communication and video calls require Chaplain approval first
+- **Transport:** SSL/TLS enforced
+- **API Access:** Role-based middleware on all routes
+- **Secrets:** GitHub secret scanning and push protection enabled
 
 ---
 
 ## 🗂️ Data Model (SQL Server)
 
-### Tables Include:
+**Core Tables:**
 
-- `Users`: Core identity table (FKs: RoleId, TokenId)
-- `Messages`: Messaging between users (SenderId, RecipientId)
-- `Reports`: Incident logs (includes narrative, hours, mileage)
-- `PrayerRequests`: Community spiritual support threads
-- `Calendar`: Event scheduling with RSVP support (by role visibility)
-- `Agencies`: Tracks external partners (fire/police departments, etc.)
-- `AdminTools`: Moderation, warnings, bans, and role promotion requests
-- `Notifications`: System alerts by event/message/report type
+- `Users`, `Reports`, `Messages`, `Notifications`, `Roles`, `PrayerRequests`, `Agencies`, `Media`, `Divisions`, `Calendar` (planned), `AdminTools` (planned)
 
-Each table is documented in `UserAccessRules.md` with relationships and constraints.
+Each table is documented in [`UserAccessRules.md`](./UserAccessRules.md) with relationships and constraints.
 
 ---
 
@@ -70,7 +66,7 @@ Each table is documented in `UserAccessRules.md` with relationships and constrai
 | 5     | Reports & Metrics                 | ⚒️ In Progress | ⚡ Medium |
 | 6     | Admin Dashboard + Agency Tracking | ⏳ Finalizing  | ✅ Final  |
 
-Detailed steps and dependencies per phase are available in `ROADMAP.md`.
+Detailed steps and dependencies per phase are available in [`ROADMAP.md`](./ROADMAP.md).
 
 ---
 
@@ -80,7 +76,7 @@ Detailed steps and dependencies per phase are available in `ROADMAP.md`.
 | --------- | ---------------------------------- |
 | Frontend  | Expo (React Native)                |
 | Backend   | ASP.NET Core Web API (C#)          |
-| Database  | Microsoft SQL Server               |
+| Database  | Microsoft SQL Server 2022          |
 | Auth      | OAuth 2.0 (Google, Apple, Email)   |
 | Messaging | Expo WebSockets (Realtime comms)   |
 | Storage   | Expo SecureStore (JWT tokens)      |
@@ -99,6 +95,52 @@ Detailed steps and dependencies per phase are available in `ROADMAP.md`.
 
 ---
 
+## 🛠 Developer Setup
+
+### Frontend Setup
+
+```bash
+cd Frontend/sopsc-mobile-app
+yarn install
+yarn start  # Start Expo Dev Client
+```
+
+Branch for Google Sign-In: `google-signin-universal` (current)
+
+### Backend Setup
+
+```bash
+cd Backend/SOPSC.Api
+dotnet build
+dotnet run
+```
+
+Requires: .NET 8 SDK
+
+### Database Setup
+
+- Run scripts in `/SQL` to generate database schema
+- Run stored procedures for core CRUD
+- Connection string in `appsettings.json`
+
+---
+
+## 🗒 Backend Dev Notes
+
+### How to Add a Table
+
+1. Define table schema → add to `/SQL`
+2. Create matching stored procedures:
+   - `[TableName]_Insert`
+   - `[TableName]_SelectAll`
+   - `[TableName]_SelectById`
+   - `[TableName]_Update`
+   - `[TableName]_Delete`
+3. Add Controller in `Backend/SOPSC.Api/Controllers/`
+4. Register endpoints in API
+
+---
+
 ## ⚠️ Dev Warnings
 
 - **Do not expose JWTs or sensitive keys.**
@@ -106,27 +148,14 @@ Detailed steps and dependencies per phase are available in `ROADMAP.md`.
 - **Chaplains act as filters between Member requests and Admin interaction.**
 - **Reports and media should link back via FK to their origin users.**
 - **Group chat, video, and calendar features are under staged rollout.**
-
----
-
-## 🛠 Developer Setup (WIP)
-
-1. Clone the repository
-2. Install dependencies (`yarn` for front-end, `dotnet restore` for back-end)
-3. Set up local environment variables:
-   - Google/Apple OAuth credentials
-   - API base URL
-   - SQL Server connection string
-4. Run front-end with `npx expo start`
-5. Launch backend: `dotnet run`
-6. Apply DB schema & seed dev data (manual scripts currently)
+- **GitHub secret scanning is active — do not commit `.env` files, API keys, or tokens.**
 
 ---
 
 ## 📎 Related Files
 
-- [`ROADMAP.md`](./ROADMAP.md): Feature rollout and milestone tracking
-- [`UserAccessRules.md`](./UserAccessRules.md): Role-level permissions and endpoint logic
+- [`ROADMAP.md`](./Planning/ROADMAP.md)
+- [`UserAccessRules.md`](./Planning/UserAccessRules.md)
 
 ---
 
@@ -150,7 +179,7 @@ Use the `RoleId` and corresponding access table as your source of truth.
 This project is active and used in a live capacity by public safety teams. Maintain **data integrity, user trust, and operational stability** at all times.
 
 For questions, contact the lead developer: Tyler Klein  
-Repo: _Private_  
+GitHub: [github.com/SirMrTyler](https://github.com/SirMrTyler)  
 License: Proprietary
 
 ---
