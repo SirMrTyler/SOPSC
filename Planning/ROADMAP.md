@@ -18,6 +18,8 @@
           4. Send the authentication token to the backend (.NET API) for validation.
              - Extract the ID token from Google OAuth response.
              - Send it to .NET API for verification.
+             - Receive JWT + DeviceId from `/api/users/google` endpoint.
+             - Store these values for authenticated requests.
           5. Handle login success & store authentication tokens.
              - Store JWT tokens securely using "Expo SecureStore".
              - Redirect users to the appropriate screen after login.
