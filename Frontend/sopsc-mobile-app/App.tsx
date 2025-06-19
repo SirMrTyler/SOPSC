@@ -23,7 +23,9 @@ export default function App() {
       if (result.type === 'success') {
         const userInfo = result.data;
         console.log('User Info:', userInfo);
-        alert(`Welcome, ${userInfo}`);
+        const name = userInfo.user.name || userInfo.user.email;
+        alert(`Welcome ${name}! You have successfully signed in with Google.`);
+        // Here you can send the userInfo to your backend for further processing
       } else {
         alert('Sign in failed. Please try again.');
       }
