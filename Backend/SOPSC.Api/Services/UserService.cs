@@ -210,7 +210,7 @@ namespace SOPSC.Api.Services
             IUserAuthData userAuth = new UserBase
             {
                 UserId = userId,
-                Name = email
+                Name = email,
                 Roles = new List<string> { "Guest" }
             };
 
