@@ -16,6 +16,7 @@ using SOPSC.Api.Models.Domains.Users;
 using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Data.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Google.Apis.Auth;
 
 namespace SOPSC.Api.Services
 {
@@ -153,9 +154,77 @@ namespace SOPSC.Api.Services
             return userId;
         }
 
-#endregion
+        public int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId)
+        {
+            int userId = 0;
+            token = null;
+            deviceId = model.DeviceId ?? Guid.NewGuid().ToString();
 
-#region READ
+            // Validate the Google IdToken
+            GoogleJsonWebSignature.Payload payload = GoogleJsonWebSignature
+                .ValidateAsync(model.IdToken, new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new[] { _configuration["GoogleOAuth:WebClientId"] } // Add this in appsettings.json
+                }).GetAwaiter().GetResult();
+
+            // Extract user info from the payload
+            string email = payload.Email;
+            string firstName = payload.GivenName;
+            string lastName = payload.FamilyName;
+            string avatarUrl = payload.Picture;
+
+            // Look up user by email
+            string procName = "[dbo].[Users_SelectByEmail]";
+            _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@Email", email);
+            }, delegate (IDataReader reader, short set)
+            {
+                int startingIndex = 0;
+                userId = reader.GetSafeInt32(startingIndex++);
+            });
+
+            // If user not found/does not exist, create a new user
+            if (userId == 0)
+            {
+                string insertProc = "[dbo].[Users_Insert_Google]";
+                _dataProvider.ExecuteNonQuery(insertProc, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@FirstName", firstName);
+                    paramCollection.AddWithValue("@LastName", lastName);
+                    paramCollection.AddWithValue("@Email", email);
+                    paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
+                    paramCollection.AddWithValue("@IsGoogleUser", true);
+                    SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
+                    idOut.Direction = ParameterDirection.Output;
+                    paramCollection.Add(idOut);
+                },
+                returnParameters: delegate (SqlParameterCollection returnCollection)
+                {
+                    object oId = returnCollection["@Id"].Value;
+                    int.TryParse(oId.ToString(), out userId);
+                });
+            }
+
+            // Generate a JWT token for the user
+            IUserAuthData userAuth = new UserBase
+            {
+                UserId = userId,
+                Name = email
+                Roles = new List<string> { "Guest" }
+            };
+
+            token = _authenticationService.GenerateJwtToken(userAuth, deviceId).GetAwaiter().GetResult();
+
+            // Save token to UserTokens table
+            _tokenService.CreateToken(token, userId, deviceId);
+
+            return userId;
+        }
+
+        #endregion
+
+        #region READ
         public async Task LogOutAsync(UserLogOutRequest request)
         {
             UserToken userToken = _tokenService.GetTokenByToken(request.Token);

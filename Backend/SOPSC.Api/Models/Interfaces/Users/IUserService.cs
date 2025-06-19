@@ -33,6 +33,7 @@ namespace SOPSC.Api.Models.Interfaces.Users
         /// along with pagination metadata.
         /// </returns>
         Paged<User> GetAllUsers(int pageIndex, int pageSize);
+        int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId);
         Task<string> LogInAsync(string email, string password, string? deviceId);
         Task LogOutAsync(UserLogOutRequest request);
         void ConfirmUser(int userId);

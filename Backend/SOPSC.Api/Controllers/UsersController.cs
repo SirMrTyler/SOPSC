@@ -133,6 +133,47 @@ public class UsersController : BaseApiController
     }
 
     [AllowAnonymous]
+    [HttpPost("google")]
+    public ActionResult<ItemResponse<object>> GoogleSignIn(GoogleSignInRequest model)
+    {
+        int iCode = 200;
+        BaseResponse response = null;
+        try
+        {
+            string token;
+            string deviceId;
+
+            int userId = _userService.GoogleSignIn(model, out token, out deviceId);
+
+            if (userId == 0)
+            {
+                iCode = 400;
+                response = new ErrorResponse("Google Sign-In failed.");
+            }
+            else
+            {
+                response = new ItemResponse<object>
+                {
+                    Item = new
+                    {
+                        token = token,
+                        deviceId = deviceId,
+                        userId = userId
+                    }
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            iCode = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+
+        return StatusCode(iCode, response);
+    }
+
+    [AllowAnonymous]
     [HttpPost("confirm/{token}")]
     public ActionResult<ItemResponse<bool>> ConfirmNewUser(string token)
     {
