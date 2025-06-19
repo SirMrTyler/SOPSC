@@ -25,7 +25,32 @@ export default function App() {
         console.log('User Info:', userInfo);
         const name = userInfo.user.name || userInfo.user.email;
         alert(`Welcome ${name}! You have successfully signed in with Google.`);
-        // Here you can send the userInfo to your backend for further processing
+        
+        // Send userInfo to backend
+        try {
+          const response = await fetch('https://localhost:5001/api/users/google', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              idToken: userInfo.idToken
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Google Sign-In success:', data);
+            alert(`Signed in! Token: ${data.item.token}`);
+          } else {
+            console.error('Google sign-in failed:', response.status);
+            const err = await response.text();
+            alert(`Google sign-in failed: ${err}`);
+          }
+        } catch (error) {
+          console.log(`Error sending Google sign-in to API:`, error);
+          alert(`Google sign-in failed: ${error}`);
+        }
       } else {
         alert('Sign in failed. Please try again.');
       }
