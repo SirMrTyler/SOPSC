@@ -20,9 +20,13 @@ namespace SOPSC.Api.Services.Extensions
         /// <returns>The updated <see cref="IServiceCollection"/> with custom services registered.</returns>
         public static IServiceCollection RegisterCustomServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Retrieve the default connection string from app configuration
+            // Retrieve the default connection string from configuration or environment variables
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new InvalidOperationException("DefaultConnection string is not configured. Set 'ConnectionStrings__DefaultConnection' or define it in appsettings.Development.json.");
+            }
             // Register services
             services.AddHttpClient<IEmailService, SendInBlueEmailService>();
             /// <summary>

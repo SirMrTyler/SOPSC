@@ -105,8 +105,6 @@ yarn install
 yarn start  # Start Expo Dev Client
 ```
 
-Branch for Google Sign-In: `google-signin-universal` (current)
-
 ### Backend Setup
 
 ```bash
@@ -121,7 +119,7 @@ Requires: .NET 8 SDK
 
 - Run scripts in `/SQL` to generate database schema
 - Run stored procedures for core CRUD
-- Connection string in `appsettings.json`
+- Configure the database connection Connection string using the `ConnectionStrings__DefaultConnection` environment variable or by editing `Backend/SOPSC.Api/appsetting
 
 ---
 

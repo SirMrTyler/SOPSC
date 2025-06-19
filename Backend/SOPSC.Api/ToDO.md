@@ -1,1 +1,0 @@
-1. Add logic for generating deviceId.
