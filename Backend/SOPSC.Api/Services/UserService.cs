@@ -205,14 +205,24 @@ namespace SOPSC.Api.Services
                     int.TryParse(oId.ToString(), out userId);
                 });
             }
-
+            else
+            {
+                // Existing user — update profile + active + last login
+                _dataProvider.ExecuteNonQuery("[dbo].[Users_UpdateGoogle]", inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@UserId", userId);
+                    paramCollection.AddWithValue("@FirstName", firstName);
+                    paramCollection.AddWithValue("@LastName", lastName);
+                    paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
+                });
+            }
             // Generate a JWT token for the user
             IUserAuthData userAuth = new UserBase
-            {
-                UserId = userId,
-                Name = email,
-                Roles = new List<string> { "Guest" }
-            };
+                {
+                    UserId = userId,
+                    Name = email,
+                    Roles = new List<string> { "Guest" }
+                };
 
             token = _authenticationService.GenerateJwtToken(userAuth, deviceId).GetAwaiter().GetResult();
 
