@@ -9,6 +9,8 @@ import {
 } from '@react-native-google-signin/google-signin';
 
 export default function App() {
+  const connectionAddress = 'http://137.119.8.154:5001/api/';
+
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: '203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com',
@@ -28,7 +30,7 @@ export default function App() {
         
         // Send userInfo to backend
         try {
-          const response = await fetch('https://localhost:5001/api/users/google', {
+          const response = await fetch(`${connectionAddress}users/google`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
