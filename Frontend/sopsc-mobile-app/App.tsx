@@ -9,7 +9,8 @@ import {
 } from '@react-native-google-signin/google-signin';
 
 export default function App() {
-  const connectionAddress = 'http://137.119.8.154:5001/api/';
+  // Define usable variables
+  const connectionAddress = 'https://137.119.8.154:5001/api/';
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -23,6 +24,7 @@ export default function App() {
       await GoogleSignin.hasPlayServices();
       // We declare this-> here so we won't have to repeat an API call repeatedly within the function.
       const result: SignInResponse = await GoogleSignin.signIn();
+      console.log('Google Sign-In result:', result);
       if (result.type === 'success') {
         // create a variable to hold the SINGLE reponse received from Google Sign-In for the user.
         const userInfo = result.data;
