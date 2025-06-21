@@ -21,10 +21,18 @@ export default function App() {
   const signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
+      // We declare this-> here so we won't have to repeat an API call repeatedly within the function.
       const result: SignInResponse = await GoogleSignin.signIn();
       if (result.type === 'success') {
+        // create a variable to hold the SINGLE reponse received from Google Sign-In for the user.
         const userInfo = result.data;
-        console.log('User Info:', userInfo);
+        
+        // Uncomment the line below to see the full user info in console
+        // This can be useful for debugging purposes, but be cautious with sensitive data.
+        // console.log('User Info:', userInfo);
+        // Log id from Google.
+        console.log('\n(Line 32): ID From Google:', userInfo.user.id);
+        
         const name = userInfo.user.name || userInfo.user.email;
         alert(`Welcome ${name}! You have successfully signed in with Google.`);
         
