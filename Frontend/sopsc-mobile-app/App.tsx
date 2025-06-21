@@ -47,7 +47,7 @@ export default function App() {
               idToken: userInfo.idToken
             })
           });
-
+          console.log('idToken value:', userInfo.idToken);
           if (response.ok) {
             const data = await response.json();
             console.log('Google Sign-In success:', data);

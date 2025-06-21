@@ -172,7 +172,7 @@ namespace SOPSC.Api.Services
             string firstName = payload.GivenName;
             string lastName = payload.FamilyName;
             string avatarUrl = payload.Picture;
-
+            Console.WriteLine("userId before SQL query: " + userId);
             // Look up user by email
             string procName = "[dbo].[Users_SelectByEmail]";
             _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
@@ -183,9 +183,10 @@ namespace SOPSC.Api.Services
                 int startingIndex = 0;
                 userId = reader.GetSafeInt32(startingIndex++);
             });
-
+            // Console.WriteLine($"UserId from DB: {userId}");
+            Console.WriteLine("userId after SQL query: " + userId);
             // If user not found/does not exist, create a new user
-            if (userId == 0)
+            if (userId == 0 || userId == 1)
             {
                 string insertProc = "[dbo].[Users_Insert_Google]";
                 _dataProvider.ExecuteNonQuery(insertProc, inputParamMapper: delegate (SqlParameterCollection paramCollection)

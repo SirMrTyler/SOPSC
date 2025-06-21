@@ -140,6 +140,13 @@ public class UsersController : BaseApiController
         BaseResponse response = null;
         try
         {
+            
+            // Log the first portion of idToken for debugging purposes
+            var tokenPreview = model.IdToken != null && model.IdToken.Length > 10
+                ? model.IdToken.Substring(0, 10) + "..."
+                : model.IdToken;
+           base.Logger.LogError($"GoogleSignIn called with IdToken: {tokenPreview}");
+
             string token;
             string deviceId;
 
