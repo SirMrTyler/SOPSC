@@ -3,6 +3,7 @@ ALTER PROC Roles_SelectAllUsersByRole
 AS
 /*
 	DECLARE @RoleId INT = 1; -- All users with admin role
+        DECLARE @RoleId INT = 2; -- All users with admin role
 	EXECUTE Roles_SelectAllUsersByRole
 		@RoleId = @RoleId;
 */

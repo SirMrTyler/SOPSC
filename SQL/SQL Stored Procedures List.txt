@@ -656,7 +656,8 @@ BEGIN
 	WHERE UserId = @UserId;
 
 	-- validate permissions
-	IF (@OriginalPoster <> @UserId AND @RoleId <> 1)
+	        -- Allow Developer or Admin (RoleId <= 2) to update any request
+        	IF (@OriginalPoster <> @UserId AND @RoleId > 2)
 	BEGIN
 		RAISERROR('Permission Denied.', 16, 1);
 		RETURN;
@@ -830,7 +831,8 @@ BEGIN
 	FROM dbo.Users
 	WHERE UserId = @RequestingUserId;
 
-	IF @RequestingUserId = @CreatorUserId OR @UserRoleId IN (1, 4) -- RoleId 1=Admin, RoleId 4=Developer
+        	-- Allow Developer or Admin (RoleId <= 2) to delete any report
+        	IF @RequestingUserId = @CreatorUserId OR @UserRoleId <= 2
 	BEGIN
 		UPDATE dbo.Users
 		SET HoursServed = HoursServed - @HoursOfService
@@ -1194,7 +1196,7 @@ ALTER PROC [dbo].[Roles_SelectAllUsersByRole]
 	@RoleId INT -- Id of role for which you want to select Users
 AS
 /*
-	DECLARE @RoleId INT = 1; -- All users with admin role
+        DECLARE @RoleId INT = 2; -- All users with admin role
 	EXECUTE Roles_SelectAllUsersByRole
 		@RoleId = @RoleId;
 */
@@ -1269,7 +1271,7 @@ AS
 
 /*
 	DECLARE @UserId INT = 2; -- Pick the user who's role will be updated
-	DECLARE @RoleId INT = 3; -- 3 = Guest Role, 2 = Member Role, 1 = Admin Role
+        DECLARE @RoleId INT = 3; -- 3 = Member Role, 4 = Guest Role, 2 = Admin Role, 1 = Developer Role
 	EXECUTE dbo.Roles_Insert
 		@RoleName = 'Admin', -- Change 'Admin' to the role name you'd like to assign.
 		@RoleId = @RoleId OUTPUT;
@@ -1349,7 +1351,7 @@ AS
 		@Email nvarchar(100) = 'sirmrtyler.business@gmail.com',
 		@Password nvarchar(255) = '!LonxPrince1!',
 		@IsActive bit = 1,
-		@RoleId int = 1; -- 1 represents admin role
+		@RoleId int = 2; -- 2 represents admin role
 	EXECUTE dbo.Users_Insert
 		@UserId OUTPUT,
 		@FirstName,

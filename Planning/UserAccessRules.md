@@ -5,18 +5,17 @@ Roles & Features: Southern Oregon Public Safety Chaplains (SOPSC) App
    This section details which roles are allowed to access certain endpoints and to what level.
 
    - Format:
+     Developer = 1
+     Admin = 2
+     Member = 3
+     Guest = 4
 
-     Guest = 1
-     Member = 2
-     Chaplain = 3
-     Admin = 4
+   - Role x:
+   - Endpoint (if listed -> has access if not listed -> no access )
 
-     - Role x:
-     - Endpoint (if listed -> has access if not listed -> no access )
-
-       - CRUD
-         - Roles (if it says users -> all roles)
-           - Purpose (What it does)
+     - CRUD
+       - Roles (if it says users -> all roles)
+         - Purpose (What it does)
 
    - Role Access:
      - Guest 1:

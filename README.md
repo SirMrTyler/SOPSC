@@ -20,13 +20,12 @@ The SOPSC app is designed to support spiritual first responders by enabling:
 
 Each user is assigned a role (integer-based) with escalating privileges:
 
-| Role      | Value | Description                            |
-| --------- | ----- | -------------------------------------- |
-| Guest     | 1     | Can register, limited read access      |
-| Member    | 2     | Can log in, message, attend events     |
-| Chaplain  | 3     | Approves calls, manages member content |
-| Admin     | 4     | Full system control                    |
-| Developer | 5     | Full CRUD access to all endpoints      |
+| Role      | Value | Description                        |
+| --------- | ----- | ---------------------------------- |
+| Developer | 1     | Full CRUD access to all endpoints  |
+| Admin     | 2     | Full system control                |
+| Member    | 3     | Can log in, message, attend events |
+| Guest     | 4     | Can register, limited read access  |
 
 Endpoints and permissions are strictly enforced per [`UserAccessRules.md`](./UserAccessRules.md). Chaplains serve as intermediaries—approving requests for contact with Admins, verifying reports, and managing events.
 

@@ -1,7 +1,7 @@
-ALTER PROC [dbo].[Roles_SelectRolesAllUsers]
+ALTER PROC [dbo].[Roles_SelectAllUsers]
 AS
 /*
-	EXECUTE Roles_SelectRolesAllUsers; -- Returns list of all users along with their roles, sorted by RoleName.
+	EXECUTE Roles_SelectAllUsers; -- Returns list of all users along with their roles, sorted by RoleName.
 */
 BEGIN
 	SELECT
