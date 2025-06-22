@@ -202,7 +202,7 @@ namespace SOPSC.Api.Services
             // If user not found/does not exist, create a new user
             if (userId == 0 || userId == 1)
             {
-                string insertProc = "[dbo].[Users_Insert_Google]";
+                string insertProc = "[dbo].[Users_InsertGoogle]";
                 _dataProvider.ExecuteNonQuery(insertProc, inputParamMapper: delegate (SqlParameterCollection paramCollection)
                 {
                     paramCollection.AddWithValue("@FirstName", firstName);
