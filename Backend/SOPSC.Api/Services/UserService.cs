@@ -113,10 +113,10 @@ namespace SOPSC.Api.Services
             // Map RoleId -> RoleName
             string roleName = roleId switch
             {
-                1 => "Admin",
-                2 => "Member",
-                3 => "Guest",
-                4 => "Developer",
+                1 => "Developer",
+                2 => "Admin",
+                3 => "Member",
+                4 => "Guest",
                 _ => "Guest"
             };
 
