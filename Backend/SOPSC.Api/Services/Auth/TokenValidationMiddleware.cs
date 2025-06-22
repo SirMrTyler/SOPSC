@@ -58,14 +58,19 @@ public class TokenValidationMiddleware
                     return;
                 }
 
-                // Add user claims to HttpContext for authorization
-                var claims = new List<Claim>
+                // Preserve existing claims (e.g. roles) from JWT authentication
+                var existingIdentity = context.User.Identity as ClaimsIdentity;
+                if (existingIdentity == null || !existingIdentity.IsAuthenticated)
                 {
-                    new Claim(ClaimTypes.NameIdentifier, userToken.UserId.ToString())
-                };
+                    existingIdentity = new ClaimsIdentity("Token");
+                }
 
-                var identity = new ClaimsIdentity(claims, "Token");
-                context.User = new ClaimsPrincipal(identity);
+                if (!existingIdentity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
+                {
+                    existingIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userToken.UserId.ToString()));
+                }
+
+                context.User = new ClaimsPrincipal(existingIdentity);
 
                 Console.WriteLine("[Middleware: 70] Claims added to HttpContext successfully.");
             }
