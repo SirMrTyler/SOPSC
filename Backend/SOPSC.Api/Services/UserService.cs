@@ -86,6 +86,7 @@ namespace SOPSC.Api.Services
             // Step 2: Authenticate user credentials
             UserBase user = null;
             string hashedPassword = null;
+            int roleId = 3;
 
             _dataProvider.ExecuteCmd("[dbo].[Users_Select_AuthData]",
                 inputParamMapper: delegate (SqlParameterCollection paramCollection)
@@ -101,12 +102,25 @@ namespace SOPSC.Api.Services
                         UserId = reader.GetSafeInt32(startingIndex++),
                         Name = email
                     };
+                    roleId = reader.GetSafeInt32(startingIndex++);
                 });
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
             {
                 return null; // Invalid credentials
             }
+
+            // Map RoleId -> RoleName
+            string roleName = roleId switch
+            {
+                1 => "Admin",
+                2 => "Member",
+                3 => "Guest",
+                4 => "Developer",
+                _ => "Guest"
+            };
+
+            user.Roles = new List<string> { roleName };
 
             // Step 3: Generate a new token for the device
             string newToken = await _authenticationService.GenerateJwtToken(user, deviceId);
