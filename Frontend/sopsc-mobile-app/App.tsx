@@ -8,7 +8,8 @@ import {
 
 export default function App() {
   // Define usable variables
-  const connectionAddress = 'https://137.119.8.154:5001/api/';
+  const connectionAddress = 'https://afe4-137-119-8-154.ngrok-free.app/api/';
+
 
   useEffect(() => {
     GoogleSignin.configure({
