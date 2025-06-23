@@ -170,6 +170,8 @@ namespace SOPSC.Api.Services
 
         public int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId)
         {
+            Console.WriteLine("Running GoogleSignIn");
+
             int userId = 0;
             token = null;
             deviceId = model.DeviceId ?? Guid.NewGuid().ToString();

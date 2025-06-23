@@ -85,6 +85,10 @@ try
     }
 
     app.UseHttpsRedirection();
+    
+    // Ensure routing is initialized before authentication and custom middleware
+    // so that endpoint metadata like [AllowAnonymous] can be resolved.
+    app.UseRouting();
 
     app.UseAuthentication();
     // Custom Middleware for Token Validation

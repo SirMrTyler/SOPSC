@@ -4,8 +4,6 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import {
   GoogleSignin,
   statusCodes,
-  SignInSuccessResponse,
-  SignInResponse
 } from '@react-native-google-signin/google-signin';
 
 export default function App() {
@@ -22,49 +20,42 @@ export default function App() {
   const signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
-      // We declare this-> here so we won't have to repeat an API call repeatedly within the function.
-      const result: SignInResponse = await GoogleSignin.signIn();
-      console.log('Google Sign-In result:', result);
-      if (result.type === 'success') {
-        // create a variable to hold the SINGLE reponse received from Google Sign-In for the user.
-        const userInfo = result.data;
-        
-        // Uncomment the line below to see the full user info in console
-        // This can be useful for debugging purposes, but be cautious with sensitive data.
-        // console.log('User Info:', userInfo);
-        // Log id from Google.
-        console.log('\n(Line 32): ID From Google:', userInfo.user.id);
-        
-        const name = userInfo.user.name || userInfo.user.email;
-        alert(`Welcome ${name}! You have successfully signed in with Google.`);
-        
-        // Send userInfo to backend
-        try {
-          const response = await fetch(`${connectionAddress}users/google`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              idToken: userInfo.idToken
-            })
-          });
-          console.log('idToken value:', userInfo.idToken);
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Google Sign-In success:', data);
-            alert(`Signed in! Token: ${data.item.token}`);
-          } else {
-            console.error('Google sign-in failed:', response.status);
-            const err = await response.text();
-            alert(`Google sign-in failed: ${err}`);
-          }
-        } catch (error) {
-          console.log(`Error sending Google sign-in to API:`, error);
-          alert(`Google sign-in failed: ${error}`);
+      const userInfo = await GoogleSignin.signIn();
+      console.log('Google Sign-In result:', userInfo);
+
+      // Uncomment the line below to see the full user info in console
+      // This can be useful for debugging purposes, but be cautious with sensitive data.
+      // console.log('User Info:', userInfo);
+
+      console.log('\n(Line 32): ID From Google:', userInfo.data.user.id);
+
+      const name = userInfo.data.user.name + userInfo.data.user.givenName;
+      alert(`Welcome ${name}! You have successfully signed in with Google.`);
+
+      // Send userInfo to backend
+      try {
+        const response = await fetch(`${connectionAddress}users/google`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idToken: userInfo.data.idToken
+          })
+        });
+        console.log('idToken value:', userInfo.data.idToken);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Google Sign-In success:', data);
+          alert(`Signed in! Token: ${data.item.token}`);
+        } else {
+          console.error('Google sign-in failed:', response.status);
+          const err = await response.text();
+          alert(`Google sign-in failed: ${err}`);
         }
-      } else {
-        alert('Sign in failed. Please try again.');
+      } catch (error) {
+        console.log(`Error sending Google sign-in to API:`, error);
+        alert(`Google sign-in failed: ${error}`);
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -79,7 +70,7 @@ export default function App() {
     }
   };
 
-  return (
+    return (
     <View style={styles.container}>
       <Text style={styles.title}>SOPSC Google Sign-In Demo</Text>
       <Button title="Sign In with Google" onPress={signIn} />
