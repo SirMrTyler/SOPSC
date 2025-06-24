@@ -1,17 +1,10 @@
 ﻿using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
-using SOPSC.Api.Models.Requests;
 using System.Data;
 using SOPSC.Api.Data;
-using System.Security.Claims;
-using BCrypt.Net;
 using SOPSC.Api.Models.Interfaces.Users;
 using SOPSC.Api.Services.Auth.Interfaces;
 using SOPSC.Api.Models.Requests.Emails;
 using SOPSC.Api.Models.Requests.Users;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using SOPSC.Api.Models.Domains.Users;
 using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Data.Interfaces;
@@ -185,8 +178,26 @@ namespace SOPSC.Api.Services
 
             // Extract user info from the payload
             string email = payload.Email;
-            string firstName = payload.GivenName ?? payload.Name;
-            string lastName = payload.FamilyName ?? string.Empty;
+            string firstName = payload.GivenName;
+            string lastName = payload.FamilyName;
+
+            // Fallback to the full name if given/family names are missing
+            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+            {
+                var nameParts = (payload.Name ?? string.Empty)
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (string.IsNullOrWhiteSpace(firstName) && nameParts.Length > 0)
+                {
+                    firstName = nameParts[0];
+                }
+                if (string.IsNullOrWhiteSpace(lastName) && nameParts.Length > 1)
+                {
+                    lastName = string.Join(" ", nameParts.Skip(1));
+                }
+            }
+
+            firstName ??= string.Empty;
+            lastName ??= string.Empty;
             string avatarUrl = payload.Picture;
             Console.WriteLine("userId before SQL query: " + userId);
             // Look up user by email
@@ -231,6 +242,7 @@ namespace SOPSC.Api.Services
                     paramCollection.AddWithValue("@FirstName", firstName);
                     paramCollection.AddWithValue("@LastName", lastName);
                     paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
+                    paramCollection.AddWithValue("@IsGoogleUser", true);
                 });
             }
             // Generate a JWT token for the user

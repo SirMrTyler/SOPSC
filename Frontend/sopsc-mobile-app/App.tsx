@@ -22,16 +22,11 @@ export default function App() {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log('Google Sign-In result:', userInfo);
-
       // Uncomment the line below to see the full user info in console
       // This can be useful for debugging purposes, but be cautious with sensitive data.
       // console.log('User Info:', userInfo);
 
-      console.log('\n(Line 32): ID From Google:', userInfo.data.user.id);
-
       const name = userInfo.data.user.name + userInfo.data.user.givenName;
-      alert(`Welcome ${name}! You have successfully signed in with Google.`);
 
       // Send userInfo to backend
       try {
@@ -47,15 +42,15 @@ export default function App() {
         console.log('idToken value:', userInfo.data.idToken);
         if (response.ok) {
           const data = await response.json();
-          console.log('Google Sign-In success:', data);
-          alert(`Signed in! Token: ${data.item.token}`);
+          //console.log('Google Sign-In success:', data);
+          alert(`Signed in with Google as ${data.name} (${data.email})`);
         } else {
-          console.error('Google sign-in failed:', response.status);
+          //console.error('Google sign-in failed:', response.status);
           const err = await response.text();
           alert(`Google sign-in failed: ${err}`);
         }
       } catch (error) {
-        console.log(`Error sending Google sign-in to API:`, error);
+        //console.log(`Error sending Google sign-in to API:`, error);
         alert(`Google sign-in failed: ${error}`);
       }
     } catch (error: any) {
