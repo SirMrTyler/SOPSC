@@ -8,7 +8,7 @@ import {
 
 export default function App() {
   // Define usable variables
-  const connectionAddress = 'https://afe4-137-119-8-154.ngrok-free.app/api/';
+  const connectionAddress = 'https://e391-137-119-8-154.ngrok-free.app/api/';
 
 
   useEffect(() => {

@@ -185,8 +185,8 @@ namespace SOPSC.Api.Services
 
             // Extract user info from the payload
             string email = payload.Email;
-            string firstName = payload.GivenName;
-            string lastName = payload.FamilyName;
+            string firstName = payload.GivenName ?? payload.Name;
+            string lastName = payload.FamilyName ?? string.Empty;
             string avatarUrl = payload.Picture;
             Console.WriteLine("userId before SQL query: " + userId);
             // Look up user by email
