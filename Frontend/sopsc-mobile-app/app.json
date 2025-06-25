@@ -9,7 +9,8 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.203699688611-5uibr1f84mjjdn3b80920r21p8vuohho"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "android": {
       "package": "com.sirmrtyler.sopscmobileapp"
