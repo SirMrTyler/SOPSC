@@ -15,6 +15,8 @@ const Login = (Props) => {
   // Define usable variables
   // Read API base URL from environment variable. Expo automatically exposes
   const connectionAddress = process.env.EXPO_PUBLIC_API_URL || '';
+
+  const landingPageMessage = 'Hello from Login!';
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -160,7 +162,7 @@ const Login = (Props) => {
   }
 
   if (user) {
-    return <LandingPage user={user} onLogout={logOut} />;
+    return <LandingPage user={user} onLogout={logOut} message={landingPageMessage} />;
   }
 
   return (
