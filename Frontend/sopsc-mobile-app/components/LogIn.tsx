@@ -11,7 +11,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 // Import Componenets
 import LandingPage from './LandingPage';
 
-const AuthScreen = () => {
+const Login = (Props) => {
   // Define usable variables
   // Read API base URL from environment variable. Expo automatically exposes
   const connectionAddress = process.env.EXPO_PUBLIC_API_URL || '';
@@ -37,7 +37,16 @@ const AuthScreen = () => {
           if (response.ok) {
             const data = await response.json();
             await SecureStore.setItemAsync('token', String(data.item.token));
-            setUser(data.item.user);
+            const apiUser = data.item.user || {};
+            setUser({
+              name:
+                apiUser.firstName ||
+                apiUser.FirstName ||
+                apiUser.name ||
+                apiUser.Name ||
+                '',
+              email: apiUser.email || apiUser.Email || '',
+            });
           } else if (response.status === 401) {
             await SecureStore.deleteItemAsync('token');
           }
@@ -198,4 +207,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AuthScreen;
+export default Login;

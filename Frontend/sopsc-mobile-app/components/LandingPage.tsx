@@ -14,9 +14,20 @@ const LandingPage = ({ user, onLogout }: Props) => {
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
   console.log("User in LandingPage:", user);
+
+  // Handle users coming from different API shapes
+  const displayName =
+    user.firstName ||
+    user.FirstName ||
+    user.name ||
+    user.Name ||
+    user.email ||
+    user.Email ||
+    "";
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{welcomeString + ' ' + (user?.firstName || user?.name || user?.email)}</Text>
+      <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
 
       <TouchableOpacity style={styles.section}>
         <Text>{homeString}</Text>
