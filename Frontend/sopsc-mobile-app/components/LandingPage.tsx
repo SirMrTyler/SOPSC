@@ -7,28 +7,35 @@ interface Props {
 }
 
 const LandingPage = ({ user, onLogout }: Props) => {
+  const welcomeString = "Welcome to SOPSC";
+  const homeString = "Home";
+  const reportsString = "Report Writing";
+  const scheduleString = "Schedule";
+  const publicPostString = "Prayer Requests";
+  const inboxString = "Inbox";
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Welcome {user?.firstName || user?.name || user?.email}</Text>
+      <Text style={styles.title}>{welcomeString} {user?.firstName || user?.name || user?.email}</Text>
 
       <TouchableOpacity style={styles.section}>
-        <Text>Home</Text>
+        <Text>{homeString}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.section}>
-        <Text>Report Writing</Text>
+        <Text>{reportsString}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.section}>
-        <Text>Schedule</Text>
+        <Text>{scheduleString}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.section}>
-        <Text>Prayer Requests</Text>
+        <Text>{publicPostString}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.section}>
-        <Text>Inbox</Text>
+        <Text>{inboxString}</Text>
       </TouchableOpacity>
 
       <Button title="Log Out" onPress={onLogout} />

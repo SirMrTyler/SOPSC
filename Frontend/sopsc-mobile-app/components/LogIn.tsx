@@ -10,7 +10,8 @@ import LandingPage from './LandingPage';
 
 const AuthScreen = () => {
   // Define usable variables
-  const connectionAddress = 'https://bd7b-137-119-8-154.ngrok-free.app/api/';
+  // Read API base URL from environment variable. Expo automatically exposes
+  const connectionAddress = process.env.EXPO_PUBLIC_API_URL || '';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState<any | null>(null);
@@ -63,7 +64,7 @@ const AuthScreen = () => {
             idToken: userInfo.data?.idToken,
           }),
         });
-        console.log('idToken value:', userInfo.data?.idToken);
+        console.log('Response Value:', userInfo.data);
         if (response.ok) {
           const data = await response.json();
           await SecureStore.setItemAsync('token', String(data.token));
