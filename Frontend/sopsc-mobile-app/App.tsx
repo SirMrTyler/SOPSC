@@ -8,6 +8,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import LandingPage from './components/LandingPage';
 
 export default function App() {
   // Define usable variables
@@ -25,19 +26,18 @@ export default function App() {
     });
 
     const checkToken = async () => {
-      const token = await SecureStore.getItemAsync('token');
       const deviceId = await SecureStore.getItemAsync('deviceId');
-      if (token && deviceId) {
+      if (deviceId) {
         try {
-          const response = await fetch(`${connectionAddress}users/current`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              DeviceId: deviceId,
-            },
-          });
+          const response = await fetch(`${connectionAddress}users/auto-login`, {
+            headers: { DeviceId: deviceId },
+            });
           if (response.ok) {
             const data = await response.json();
-            setUser(data.item);
+            await SecureStore.setItemAsync('token', String(data.item.token));
+            setUser(data.item.user);
+          } else if (response.status === 401) {
+            await SecureStore.deleteItemAsync('token');
           }
         } catch (e) {
           console.log('Auto-login failed', e);
@@ -51,7 +51,7 @@ export default function App() {
 const googleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
+      const userInfo: any = await GoogleSignin.signIn();
       // Uncomment the line below to see the full user info in console
       // This can be useful for debugging purposes, but be cautious with sensitive data.
       // console.log('User Info:', userInfo);
@@ -72,9 +72,9 @@ const googleSignIn = async () => {
         console.log('idToken value:', userInfo.data?.idToken);
         if (response.ok) {
           const data = await response.json();
-        await SecureStore.setItemAsync('token', String(data.token));
-        await SecureStore.setItemAsync('deviceId', String(data.deviceId));
-          setUser({ name: data.name, email: data.email });
+          await SecureStore.setItemAsync('token', String(data.token));
+          await SecureStore.setItemAsync('deviceId', String(data.deviceId));
+          setUser({ name: userInfo.user?.name, email: userInfo.user?.email });
         } else {
           //console.error('Google sign-in failed:', response.status);
           const err = await response.text();
@@ -154,12 +154,7 @@ const googleSignIn = async () => {
   }
 
   if (user) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Welcome {user.name || user.email}</Text>
-        <Button title="Log Out" onPress={logOut} />
-      </View>
-    );
+    return <LandingPage user={user} onLogout={logOut} />;
   }
 
   return (

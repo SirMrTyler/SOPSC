@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SOPSC.Api.Controllers;
-using SOPSC.Api.Services.Auth.Interfaces;
-using SOPSC.Api.Models.Responses;
+using SOPSC.Api.Data;
+using SOPSC.Api.Models.Domains.Users;
+using SOPSC.Api.Models.Interfaces.Users;
 using SOPSC.Api.Models.Requests;
 using SOPSC.Api.Models.Requests.Users;
-using SOPSC.Api.Models.Interfaces.Users;
-using SOPSC.Api.Models.Domains.Users;
-using SOPSC.Api.Data;
+using SOPSC.Api.Models.Responses;
+using SOPSC.Api.Services.Auth.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
 
 /// <summary>
 /// Handles all user-related operations such as creating, retrieving, updating, and deleting users.
@@ -62,6 +63,12 @@ public class UsersController : BaseApiController
                 deviceId = Guid.NewGuid().ToString();
             }
 
+            if (_userService.IsGoogleUser(tryUser.Email))
+            {
+                iCode = 403;
+                response = new ErrorResponse("Please sign in with google.");
+                return StatusCode(iCode, response);
+            }
             // Delete any existing tokens for this user and device
             UserToken existingToken = _tokenService.GetTokenByDeviceId(deviceId);
             if (existingToken != null)
@@ -178,6 +185,57 @@ public class UsersController : BaseApiController
         }
 
         return StatusCode(iCode, response);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("auto-login")]
+    public ActionResult<ItemResponse<object>> AutoLogin()
+    {
+        int statusCode = 200;
+        BaseResponse response = null;
+
+        try
+        {
+            string deviceId = HttpContext.Request.Headers["DeviceId"].ToString();
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                statusCode = 400;
+                response = new ErrorResponse("DeviceId required.");
+                return StatusCode(statusCode, response);
+            }
+
+            UserToken userToken = _tokenService.GetTokenByDeviceId(deviceId);
+            if (userToken == null)
+            {
+                statusCode = 404;
+                response = new ErrorResponse("Session not found.");
+                return StatusCode(statusCode, response);
+            }
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(userToken.Token);
+            if (jwt.ValidTo < DateTime.UtcNow)
+            {
+                _tokenService.DeleteTokenAndDeviceId(userToken.Token, deviceId);
+                statusCode = 401;
+                response = new ErrorResponse("Token expired.");
+                return StatusCode(statusCode, response);
+            }
+
+            UserWithRole user = _userService.GetUserWithRoleById(userToken.UserId);
+            response = new ItemResponse<object>
+            {
+                Item = new { token = userToken.Token, user }
+            };
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            statusCode = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+
+        return StatusCode(statusCode, response);
     }
 
     [AllowAnonymous]

@@ -263,7 +263,7 @@ namespace SOPSC.Api.Services
 
         #endregion
 
-        #region READ
+#region READ
         public async Task LogOutAsync(UserLogOutRequest request)
         {
             UserToken userToken = _tokenService.GetTokenByToken(request.Token);
@@ -390,9 +390,22 @@ namespace SOPSC.Api.Services
 
             return pagedUserList;
         }
-#endregion
 
-#region UPDATE
+        public bool IsGoogleUser(string email)
+        {
+            bool isGoogle = false;
+            string procName = "[dbo].[Users_CheckIsGoogleUser]";
+
+            _dataProvider.ExecuteCmd(procName,
+                param => { param.AddWithValue("@Email", email); },
+                (reader, set) => { isGoogle = reader.GetSafeBool(0); });
+
+            return isGoogle;
+        }
+
+        #endregion
+
+        #region UPDATE
         public void ConfirmUser(int userId)
         {
             string procName = "[dbo].[Users_Confirm]";

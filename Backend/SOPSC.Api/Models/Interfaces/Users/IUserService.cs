@@ -40,5 +40,12 @@ namespace SOPSC.Api.Models.Interfaces.Users
         void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl);
 
         UserWithRole GetUserWithRoleById(int userId);
+
+        /// <summary>
+        /// Checks whether a user account is configured for Google sign in only.
+        /// </summary>
+        /// <param name="email">User email to check.</param>
+        /// <returns><c>true</c> if the user must authenticate with Google.</returns>
+        bool IsGoogleUser(string email);
     }
 }
