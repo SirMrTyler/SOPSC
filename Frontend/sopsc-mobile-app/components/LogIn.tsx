@@ -3,15 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../App';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 // Import Componenets
-import LandingPage from './LandingPage';
+interface LoginProps {
+  onLogin: (user: any) => void;
+}
 
-const Login = (Props) => {
+const Login = ({ onLogin }: LoginProps) => {
   // Define usable variables
   // Read API base URL from environment variable. Expo automatically exposes
   const connectionAddress = process.env.EXPO_PUBLIC_API_URL || '';
@@ -151,16 +150,18 @@ const Login = (Props) => {
     setUser(null);
   };
 
+  useEffect(() => {
+    if (user) {
+      onLogin(user);
+    }
+  }, [user]);
+
   if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator />
       </View>
     );
-  }
-
-  if (user) {
-    return <LandingPage user={user} onLogout={logOut} />;
   }
 
   return (
