@@ -4,7 +4,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import AuthScreen from './components/LogIn';
+import AuthScreen from './components/Login';
 import LandingPage from './components/LandingPage';
 
 export type RootStackParamList = {
