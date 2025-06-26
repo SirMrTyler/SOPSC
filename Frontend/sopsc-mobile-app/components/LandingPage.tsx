@@ -13,10 +13,10 @@ const LandingPage = ({ user, onLogout }: Props) => {
   const scheduleString = "Schedule";
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
-  
+  console.log("User in LandingPage:", user);
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{welcomeString} {user?.firstName || user?.name || user?.email}</Text>
+      <Text style={styles.title}>{welcomeString + ' ' + (user?.firstName || user?.name || user?.email)}</Text>
 
       <TouchableOpacity style={styles.section}>
         <Text>{homeString}</Text>

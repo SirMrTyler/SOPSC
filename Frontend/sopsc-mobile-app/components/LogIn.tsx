@@ -15,6 +15,7 @@ const AuthScreen = () => {
   // Define usable variables
   // Read API base URL from environment variable. Expo automatically exposes
   const connectionAddress = process.env.EXPO_PUBLIC_API_URL || '';
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState<any | null>(null);
@@ -22,7 +23,7 @@ const AuthScreen = () => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
       offlineAccess: true,
     });
 
