@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
 
 interface Props {
-  user: any;
+  user: any | null;
   onLogout: () => void;
 }
 
@@ -17,15 +17,15 @@ const LandingPage = ({ user, onLogout }: Props) => {
 
   // Handle users coming from different API shapes
   const displayName =
-    user.firstName ||
-    user.FirstName ||
-    user.name ||
-    user.Name ||
-    user.email ||
-    user.Email ||
+    user?.firstName ||
+    user?.FirstName ||
+    user?.name ||
+    user?.Name ||
+    user?.email ||
+    user?.Email ||
     "";
 
-  return (
+  return user ? (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
 
@@ -51,6 +51,10 @@ const LandingPage = ({ user, onLogout }: Props) => {
 
       <Button title="Log Out" onPress={onLogout} />
     </ScrollView>
+  ) : (
+      <View style={styles.container}>
+        <Text style={styles.title}>Login</Text>
+      </View>
   );
 };
 
