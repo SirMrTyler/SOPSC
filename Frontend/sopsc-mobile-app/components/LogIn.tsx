@@ -1,11 +1,14 @@
+// Import necessary libraries
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../App';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+
+// Import Componenets
 import LandingPage from './LandingPage';
 
 const AuthScreen = () => {
@@ -19,7 +22,7 @@ const AuthScreen = () => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com',
+      webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
       offlineAccess: true,
     });
 
