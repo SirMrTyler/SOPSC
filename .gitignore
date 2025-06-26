@@ -46,7 +46,6 @@ obj/
 
 # Environment secrets
 .env
-.env.* 
 Keys/
 Google/
 client_secret_*.json

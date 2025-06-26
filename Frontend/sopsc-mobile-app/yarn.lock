@@ -3778,10 +3778,10 @@ expo-secure-store@^14.2.3:
   resolved "https://registry.yarnpkg.com/expo-secure-store/-/expo-secure-store-14.2.3.tgz#8e74da512e671cec5f7b88679def3d54b59cd49d"
   integrity sha512-hYBbaAD70asKTFd/eZBKVu+9RTo9OSTMMLqXtzDF8ndUGjpc6tmRCoZtrMHlUo7qLtwL5jm+vpYVBWI8hxh/1Q==
 
-expo@^53.0.12:
-  version "53.0.12"
-  resolved "https://registry.yarnpkg.com/expo/-/expo-53.0.12.tgz#5c8b9fa7150b98881ab67e5ec891a5e5c0810006"
-  integrity sha512-dtmED749hkxDWCcvtD++tb8bAm3Twv8qnUOXzVyXA5owNG0mwDIz0HveJTpWK1UzkY4HcTVRezDf0tflZJ+JXQ==
+expo@53.0.13:
+  version "53.0.13"
+  resolved "https://registry.yarnpkg.com/expo/-/expo-53.0.13.tgz#8a4617ca67ac6cfd7c92092370937b38ef5c53b9"
+  integrity sha512-QDdEEbFErUmm2IHR/UPKKIRLN3z5MmN2QLx0aPlOEGOx295buSUE42u6f7TppkgJn0BUX3f7wFaHRo86+G+Trg==
   dependencies:
     "@babel/runtime" "^7.20.0"
     "@expo/cli" "0.24.15"
