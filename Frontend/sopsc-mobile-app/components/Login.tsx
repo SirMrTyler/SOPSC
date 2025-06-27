@@ -7,10 +7,10 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 
 // Import Componenets
 interface LoginProps {
-  onLogin: (user: any) => void;
+  onLoginSuccess: (user: any) => void;
 }
 
-const Login = ({ onLogin }: LoginProps) => {
+const Login = ({ onLoginSuccess }: LoginProps) => {
   // Define usable variables
   // Read API base URL from environment variable. Expo automatically exposes
   const connectionAddress = process.env.EXPO_PUBLIC_API_URL || '';
@@ -152,7 +152,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
   useEffect(() => {
     if (user) {
-      onLogin(user);
+      onLoginSuccess(user);
     }
   }, [user]);
 
