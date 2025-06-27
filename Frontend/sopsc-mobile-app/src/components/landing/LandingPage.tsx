@@ -15,7 +15,7 @@ const LandingPage = ({ message, onLogout }: Props) => {
   const scheduleString = "Schedule";
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
-  console.log("User in LandingPage:", user);
+  console.log("User in LandingPage:", message);
 
   // Handle users coming from different API shapes
   const displayName =

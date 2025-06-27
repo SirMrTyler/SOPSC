@@ -23,7 +23,7 @@ using System.IdentityModel.Tokens.Jwt;
 /// </para>
 /// </remarks>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UsersController : BaseApiController
 {
     private IUserService _userService = null;
