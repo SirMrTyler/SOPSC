@@ -1,24 +1,47 @@
 // App.tsx
 // ngrok http https://localhost:5001
 import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Login from './components/LogIn';
+import Login from './components/Login';
 import LandingPage from './components/LandingPage';
+
+export type RootStackParamList = {
+  Auth: undefined;
+  Landing: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
 
-  const handleLogin = (u: any) => {
-    setUser(u);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-  };
-
-  return user ? (
-    <LandingPage user={user} onLogout={handleLogout} />
-  ) : (
-    <Login onLogin={handleLogin} />
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {user ? (
+          <Stack.Screen name="Landing">
+            {(props) => (
+              <LandingPage
+                {...props}
+                user={user}
+                onLogout={() => setUser(null)}
+                message="Hello from Login!"
+              />
+            )}
+          </Stack.Screen>
+        ) : (
+          <Stack.Screen name="Auth">
+            {(props) => (
+              <Login
+                {...props}
+                onLoginSuccess={(userData: any) => setUser(userData)}
+              />
+            )}
+          </Stack.Screen>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

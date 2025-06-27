@@ -4,9 +4,10 @@ import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 're
 interface Props {
   user: any | null;
   onLogout: () => void;
+  message: string;
 }
 
-const LandingPage = ({ user, onLogout }: Props) => {
+const LandingPage = ({ user, onLogout, message }: Props) => {
   const welcomeString = "Welcome to SOPSC";
   const homeString = "Home";
   const reportsString = "Report Writing";
@@ -28,6 +29,7 @@ const LandingPage = ({ user, onLogout }: Props) => {
   return user ? (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
+      <Text>{message}</Text>
 
       <TouchableOpacity style={styles.section}>
         <Text>{homeString}</Text>
