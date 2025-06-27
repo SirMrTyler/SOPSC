@@ -19,7 +19,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator id={undefined}screenOptions={{ headerShown: false }}>
         {user ? (
           <Stack.Screen name="Landing">
             {(props) => (

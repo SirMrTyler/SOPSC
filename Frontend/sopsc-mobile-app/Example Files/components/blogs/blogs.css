@@ -1,0 +1,48 @@
+.blogs-box-gradient:before {
+  content: "";
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(180deg, #4aa6b2 0%, #0feda6 100%);
+  transform: translate3d(0px, 0px, 0) scale(1);
+  filter: blur(5px);
+  opacity: var(0.55);
+  transition: opacity 0.3s;
+  border-radius: inherit;
+}
+
+.blogs-box-gradient::after {
+  content: "";
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: inherit;
+  border-radius: inherit;
+}
+
+.blogs-card-header {
+  text-align: center;
+  font-variant: small-caps;
+}
+
+.blogs-card-img {
+  width: auto;
+  height: auto;
+  display: block;
+  max-width: 233px;
+  max-height: 233px;
+}
+
+.blogs-formik-focus:focus {
+  border-color: #0feda6 !important;
+}
+
+.ck-focused {
+  border-color: #0feda6 !important;
+}
