@@ -5,17 +5,18 @@ import { useAuth } from '../../hooks/useAuth';
 interface Props {
   message: string;
   onLogout: () => void;
+  user?: any;
 }
 
-const LandingPage = ({ message, onLogout }: Props) => {
-  const { user, signOut } = useAuth();
+const LandingPage = ({ message, onLogout, user }: Props) => {
+  const { signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
   const homeString = "Home";
   const reportsString = "Report Writing";
   const scheduleString = "Schedule";
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
-  console.log("User in LandingPage:", message);
+  console.log("[LandingPage] user:", user);
 
   // Handle users coming from different API shapes
   const displayName =

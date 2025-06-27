@@ -59,6 +59,6 @@ export const useAuth = () => {
     await SecureStore.deleteItemAsync('deviceId');
     setUser(null);
   };
-
+  
   return { user, loading, signInEmail, signInGoogle, signOut };
 };

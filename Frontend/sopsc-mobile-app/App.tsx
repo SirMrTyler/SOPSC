@@ -9,7 +9,7 @@ import LandingPage from './src/components/landing/LandingPage';
 
 export type RootStackParamList = {
   Login: undefined;
-  Landing: undefined;
+  Landing: { user: any} | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -23,7 +23,12 @@ export default function App() {
         {user ? (
           <Stack.Screen name="Landing">
             {(props) => (
-              <LandingPage {...props} onLogout={() => setUser(null)} message="Hello from Login!" />
+              <LandingPage 
+                {...props} 
+                onLogout={() => setUser(null)} 
+                message="Hello from Login!"
+                user={user}
+              />
             )}
           </Stack.Screen>
         ) : (
