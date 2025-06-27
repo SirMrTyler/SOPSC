@@ -1,7 +1,8 @@
 import axios from 'axios';
 import * as helper from './serviceHelpers';
 
-const endpoint = `${process.env.EXPO_PUBLIC_API_URL}/users`;
+const endpoint = `${process.env.EXPO_PUBLIC_API_URL}users`;
+console.log('[userService] API endpoint:', endpoint);   // verify path
 
 // User login with email/password
 const login = (email, password) => {
@@ -9,8 +10,6 @@ const login = (email, password) => {
     method: 'POST',
     url: `${endpoint}/login`,
     data: { email, password },
-    withCredentials: true,
-    crossDomain: true,
     headers: { 'Content-Type': 'application/json' },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
