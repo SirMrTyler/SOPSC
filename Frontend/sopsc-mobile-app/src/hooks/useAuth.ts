@@ -48,20 +48,24 @@ export const useAuth = () => {
     }
     const data = await emailLogin(email, password);
     const token = String(data.item.token);
+    
     await SecureStore.setItemAsync('token', token);
     await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
     
-    const currentUser = await getCurrent(token);
+    const currentUser = await getCurrent(token, String(data.item.deviceId));
     setUser(currentUser.item);
   };
 
   const signInGoogle = async (idToken, name, email) => {
     const data = await googleLogin(idToken);
     const token = String(data.item.token);
-    await SecureStore.setItemAsync('token', token);
-    await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
+    const deviceId = String(data.item.deviceId);
 
-    const currentUser = await getCurrent(token);
+    // Store the token and deviceId securely
+    await SecureStore.setItemAsync('token', token);
+    await SecureStore.setItemAsync('deviceId', deviceId);
+
+    const currentUser = await getCurrent(token, deviceId);
     setUser(currentUser.item);
     // setUser({
     //   userId: 0,

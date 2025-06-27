@@ -37,11 +37,14 @@ const autoLogin = (deviceId) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-const getCurrent = (token) => {
+const getCurrent = (token, deviceId) => {
   const config = {
     method: 'GET',
     url: `${endpoint}/current`,
-    headers: {Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };

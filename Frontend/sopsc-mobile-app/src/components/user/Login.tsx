@@ -43,6 +43,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       await signInGoogle(idToken, name, email);
       onLoginSuccess({ name, email, photo });
     } catch (error) {
+        console.error(`Google Sign In Error: ${JSON.stringify(error)}`);
         alert(`Google Sign In Error: ${JSON.stringify(error)}`);
     }
   };
