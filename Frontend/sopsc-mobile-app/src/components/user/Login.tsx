@@ -38,7 +38,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
       const idToken = tokens.idToken;
-      const {name=`${userInfo.data.user.givenName} ${userInfo.data.user.familyName}`, email, photo} = userInfo.data.user;
+      const {name={firstName: userInfo.data.user.givenName, lastName: userInfo.data.user.familyName}, email, photo} = userInfo.data.user;
       if (!idToken) throw new Error('No ID token returned from Google Sign In');
       await signInGoogle(idToken, name, email);
       onLoginSuccess({ name, email, photo });

@@ -4,15 +4,25 @@ import * as Crypto from 'expo-crypto';
 import { autoLogin, login as emailLogin, googleLogin, logout } from '../services/userService.js';
 
 export interface AuthUser {
-  name?: string;
-  email?: string;
-  [key: string]: any;
+  userId: number;
+  name: {
+    firstName: string;
+    lastName: string;
+  }
+  email: string;
+  Roles: [{ roleId: number; roleName: string }, ...any[]]; // Adjusted to allow for multiple roles
+  profilePicturePath?: string;
+  isConfirmed: boolean;
+  isActive: boolean;
 }
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    console.log("[useAuth] User:", user)
+  })
   useEffect(() => {
     const tryAutoLogin = async () => {
       const deviceId = await SecureStore.getItemAsync('deviceId');
@@ -47,6 +57,7 @@ export const useAuth = () => {
     await SecureStore.setItemAsync('token', String(data.token));
     await SecureStore.setItemAsync('deviceId', String(data.deviceId));
     setUser({ name, email });
+    console.log("[useAuth] User:", { user });
   };
 
   const signOut = async () => {
@@ -59,6 +70,6 @@ export const useAuth = () => {
     await SecureStore.deleteItemAsync('deviceId');
     setUser(null);
   };
-  
+
   return { user, loading, signInEmail, signInGoogle, signOut };
 };
