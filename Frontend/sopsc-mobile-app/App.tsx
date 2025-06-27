@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Login from './components/Login';
-import LandingPage from './components/LandingPage';
+import Login from './src/components/user/Login';
+import LandingPage from './src/components/landing/LandingPage';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -23,12 +23,7 @@ export default function App() {
         {user ? (
           <Stack.Screen name="Landing">
             {(props) => (
-              <LandingPage
-                {...props}
-                user={user}
-                onLogout={() => setUser(null)}
-                message="Hello from Login!"
-              />
+              <LandingPage {...props} onLogout={() => setUser(null)} message="Hello from Login!" />
             )}
           </Stack.Screen>
         ) : (
