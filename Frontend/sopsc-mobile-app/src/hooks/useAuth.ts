@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import { autoLogin, login as emailLogin, googleLogin, logout } from '../services/userService.js';
+import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../services/userService.js';
 
 export interface AuthUser {
   userId: number;
@@ -47,16 +47,30 @@ export const useAuth = () => {
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
     const data = await emailLogin(email, password);
-    await SecureStore.setItemAsync('token', String(data.item.token));
+    const token = String(data.item.token);
+    await SecureStore.setItemAsync('token', token);
     await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
-    setUser({ email });
+    
+    const currentUser = await getCurrent(token);
+    setUser(currentUser.item);
   };
 
-  const signInGoogle = async (idToken, name?, email?) => {
+  const signInGoogle = async (idToken, name, email) => {
     const data = await googleLogin(idToken);
-    await SecureStore.setItemAsync('token', String(data.token));
+    const token = String(data.token);
+    await SecureStore.setItemAsync('token', token);
     await SecureStore.setItemAsync('deviceId', String(data.deviceId));
-    setUser({ name, email });
+    
+    const currentUser = await getCurrent(token);
+    setUser(currentUser.item);
+    // setUser({
+    //   userId: 0,
+    //   name: name,
+    //   email: email,
+    //   Roles: [{ roleId: 0, roleName: 'User' }],
+    //   isConfirmed: false,
+    //   isActive: false,
+    // });
     console.log("[useAuth] User:", { user });
   };
 

@@ -2,7 +2,6 @@ import axios from 'axios';
 import * as helper from './serviceHelpers';
 
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}users`;
-console.log('[userService] API endpoint:', endpoint);   // verify path
 
 // User login with email/password
 const login = (email, password) => {
@@ -38,6 +37,15 @@ const autoLogin = (deviceId) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+const getCurrent = (token) => {
+  const config = {
+    method: 'GET',
+    url: `${endpoint}/current`,
+    headers: {Authorization: `Bearer ${token}` },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 // Logout user
 const logout = (token, deviceId) => {
   const config = {
@@ -56,4 +64,5 @@ export {
   googleLogin,
   autoLogin,
   logout,
+  getCurrent,
 };
