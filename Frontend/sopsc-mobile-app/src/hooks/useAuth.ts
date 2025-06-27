@@ -57,10 +57,10 @@ export const useAuth = () => {
 
   const signInGoogle = async (idToken, name, email) => {
     const data = await googleLogin(idToken);
-    const token = String(data.token);
+    const token = String(data.item.token);
     await SecureStore.setItemAsync('token', token);
-    await SecureStore.setItemAsync('deviceId', String(data.deviceId));
-    
+    await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
+
     const currentUser = await getCurrent(token);
     setUser(currentUser.item);
     // setUser({
