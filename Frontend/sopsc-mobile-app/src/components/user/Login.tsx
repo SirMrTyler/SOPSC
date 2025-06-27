@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useAuth } from '../../hooks/useAuth';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../App'; // Adjust the import path as necessary
+
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 interface LoginProps {
-  onLoginSuccess: (user: any) => void;
+  onLoginSuccess: (userData: any) => void;
+  navigation: LoginScreenNavigationProp;
 }
 
-const Login = ({ onLoginSuccess }: LoginProps) => {
+const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const { user, loading, signInEmail, signInGoogle } = useAuth();
 
   useEffect(() => {
@@ -22,25 +26,24 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
 
   useEffect(() => {
     if (user) {
-      onLoginSuccess(user);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Landing', params: { user } }],
+      });
     }
   }, [user]);
 
   const googleSignIn = async () => {
     try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo: any = await GoogleSignin.signIn();
-      await signInGoogle(userInfo.data?.idToken, userInfo.user?.name, userInfo.user?.email);
-    } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        alert('Sign in cancelled');
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        alert('Sign in in progress');
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        alert('Google Play Services not available');
-      } else {
-        alert(`Unknown error: ${JSON.stringify(error)}`);
-      }
+      const userInfo = await GoogleSignin.signIn();
+      const tokens = await GoogleSignin.getTokens();
+      const idToken = tokens.idToken;
+      const {name=`${userInfo.data.user.givenName} ${userInfo.data.user.familyName}`, email, photo} = userInfo.data.user;
+      if (!idToken) throw new Error('No ID token returned from Google Sign In');
+      await signInGoogle(idToken, name, email);
+      onLoginSuccess({ name, email, photo });
+    } catch (error) {
+        alert(`Google Sign In Error: ${JSON.stringify(error)}`);
     }
   };
 

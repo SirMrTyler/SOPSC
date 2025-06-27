@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import { autoLogin, login as emailLogin, googleLogin, logout } from '../services/userService';
+import { autoLogin, login as emailLogin, googleLogin, logout } from '../services/userService.js';
 
 export interface AuthUser {
   name?: string;
@@ -42,7 +42,7 @@ export const useAuth = () => {
     setUser({ email });
   };
 
-  const signInGoogle = async (idToken: string, name?: string, email?: string) => {
+  const signInGoogle = async (idToken, name?, email?) => {
     const data = await googleLogin(idToken);
     await SecureStore.setItemAsync('token', String(data.token));
     await SecureStore.setItemAsync('deviceId', String(data.deviceId));

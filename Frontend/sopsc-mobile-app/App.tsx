@@ -8,7 +8,7 @@ import Login from './src/components/user/Login';
 import LandingPage from './src/components/landing/LandingPage';
 
 export type RootStackParamList = {
-  Auth: undefined;
+  Login: undefined;
   Landing: undefined;
 };
 
@@ -27,7 +27,7 @@ export default function App() {
             )}
           </Stack.Screen>
         ) : (
-          <Stack.Screen name="Auth">
+          <Stack.Screen name="Login">
             {(props) => (
               <Login
                 {...props}

@@ -52,7 +52,7 @@ const logout = (token, deviceId) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-export default {
+export {
   login,
   googleLogin,
   autoLogin,
