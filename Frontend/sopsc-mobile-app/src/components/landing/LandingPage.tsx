@@ -3,12 +3,11 @@ import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 're
 import { useAuth } from '../../hooks/useAuth';
 
 interface Props {
-  message: string;
   onLogout: () => void;
   user?: any;
 }
 
-const LandingPage = ({ message, onLogout, user }: Props) => {
+const LandingPage = ({ onLogout, user }: Props) => {
   const { signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
   const homeString = "Home";
@@ -31,7 +30,6 @@ const LandingPage = ({ message, onLogout, user }: Props) => {
   return user ? (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
-      <Text>{message}</Text>
 
       <TouchableOpacity style={styles.section}>
         <Text>{homeString}</Text>

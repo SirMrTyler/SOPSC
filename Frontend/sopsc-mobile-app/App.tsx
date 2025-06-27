@@ -26,7 +26,6 @@ export default function App() {
               <LandingPage 
                 {...props} 
                 onLogout={() => setUser(null)} 
-                message="Hello from Login!"
                 user={user}
               />
             )}
