@@ -33,3 +33,13 @@ export const autoLogin = async (deviceId: string) => {
 export const logout = async (token: string, deviceId: string) => {
   await fetch(`${API}users/logout`, { headers: { Authorization: `Bearer ${token}`, DeviceId: deviceId } });
 };
+
+export const getCurrent = async (token: string) => {
+  const response = await fetch(`${API}users/current`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+  return response.json();
+};

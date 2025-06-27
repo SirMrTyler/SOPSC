@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import { autoLogin, login as emailLogin, googleLogin, logout } from '../services/userService';
+import {
+  autoLogin,
+  login as emailLogin,
+  googleLogin,
+  logout,
+  getCurrent,
+} from '../services/userService';
 
 export interface AuthUser {
   name?: string;
@@ -39,14 +45,17 @@ export const useAuth = () => {
     const data = await emailLogin(email, password);
     await SecureStore.setItemAsync('token', String(data.item.token));
     await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
-    setUser({ email });
+    const current = await getCurrent(data.item.token);
+    setUser(current.item);
   };
 
   const signInGoogle = async (idToken: string, name?: string, email?: string) => {
     const data = await googleLogin(idToken);
-    await SecureStore.setItemAsync('token', String(data.token));
-    await SecureStore.setItemAsync('deviceId', String(data.deviceId));
-    setUser({ name, email });
+    await SecureStore.setItemAsync('token', String(data.item.token));
+    await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
+    const current = await getCurrent(data.item.token);
+    // Fall back to google-provided name/email if API did not return
+    setUser(current.item || { name, email });
   };
 
   const signOut = async () => {
