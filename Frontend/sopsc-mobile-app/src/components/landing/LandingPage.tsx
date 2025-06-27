@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
+import { useAuth } from '../../hooks/useAuth';
 
 interface Props {
-  user: any | null;
-  onLogout: () => void;
   message: string;
+  onLogout: () => void;
 }
 
-const LandingPage = ({ user, onLogout, message }: Props) => {
+const LandingPage = ({ message, onLogout }: Props) => {
+  const { user, signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
   const homeString = "Home";
   const reportsString = "Report Writing";
@@ -51,7 +52,13 @@ const LandingPage = ({ user, onLogout, message }: Props) => {
         <Text>{inboxString}</Text>
       </TouchableOpacity>
 
-      <Button title="Log Out" onPress={onLogout} />
+      <Button
+        title="Log Out"
+        onPress={() => {
+          signOut();
+          onLogout();
+        }}
+      />
     </ScrollView>
   ) : (
       <View style={styles.container}>
