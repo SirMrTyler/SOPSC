@@ -26,10 +26,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
 
   useEffect(() => {
     if (user) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Landing', params: { user } }],
-      });
+      onLoginSuccess(user);
     }
   }, [user]);
 
