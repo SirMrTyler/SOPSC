@@ -9,6 +9,8 @@ const getAll = () => {
     url: endpoint,
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${helper.getToken()}`,
+      DeviceId: helper.getDeviceId(),
     },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
