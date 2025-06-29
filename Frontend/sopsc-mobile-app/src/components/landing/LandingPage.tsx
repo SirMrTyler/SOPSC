@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
+import * as helpers from './landingPageHelpers';
 
 interface Props {
   onLogout: () => void;
@@ -31,23 +32,23 @@ const LandingPage = ({ onLogout, user }: Props) => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={helpers.onHomePress}>
         <Text>{homeString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={helpers.onReportPress}>
         <Text>{reportsString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={helpers.onSchedulePress}>
         <Text>{scheduleString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={helpers.onPublicPostPress}>
         <Text>{publicPostString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={helpers.onInboxPress}>
         <Text>{inboxString}</Text>
       </TouchableOpacity>
 
