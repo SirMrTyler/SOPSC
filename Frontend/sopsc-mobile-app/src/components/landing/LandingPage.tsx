@@ -2,13 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import * as helpers from './landingPageHelpers';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../App';
 
 interface Props {
   onLogout: () => void;
   user?: any;
+  navigation: NativeStackNavigationProp<RootStackParamList, 'Landing'>;
 }
 
-const LandingPage = ({ onLogout, user }: Props) => {
+const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const { signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
   const homeString = "Home";
@@ -32,23 +35,23 @@ const LandingPage = ({ onLogout, user }: Props) => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
 
-      <TouchableOpacity style={styles.section} onPress={helpers.onHomePress}>
+      <TouchableOpacity style={styles.section} onPress={() =>helpers.onHomePress(navigation)}>
         <Text>{homeString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={helpers.onReportPress}>
+      <TouchableOpacity style={styles.section} onPress={() => helpers.onReportPress(navigation)}>
         <Text>{reportsString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={helpers.onSchedulePress}>
+      <TouchableOpacity style={styles.section} onPress={() => helpers.onSchedulePress(navigation)}>
         <Text>{scheduleString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={helpers.onPublicPostPress}>
+      <TouchableOpacity style={styles.section} onPress={() => helpers.onPublicPostPress(navigation)}>
         <Text>{publicPostString}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={helpers.onInboxPress}>
+      <TouchableOpacity style={styles.section} onPress={() => helpers.onInboxPress(navigation)}>
         <Text>{inboxString}</Text>
       </TouchableOpacity>
 
