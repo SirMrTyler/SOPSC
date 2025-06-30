@@ -42,7 +42,7 @@ namespace SOPSC.Api.Services
                         OtherUserProfilePicturePath = reader.GetSafeString(startingIndex++),
                         MostRecentMessage = reader.GetSafeString(startingIndex++),
                         IsRead = reader.GetSafeBool(startingIndex++),
-                        SentTimestamp = reader.GetSafeDateTime(startingIndex++),
+                        SentTimestamp = reader.GetSafeUtcDateTime(startingIndex++),
                         NumMessages = reader.GetSafeInt32(startingIndex++)
                     };
 
@@ -83,8 +83,8 @@ namespace SOPSC.Api.Services
                         RecipientId = reader.GetSafeInt32(startingIndex++),
                         RecipientName = reader.GetSafeString(startingIndex++),
                         MessageContent = reader.GetSafeString(startingIndex++),
-                        SentTimestamp = reader.GetSafeDateTime(startingIndex++),
-                        ReadTimestamp = reader.GetSafeDateTimeNullable(startingIndex++),
+                        SentTimestamp = reader.GetSafeUtcDateTime(startingIndex++),
+                        ReadTimestamp = reader.GetSafeUtcDateTimeNullable(startingIndex++),
                         IsRead = reader.GetSafeBool(startingIndex++),
                     };
                     totalCount = reader.GetSafeInt32(startingIndex++);
