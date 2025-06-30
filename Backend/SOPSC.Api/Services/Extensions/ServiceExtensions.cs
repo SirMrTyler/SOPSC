@@ -1,6 +1,7 @@
 ﻿using SOPSC.Api.Data;
 using SOPSC.Api.Data.Interfaces;
 using SOPSC.Api.Models.Interfaces.Emails;
+using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Interfaces.Users;
 using SOPSC.Api.Services.Auth;
 using SOPSC.Api.Services.Auth.Interfaces;
@@ -51,6 +52,7 @@ namespace SOPSC.Api.Services.Extensions
             // Creates a new instance of the <see cref="TokenService"/> class. 
             services.AddScoped<ITokenService, TokenService>();
 
+            services.AddScoped<IMessagesService, MessagesService>();
             /// <summary>
             /// Adds HTTP context accessor for accessing the current HTTP context.
             /// </summary>
