@@ -114,5 +114,30 @@ namespace SOPSC.Api.Services
                     param.AddWithValue("@IsRead", isRead);
                 });
         }
+
+        public int SendMessage(int senderId, int recipientId, string messageContent)
+        {
+            int messageId = 0;
+            string procName = "[dbo].[Messages_Insert]";
+
+            _dataProvider.ExecuteNonQuery(procName,
+                delegate (SqlParameterCollection param)
+                {
+                    param.AddWithValue("@SenderId", senderId);
+                    param.AddWithValue("@RecipientId", recipientId);
+                    param.AddWithValue("@MessageContent", messageContent);
+
+                    SqlParameter idOut = new SqlParameter("@MessageId", SqlDbType.Int);
+                    idOut.Direction = ParameterDirection.Output;
+                    param.Add(idOut);
+                },
+                delegate (SqlParameterCollection returnCollection)
+                {
+                    object oId = returnCollection["@MessageId"].Value;
+                    int.TryParse(oId.ToString(), out messageId);
+                });
+
+            return messageId;
+        }
     }
 }

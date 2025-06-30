@@ -3,6 +3,7 @@ using SOPSC.Api.Data;
 using SOPSC.Api.Models.Domains.Messages;
 using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Responses;
+using SOPSC.Api.Models.Requests.Messages;
 using SOPSC.Api.Services;
 using SOPSC.Api.Services.Auth.Interfaces;
 using System.Collections.Generic;
@@ -66,6 +67,27 @@ namespace SOPSC.Api.Controllers
                 {
                     response = new ItemResponse<Paged<Message>> { Item = paged };
                 }
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
+            return StatusCode(code, response);
+        }
+
+        [HttpPost]
+        public ActionResult<ItemResponse<int>> Send(SendMessageRequest model)
+        {
+            int code = 201;
+            BaseResponse response = null;
+            try
+            {
+                int senderId = _authService.GetCurrentUserId();
+                int id = _messagesService.SendMessage(senderId, model.RecipientId, model.MessageContent);
+                response = new ItemResponse<int> { Item = id };
             }
             catch (Exception ex)
             {

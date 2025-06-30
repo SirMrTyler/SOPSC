@@ -16,5 +16,6 @@ namespace SOPSC.Api.Models.Interfaces.Messages
         List<MessageConversation> GetConversations(int userId);
         Paged<Message> GetConversationByUserId(int userId, int otherUserId, int pageIndex, int pageSize);
         void UpdateReadStatus(int messageId, bool isRead);
+        int SendMessage(int senderId, int recipientId, string messageContent);
     }
 }

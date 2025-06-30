@@ -75,27 +75,28 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
     return (
         <View style={styles.container}>
-        <Text style={styles.header}>Conversation with {conversation.otherUserName}</Text>
-        {loading && messages.length === 0 ? (
-            <ActivityIndicator />
-        ) : (
-            <FlatList
-            data={messages}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.messageId.toString()}
-            onEndReached={handleEndReached}
-            />
-        )}
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message"
-            value={newMessage}
-            onChangeText={setNewMessage}
-            editable={!sending}
-          />
-        <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
-        </View>
+            <Text style={styles.header}>Conversation with {conversation.otherUserName}</Text>
+            {loading && messages.length === 0 ? (
+                <ActivityIndicator />
+            ) : (
+                <FlatList
+                data={messages}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.messageId.toString()}
+                onEndReached={handleEndReached}
+                />
+            )}
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Type a message"
+                    placeholderTextColor={'#999'}
+                    value={newMessage}
+                    onChangeText={setNewMessage}
+                    editable={!sending}
+                />
+                <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
+            </View>
         </View>
     );
 };
