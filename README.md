@@ -118,7 +118,8 @@ Requires: .NET 8 SDK
 
 - Run scripts in `/SQL` to generate database schema
 - Run stored procedures for core CRUD
-- Configure the database connection Connection string using the `ConnectionStrings__DefaultConnection` environment variable or by editing `Backend/SOPSC.Api/appsetting
+- Copy `Backend/SOPSC.Api/.env.example` to `.env` and set `ConnectionStrings__DefaultConnection` and `JWT_KEY`
+- The API loads variables from this `.env` file at startup. **Do not commit it.**
 
 ---
 

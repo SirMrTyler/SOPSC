@@ -5,10 +5,11 @@ using SOPSC.Api.Services.Extensions;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Env.Load(); // Load environment variables from .env file if present
 try
 {
     builder.Configuration
@@ -22,8 +23,7 @@ try
     {
         throw new Exception("JWT Key is required!");
     }
-    builder.Configuration["Jwt:Key"] = jwtKey;
-
+    builder.Configuration["Jwt:Key"] = jwtKey;    
     // Add JWT Bearer Authentication
     var jwtIssuer = builder.Configuration["Jwt:Issuer"];
     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -73,9 +73,6 @@ try
     });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
-
-    //builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     builder.Services.RegisterCustomServices(builder.Configuration);
 
