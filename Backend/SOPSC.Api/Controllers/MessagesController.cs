@@ -76,5 +76,25 @@ namespace SOPSC.Api.Controllers
 
             return StatusCode(code, response);
         }
+
+        [HttpPut("{messageId:int}/read")]
+        public ActionResult<SuccessResponse> UpdateRead(int messageId, bool isRead)
+        {
+            int code = 200;
+            BaseResponse response = null;
+            try
+            {
+                _messagesService.UpdateReadStatus(messageId, isRead);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
+            return StatusCode(code, response);
+        }
     }
 }

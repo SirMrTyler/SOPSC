@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { MessageConversation } from '../../types/messages';
+import { formatTimestamp } from '../../utils/date';
 
 interface Props {
   conversation: MessageConversation;
@@ -15,10 +16,16 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress }) => {
         style={styles.avatar}
       />
       <View style={styles.content}>
-        <Text style={styles.name}>{conversation.otherUserName}</Text>
-        <Text style={styles.message} numberOfLines={1}>
-          {conversation.mostRecentMessage}
-        </Text>
+        <View style={styles.row}>
+          <Text style={styles.name}>{conversation.otherUserName}</Text>
+          <Text style={styles.time}>{formatTimestamp(conversation.sentTimestamp)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.message} numberOfLines={1}>
+            {conversation.mostRecentMessage}
+          </Text>
+          <Text style={styles.status}>{conversation.isRead ? 'Read' : 'Unread'}</Text>
+        </View>
       </View>
       {conversation.numMessages > 0 && (
         <View style={styles.badge}>
@@ -44,11 +51,23 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   name: {
     fontWeight: 'bold',
   },
   message: {
     color: '#555',
+  },
+  time: {
+    color: '#666',
+    fontSize: 12,
+  },
+  status: {
+    color: '#666',
+    fontSize: 12,
   },
   badge: {
     backgroundColor: 'red',

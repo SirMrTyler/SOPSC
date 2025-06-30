@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { MessageConversation, Message } from '../../types/messages';
 import { getConversation } from '../../services/messageService.js';
+import { formatTimestamp } from '../../utils/date';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 
@@ -41,11 +42,20 @@ const [messages, setMessages] = useState<Message[]>([]);
     }
   };
 
-  const renderItem = ({ item }: { item: Message }) => (
-    <View style={ item.senderId === conversation.otherUserId ? styles.messageLeft : styles.messageRight }>
-      <Text>{item.messageContent}</Text>
-    </View>
-  );
+  const renderItem = ({ item }: { item: Message }) => {
+    const incoming = item.senderId === conversation.otherUserId;
+    return (
+      <View style={incoming ? styles.messageLeft : styles.messageRight}>
+        <Text>{item.messageContent}</Text>
+        <View style={styles.meta}>
+          <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
+          {!incoming && (
+            <Text style={styles.status}>{item.isRead ? 'Read' : 'Unread'}</Text>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -87,6 +97,19 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     padding: 8,
     borderRadius: 4,
+  },
+  meta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
+  time: {
+    fontSize: 12,
+    color: '#666',
+  },
+  status: {
+    fontSize: 12,
+    color: '#666',
   },
 });
 

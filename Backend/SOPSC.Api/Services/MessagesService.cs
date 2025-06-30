@@ -103,5 +103,16 @@ namespace SOPSC.Api.Services
 
             return pagedList;
         }
+        public void UpdateReadStatus(int messageId, bool isRead)
+        {
+            string procName = "[dbo].[Messages_UpdateReadStatus]";
+
+            _dataProvider.ExecuteNonQuery(procName,
+                delegate (SqlParameterCollection param)
+                {
+                    param.AddWithValue("@MessageId", messageId);
+                    param.AddWithValue("@IsRead", isRead);
+                });
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace SOPSC.Api.Models.Interfaces.Messages
         /// <param name="userId">The id of the user.</param>
         /// <returns>List of message conversations.</returns>
         List<MessageConversation> GetConversations(int userId);
-
         Paged<Message> GetConversationByUserId(int userId, int otherUserId, int pageIndex, int pageSize);
+        void UpdateReadStatus(int messageId, bool isRead);
     }
 }
