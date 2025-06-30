@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, FlatList, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/messageService.js';
+import ConversationItem from './ConversationItem';
+import { MessageConversation } from '../../types/messages';
 
 const Messages: React.FC = () => {
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<MessageConversation[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     useEffect(() => {
         const load = async () => {
@@ -39,9 +45,14 @@ const Messages: React.FC = () => {
       ) : (
         <FlatList
           data={messages}
-          keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
+          keyExtractor={(item, index) => 
+            item.messageId?.toString() ?? index.toString()}
           renderItem={({ item }) => (
-            <Text>{item.subject || item.text || JSON.stringify(item)}</Text>
+            <ConversationItem
+              conversation={item}
+              onPress={() => 
+                navigation.navigate('Conversation', { conversation: item })}
+            />
           )}
         />
       )}

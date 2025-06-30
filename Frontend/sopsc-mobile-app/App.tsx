@@ -10,11 +10,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './src/components/user/Login';
 import LandingPage from './src/components/landing/LandingPage';
 import Messages from './src/components/messages/Messages';
+import Conversation from './src/components/messages/Conversation';
+import { MessageConversation } from './src/types/messages';
 
 export type RootStackParamList = {
   Login: undefined;
   Landing: { user: any} | undefined;
   Messages: undefined;
+  Conversation: { conversation: MessageConversation };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -24,7 +27,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator id={undefined}screenOptions={{ headerShown: false }}>
+      <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
         {user ? (
           <>
             <Stack.Screen name="Landing">
@@ -37,9 +40,9 @@ export default function App() {
               )}
             </Stack.Screen>
             
-            {/* Add other screens here as needed */}
             <Stack.Screen name="Messages" component={Messages} />
-            
+            <Stack.Screen name="Conversation" component={Conversation} />
+            {/* Add other screens here as needed */}
           </>
         ) : (
           <Stack.Screen name="Login">

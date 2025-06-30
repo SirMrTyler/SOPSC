@@ -405,7 +405,7 @@ namespace SOPSC.Api.Services
 
         #endregion
 
-        #region UPDATE
+#region UPDATE
         public void ConfirmUser(int userId)
         {
             string procName = "[dbo].[Users_Confirm]";
