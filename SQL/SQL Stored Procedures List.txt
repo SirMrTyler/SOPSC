@@ -158,7 +158,11 @@ BEGIN
 		-- Get read reciepts/time stamps
 		LatestMessages.IsRead,
 		LatestMessages.SentTimestamp,
-		ISNULL(UnreadMessages.NumMessages, 0) AS NumMessages
+		ISNULL(UnreadMessages.NumMessages, 0) AS NumMessages,
+		CASE
+                	WHEN LatestMessages.SenderId = @UserId THEN 1
+                        ELSE 0
+                END AS IsLastMessageFromUser
 	FROM (
 		-- Subquery to determine most recent message in each conversation
 		SELECT

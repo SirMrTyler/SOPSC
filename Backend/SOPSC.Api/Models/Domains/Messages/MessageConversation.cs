@@ -13,5 +13,6 @@
         public bool IsRead { get; set; }
         public DateTime SentTimestamp { get; set; }
         public int NumMessages { get; set; }
+        public bool IsLastMessageFromUser { get; set; }
     }
 }

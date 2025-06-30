@@ -24,7 +24,13 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress }) => {
           <Text style={styles.message} numberOfLines={1}>
             {conversation.mostRecentMessage}
           </Text>
-          <Text style={styles.status}>{conversation.isRead ? 'Read' : 'Unread'}</Text>
+          <Text style={styles.status}>
+            {conversation.isRead && (
+                <Text style={styles.status}>
+                    {conversation.isRead ? 'Read' : 'Unread' }
+                </Text>
+            )}
+          </Text>
         </View>
       </View>
       {conversation.numMessages > 0 && (

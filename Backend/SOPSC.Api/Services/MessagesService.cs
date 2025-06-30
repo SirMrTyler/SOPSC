@@ -43,7 +43,8 @@ namespace SOPSC.Api.Services
                         MostRecentMessage = reader.GetSafeString(startingIndex++),
                         IsRead = reader.GetSafeBool(startingIndex++),
                         SentTimestamp = reader.GetSafeUtcDateTime(startingIndex++),
-                        NumMessages = reader.GetSafeInt32(startingIndex++)
+                        NumMessages = reader.GetSafeInt32(startingIndex++),
+                        IsLastMessageFromUser = reader.GetSafeBool(startingIndex++)
                     };
 
                     if (list == null)

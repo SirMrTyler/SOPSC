@@ -7,6 +7,7 @@ export interface MessageConversation {
   isRead: boolean;
   sentTimestamp: string;
   numMessages: number;
+  isLastMessageFromUser: boolean;
 }
 
 export interface Message {
