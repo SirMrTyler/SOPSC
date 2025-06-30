@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using SOPSC.Api.Data;
 using SOPSC.Api.Data.Interfaces;
 using SOPSC.Api.Models.Domains.Messages;
 using SOPSC.Api.Models.Interfaces.Messages;
@@ -53,6 +54,54 @@ namespace SOPSC.Api.Services
                 });
 
             return list;
+        }
+
+
+        public Paged<Message> GetConversationByUserId(int userId, int otherUserId, int pageIndex, int pageSize)
+        {
+            List<Message> list = null;
+            Paged<Message> pagedList = null;
+            int totalCount = 0;
+            string procName = "[dbo].[Messages_SelectConversationByUserId]";
+
+            _dataProvider.ExecuteCmd(procName,
+                inputParamMapper: delegate (SqlParameterCollection param)
+                {
+                    param.AddWithValue("@UserId", userId);
+                    param.AddWithValue("@OtherUserId", otherUserId);
+                    param.AddWithValue("@PageIndex", pageIndex);
+                    param.AddWithValue("@PageSize", pageSize);
+                },
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    Message message = new Message
+                    {
+                        MessageId = reader.GetSafeInt32(startingIndex++),
+                        SenderId = reader.GetSafeInt32(startingIndex++),
+                        SenderName = reader.GetSafeString(startingIndex++),
+                        RecipientId = reader.GetSafeInt32(startingIndex++),
+                        RecipientName = reader.GetSafeString(startingIndex++),
+                        MessageContent = reader.GetSafeString(startingIndex++),
+                        SentTimestamp = reader.GetSafeDateTime(startingIndex++),
+                        ReadTimestamp = reader.GetSafeDateTimeNullable(startingIndex++),
+                        IsRead = reader.GetSafeBool(startingIndex++),
+                    };
+                    totalCount = reader.GetSafeInt32(startingIndex++);
+
+                    if (list == null)
+                    {
+                        list = new List<Message>();
+                    }
+                    list.Add(message);
+                });
+
+            if (list != null && list.Count > 0)
+            {
+                pagedList = new Paged<Message>(list, pageIndex, pageSize, totalCount);
+            }
+
+            return pagedList;
         }
     }
 }

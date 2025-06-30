@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SOPSC.Api.Data;
 using SOPSC.Api.Models.Domains.Messages;
 using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Responses;
@@ -35,6 +36,36 @@ namespace SOPSC.Api.Controllers
                 List<MessageConversation> list = _messagesService.GetConversations(userId);
 
                 response = new ItemsResponse<MessageConversation> { Items = list ?? new List<MessageConversation>() };
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
+            return StatusCode(code, response);
+        }
+
+        [HttpGet("{otherUserId:int}")]
+        public ActionResult<ItemResponse<Paged<Message>>> GetConversation(int otherUserId, int pageIndex, int pageSize)
+        {
+            int code = 200;
+            BaseResponse response = null;
+            try
+            {
+                int userId = _authService.GetCurrentUserId();
+                Paged<Message> paged = _messagesService.GetConversationByUserId(userId, otherUserId, pageIndex, pageSize);
+
+                if (paged == null)
+                {
+                    code = 404;
+                    response = new ErrorResponse("Records not found.");
+                }
+                else
+                {
+                    response = new ItemResponse<Paged<Message>> { Item = paged };
+                }
             }
             catch (Exception ex)
             {

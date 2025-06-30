@@ -8,3 +8,15 @@ export interface MessageConversation {
   sentTimestamp: string;
   numMessages: number;
 }
+
+export interface Message {
+  messageId: number;
+  senderId: number;
+  senderName: string;
+  recipientId: number;
+  recipientName: string;
+  messageContent: string;
+  sentTimestamp: string;
+  readTimestamp: string | null;
+  isRead: boolean;
+}
