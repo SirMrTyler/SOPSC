@@ -33,4 +33,19 @@ const getConversation = async (otherUserId, pageIndex = 0, pageSize = 20) => {
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-export { getAll, getConversation };
+const send = async (recipientId, messageContent) => {
+    const token = await helper.getToken();
+    const deviceId = await helper.getDeviceId();
+    const config = {
+        method: 'POST',
+        url: endpoint,
+        data: { recipientId, messageContent },
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            DeviceId: deviceId,
+        },
+    };
+    return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+export { getAll, getConversation, send };
