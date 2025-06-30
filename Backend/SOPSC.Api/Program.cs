@@ -5,6 +5,7 @@ using SOPSC.Api.Services.Extensions;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,9 @@ try
     });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
+    //builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     builder.Services.RegisterCustomServices(builder.Configuration);
 
