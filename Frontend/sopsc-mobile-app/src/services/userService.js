@@ -25,6 +25,17 @@ const googleLogin = (idToken) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+// Register user with email/password
+const register = async ({firstName, lastName, email, password, passwordConfirm}) => {
+  const config = {
+    method: 'POST',
+    url: `${endpoint}/register`,
+    data: { firstName, lastName, email, password, passwordConfirm },
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 // Auto-login with deviceId
 const autoLogin = (deviceId) => {
   const config = {
@@ -65,6 +76,7 @@ const logout = (token, deviceId) => {
 export {
   login,
   googleLogin,
+  register,
   autoLogin,
   logout,
   getCurrent,

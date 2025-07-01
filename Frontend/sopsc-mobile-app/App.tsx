@@ -60,7 +60,14 @@ export default function App() {
                   />
                 )}
               </Stack.Screen>
-              <Stack.Screen name="Register" component={Register} />
+              <Stack.Screen name="Register">
+                {(props) => (
+                  <Register
+                    {...props}
+                    onRegisterSuccess={(userData: any) => setUser(userData)}
+                  />
+                )}
+              </Stack.Screen>
             </>
           )}
         </Stack.Navigator>

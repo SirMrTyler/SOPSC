@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput } from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { useAuth } from '../../hooks/useAuth';
+import { register as registerUser } from '../../services/userService.js';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 
@@ -7,40 +10,102 @@ type RegisterScreenNavigationProp = NativeStackNavigationProp<RootStackParamList
 
 interface RegisterProps {
   navigation: RegisterScreenNavigationProp;
+  onRegisterSuccess: (userData: any) => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const Register: React.FC<RegisterProps> = ({ navigation, onRegisterSuccess }) => {
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const { user, signInGoogle } = useAuth();
 
-  const handleRegister = () => {
-    // Placeholder implementation
-    alert('Registration coming soon!');
-    navigation.goBack();
+useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      offlineAccess: true,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      onRegisterSuccess(user);
+    }
+  }, [user]);
+
+  const handleRegister = async () => {
+    try {
+      await registerUser({firstName, lastName, email, password, passwordConfirm});
+      alert('Registration successful! Please check your email to confirm.');
+      navigation.goBack();
+    } catch (error) {
+      console.error(error);
+      alert('Registration failed. Please try again.');
+    }
   };
 
-  return (
+  const googleSignUp = async () => {
+    try {
+      const userInfo = await GoogleSignin.signIn();
+      const tokens = await GoogleSignin.getTokens();
+      const idToken = tokens.idToken;
+      const { name = { firstName: userInfo.data.user.givenName, lastName: userInfo.data.user.familyName }, email, photo } = userInfo.data.user;
+      if (!idToken) throw new Error('No ID token returned from Google Sign In');
+      await signInGoogle(idToken, name, email);
+      onRegisterSuccess({ name, email, photo });
+    } catch (error) {
+      console.error(`Google Sign Up Error: ${JSON.stringify(error)}`);
+      alert(`Google Sign Up Error: ${JSON.stringify(error)}`);
+    }
+  };
+
+    return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={'#888'}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={'#888'}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button title="Create Account" onPress={handleRegister} />
+        <Text style={styles.title}>Register</Text>
+        <TextInput
+            style={styles.input}
+            placeholder="First Name"
+            placeholderTextColor={'#888'}
+            value={firstName}
+            onChangeText={setFirstName}
+        />
+        <TextInput
+            style={styles.input}
+            placeholder="Last Name"
+            placeholderTextColor={'#888'}
+            value={lastName}
+            onChangeText={setLastName}
+        />
+        <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor={'#888'}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+        />
+        <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor={'#888'}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+        />
+        <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            placeholderTextColor={'#888'}
+            value={passwordConfirm}
+            onChangeText={setPasswordConfirm}
+            secureTextEntry
+        />
+        <Button title="Create Account" onPress={handleRegister} />
+        <View style={{ height: 10 }} />
+        <Button title="Register with Google" onPress={googleSignUp} />
     </View>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
