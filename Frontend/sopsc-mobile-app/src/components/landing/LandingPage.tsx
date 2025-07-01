@@ -11,11 +11,13 @@ import * as helpers from './landingPageHelpers';
 import type { RootStackParamList } from '../../../App';
 
 // Icon imports lazy loaded to reduce initial bundle size
-const HomeIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.HomeIcon })))
-const ReportIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.DocumentTextIcon })))
-const CalendarIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.CalendarIcon })))
-const ChatBubbleLeftIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.ChatBubbleLeftIcon })))
-const InboxIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.InboxIcon })))
+const HomeIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.HomeIcon })));
+const ReportIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.DocumentTextIcon })));
+const CalendarIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.CalendarIcon })));
+const ChatBubbleLeftIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.ChatBubbleLeftIcon })));
+const InboxIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.InboxIcon })));
+const LogoutIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.ArrowRightEndOnRectangleIcon })));
+
 interface Props {
   onLogout: () => void;
   user?: any;
@@ -25,6 +27,11 @@ interface Props {
 const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const { signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
+  const homeString = "Home";
+  const reportsString = "Report Writing";
+  const scheduleString = "Schedule";
+  const publicPostString = "Prayer Requests";
+  const inboxString = "Inbox";
   console.log("[LandingPage] user:", user);
 
   // Handle users coming from different API shapes
@@ -39,38 +46,40 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
 
   return user ? (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* <BeakerIcon size={24} color="blue" /> */}
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
-
       <Suspense fallback={<Text>Loading...</Text>}>
-        <TouchableOpacity style={styles.section} onPress={() => helpers.onHomePress(navigation)}>
-          <HomeIcon size={24} color="black" />
-        </TouchableOpacity>
+        <View style={styles.grid}>
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onHomePress(navigation)}>
+            <HomeIcon size={32} color="black" />
+            <Text style={styles.gridLabel}>{homeString}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.section} onPress={() => helpers.onReportPress(navigation)}>
-          <ReportIcon size={24} color="black" />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onReportPress(navigation)}>
+            <ReportIcon size={32} color="black" />
+            <Text style={styles.gridLabel}>{reportsString}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.section} onPress={() => helpers.onSchedulePress(navigation)}>
-          <CalendarIcon size={24} color="black" />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onSchedulePress(navigation)}>
+            <CalendarIcon size={32} color="black" />
+            <Text style={styles.gridLabel}>{scheduleString}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.section} onPress={() => helpers.onPublicPostPress(navigation)}>
-          <ChatBubbleLeftIcon size={24} color="black" />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onPublicPostPress(navigation)}>
+            <ChatBubbleLeftIcon size={32} color="black" />
+            <Text style={styles.gridLabel}>{publicPostString}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.section} onPress={() => helpers.onInboxPress(navigation)}>
-          <InboxIcon size={24} color="black" />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onInboxPress(navigation)}>
+            <InboxIcon size={32} color="black" />
+            <Text style={styles.gridLabel}>{inboxString}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.gridItem} onPress={() => { signOut(); onLogout(); }}>
+            <LogoutIcon size={32} color="red" />
+            <Text style={[styles.gridLabel, { color: 'red' }]}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </Suspense>
-      
-      <Button
-        title="Log Out"
-        onPress={() => {
-          signOut();
-          onLogout();
-        }}
-      />
     </ScrollView>
   ) : (
       <View style={styles.container}>
@@ -90,13 +99,25 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 20,
   },
-  section: {
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 24,
+    columnGap: 8,
     width: '100%',
-    padding: 20,
-    marginBottom: 10,
-    backgroundColor: '#f2f2f2',
-    borderRadius: 4,
+    marginTop: 30,
+  },
+  gridItem: {
+    width: '30%',
     alignItems: 'center',
+    marginVertical: 15,
+  },
+  gridLabel: {
+    marginTop: 5,
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 
