@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, Button, StyleSheet, TextInput, ActivityIndicator, ImageBackground } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useAuth } from '../../hooks/useAuth';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,7 +16,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { user, loading, signInEmail, signInGoogle } = useAuth();
-
+  const backgroundImage = require('../../../images/SOPSC_Logo.png');
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
@@ -54,6 +54,11 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   }
 
   return (
+    <ImageBackground
+      source={backgroundImage}
+      style={styles.background}
+      resizeMode="cover"
+    >
     <View style={styles.container}>
       <Text style={styles.title}>SOPSC Sign In</Text>
       <TextInput
@@ -78,19 +83,26 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       <View style={{ height: 10 }} />
       <Button title="Register" onPress={() => navigation.navigate('Register')} />
     </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Semi-transparent background
   },
   title: {
     fontSize: 20,
     marginBottom: 20,
+    color: '#000',
   },
   input: {
     width: '80%',
@@ -98,6 +110,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     marginBottom: 10,
+    backgroundColor: 'white',
   },
 });
 
