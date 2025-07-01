@@ -46,13 +46,14 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
     const renderItem = ({ item }: { item: Message }) => {
         const incoming = item.senderId === conversation.otherUserId;
+        const isLastMessageFromUser = item.senderId === conversation.otherUserId;
         return (
         <View style={incoming ? styles.messageLeft : styles.messageRight}>
             <Text>{item.messageContent}</Text>
             <View style={styles.meta}>
             <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
             {!incoming && (
-                <Text style={styles.status}>{item.isRead ? 'Read' : 'Unread'}</Text>
+                <Text style={styles.status}>{item.isRead ? '[C]Read' : '[C]Unread'}</Text>
             )}
             </View>
         </View>
