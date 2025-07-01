@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Components
 import Login from './src/components/user/Login';
+import Register from './src/components/user/Register';
 import LandingPage from './src/components/landing/LandingPage';
 import Messages from './src/components/messages/Messages';
 import Conversation from './src/components/messages/Conversation';
@@ -15,6 +16,7 @@ import { MessageConversation } from './src/types/messages';
 
 export type RootStackParamList = {
   Login: undefined;
+  Register: undefined;
   Landing: { user: any} | undefined;
   Messages: undefined;
   Conversation: { conversation: MessageConversation };
@@ -45,14 +47,17 @@ export default function App() {
             {/* Add other screens here as needed */}
           </>
         ) : (
-          <Stack.Screen name="Login">
-            {(props) => (
-              <Login
-                {...props}
-                onLoginSuccess={(userData: any) => setUser(userData)}
-              />
-            )}
-          </Stack.Screen>
+          <>
+            <Stack.Screen name="Login">
+              {(props) => (
+                <Login
+                  {...props}
+                  onLoginSuccess={(userData: any) => setUser(userData)}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Register" component={Register} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

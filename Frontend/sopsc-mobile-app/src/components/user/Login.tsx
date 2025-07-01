@@ -73,6 +73,8 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       <Button title="Sign In" onPress={() => signInEmail(email, password)} />
       <View style={{ height: 10 }} />
       <Button title="Sign In with Google" onPress={googleSignIn} />
+      <View style={{ height: 10 }} />
+      <Button title="Register" onPress={() => navigation.navigate('Register')} />
     </View>
   );
 };
