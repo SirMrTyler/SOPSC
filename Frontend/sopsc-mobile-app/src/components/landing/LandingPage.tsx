@@ -74,7 +74,12 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
             <Text style={styles.gridLabel}>{inboxString}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.gridItem} onPress={() => { signOut(); onLogout(); }}>
+          <TouchableOpacity 
+            style={styles.gridItem} 
+            onPress={async () => { 
+              await signOut(); 
+              onLogout(); 
+            }}>
             <LogoutIcon size={32} color="red" />
             <Text style={[styles.gridLabel, { color: 'red' }]}>Logout</Text>
           </TouchableOpacity>
