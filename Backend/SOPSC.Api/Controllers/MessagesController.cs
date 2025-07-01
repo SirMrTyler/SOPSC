@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SOPSC.Api.Data;
 using SOPSC.Api.Models.Domains.Messages;
 using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Models.Requests.Messages;
-using SOPSC.Api.Services;
 using SOPSC.Api.Services.Auth.Interfaces;
-using System.Collections.Generic;
 
 namespace SOPSC.Api.Controllers
 {
     [ApiController]
     [Route("api/messages")]
+    [Authorize]
     public class MessagesController : BaseApiController
     {
         private readonly IMessagesService _messagesService;

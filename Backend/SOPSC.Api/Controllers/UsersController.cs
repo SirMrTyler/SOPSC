@@ -24,6 +24,7 @@ using System.IdentityModel.Tokens.Jwt;
 /// </remarks>
 [ApiController]
 [Route("api/users")]
+[Authorize(Roles = "Member,Admin,Developer")]
 public class UsersController : BaseApiController
 {
     private IUserService _userService = null;
