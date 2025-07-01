@@ -59,6 +59,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       <TextInput
         style={styles.input}
         placeholder="Email"
+        placeholderTextColor={'#888'}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -66,6 +67,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor={'#888'}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
