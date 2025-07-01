@@ -79,14 +79,21 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
-    const token = await SecureStore.getItemAsync('token');
-    const deviceId = await SecureStore.getItemAsync('deviceId');
-    if (token && deviceId) {
-      await logout(token, deviceId);
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      const deviceId = await SecureStore.getItemAsync('deviceId');
+      if (token && deviceId) {
+        try {
+          await logout(token, deviceId);
+        } catch (error) {
+          console.warn('[useAuth] logout request failed', error);
+        }
+      }
+    } finally {
+      await SecureStore.deleteItemAsync('token');
+      await SecureStore.deleteItemAsync('deviceId');
+      setUser(null);
     }
-    await SecureStore.deleteItemAsync('token');
-    await SecureStore.deleteItemAsync('deviceId');
-    setUser(null);
   };
 
   return { user, loading, signInEmail, signInGoogle, signOut };
