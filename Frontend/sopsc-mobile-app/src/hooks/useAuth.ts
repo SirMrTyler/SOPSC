@@ -85,8 +85,8 @@ export const useAuth = () => {
       if (token && deviceId) {
         try {
           await logout(token, deviceId);
-        } catch (error) {
-          console.warn('[useAuth] logout request failed', error);
+        } catch {
+          // ignore network failures so local sign-out still succeeds
         }
       }
     } finally {
