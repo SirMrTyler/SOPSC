@@ -39,24 +39,24 @@ const Messages: React.FC = () => {
     }
 
     return (
-    <View style={styles.container}>
-      {messages.length === 0 ? (
-        <Text>No messages found.</Text>
-      ) : (
-        <FlatList
-          data={messages}
-          keyExtractor={(item, index) => 
-            item.messageId?.toString() ?? index.toString()}
-          renderItem={({ item }) => (
-            <ConversationItem
-              conversation={item}
-              onPress={() => 
-                navigation.navigate('Conversation', { conversation: item })}
-            />
-          )}
-        />
-      )}
-    </View>
+        <View style={styles.container}>
+            <Text style={styles.header}>Messages</Text>
+            {messages.length === 0 ? (
+                <Text>No messages found.</Text>
+            ) : (
+                <FlatList
+                data={messages}
+                keyExtractor={(item, index) => item.messageId?.toString() ?? index.toString()}
+                renderItem={({ item }) => (
+                    <ConversationItem
+                    conversation={item}
+                    onPress={() => 
+                        navigation.navigate('Conversation', { conversation: item })}
+                    />
+                )}
+                />
+            )}
+        </View>
   );
 };
 
@@ -65,6 +65,11 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
         justifyContent: 'center',
+    },
+    header: {
+        fontWeight: 'bold',
+        fontSize: 24,
+        marginBottom: 8,
     },
 });
 
