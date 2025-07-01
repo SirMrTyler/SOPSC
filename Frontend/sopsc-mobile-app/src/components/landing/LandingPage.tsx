@@ -1,10 +1,21 @@
-import React from 'react';
+// Library imports
+import React, { lazy, Suspense } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+// import { BeakerIcon } from '@heroicons/react/solid';
+// import * as LandingPageIcons from '../../../assets/icons/LandingPageIcons'
+
+// Custom code imports
 import { useAuth } from '../../hooks/useAuth';
 import * as helpers from './landingPageHelpers';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 
+// Icon imports lazy loaded to reduce initial bundle size
+const HomeIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.HomeIcon })))
+const ReportIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.DocumentTextIcon })))
+const CalendarIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.CalendarIcon })))
+const ChatBubbleLeftIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.ChatBubbleLeftIcon })))
+const InboxIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.InboxIcon })))
 interface Props {
   onLogout: () => void;
   user?: any;
@@ -14,11 +25,6 @@ interface Props {
 const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const { signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
-  const homeString = "Home";
-  const reportsString = "Report Writing";
-  const scheduleString = "Schedule";
-  const publicPostString = "Prayer Requests";
-  const inboxString = "Inbox";
   console.log("[LandingPage] user:", user);
 
   // Handle users coming from different API shapes
@@ -33,28 +39,31 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
 
   return user ? (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* <BeakerIcon size={24} color="blue" /> */}
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
 
-      <TouchableOpacity style={styles.section} onPress={() =>helpers.onHomePress(navigation)}>
-        <Text>{homeString}</Text>
-      </TouchableOpacity>
+      <Suspense fallback={<Text>Loading...</Text>}>
+        <TouchableOpacity style={styles.section} onPress={() => helpers.onHomePress(navigation)}>
+          <HomeIcon size={24} color="black" />
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={() => helpers.onReportPress(navigation)}>
-        <Text>{reportsString}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.section} onPress={() => helpers.onReportPress(navigation)}>
+          <ReportIcon size={24} color="black" />
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={() => helpers.onSchedulePress(navigation)}>
-        <Text>{scheduleString}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.section} onPress={() => helpers.onSchedulePress(navigation)}>
+          <CalendarIcon size={24} color="black" />
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={() => helpers.onPublicPostPress(navigation)}>
-        <Text>{publicPostString}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.section} onPress={() => helpers.onPublicPostPress(navigation)}>
+          <ChatBubbleLeftIcon size={24} color="black" />
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section} onPress={() => helpers.onInboxPress(navigation)}>
-        <Text>{inboxString}</Text>
-      </TouchableOpacity>
-
+        <TouchableOpacity style={styles.section} onPress={() => helpers.onInboxPress(navigation)}>
+          <InboxIcon size={24} color="black" />
+        </TouchableOpacity>
+      </Suspense>
+      
       <Button
         title="Log Out"
         onPress={() => {

@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ImageBackground, StyleSheet } from 'react-native';
 
 // Components
 import Login from './src/components/user/Login';
@@ -24,42 +25,55 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const backgroundImage = require('./assets/images/backgroundImage.png');
+
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
-        {user ? (
-          <>
-            <Stack.Screen name="Landing">
-              {(props) => (
-                <LandingPage 
-                  {...props} 
-                  onLogout={() => setUser(null)} 
-                  user={user}
-                />
-              )}
-            </Stack.Screen>
-            
-            <Stack.Screen name="Messages" component={Messages} />
-            <Stack.Screen name="Conversation" component={Conversation} />
-            {/* Add other screens here as needed */}
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Login">
-              {(props) => (
-                <Login
-                  {...props}
-                  onLoginSuccess={(userData: any) => setUser(userData)}
-                />
-              )}
-            </Stack.Screen>
-            <Stack.Screen name="Register" component={Register} />
-          </>
-        )}
-      </Stack.Navigator>
+      <ImageBackground source={backgroundImage} style={styles.background}>
+        <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
+          {user ? (
+            <>
+              <Stack.Screen name="Landing">
+                {(props) => (
+                  <LandingPage 
+                    {...props} 
+                    onLogout={() => setUser(null)} 
+                    user={user}
+                  />
+                )}
+              </Stack.Screen>
+              
+              <Stack.Screen name="Messages" component={Messages} />
+              <Stack.Screen name="Conversation" component={Conversation} />
+              {/* Add other screens here as needed */}
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Login">
+                {(props) => (
+                  <Login
+                    {...props}
+                    onLoginSuccess={(userData: any) => setUser(userData)}
+                  />
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Register" component={Register} />
+            </>
+          )}
+        </Stack.Navigator>
+      </ImageBackground>
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+});
