@@ -51,31 +51,31 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
       <Suspense fallback={<Text>Loading...</Text>}>
         <View style={styles.grid}>
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onHomePress(navigation)}>
-            <HomeIcon size={32} color="black" />
+            <HomeIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{homeString}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onReportPress(navigation)}>
-            <ReportIcon size={32} color="black" />
+            <ReportIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{reportsString}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onSchedulePress(navigation)}>
-            <CalendarIcon size={32} color="black" />
+            <CalendarIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{scheduleString}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onPublicPostPress(navigation)}>
-            <ChatBubbleLeftIcon size={32} color="black" />
+            <ChatBubbleLeftIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{publicPostString}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onInboxPress(navigation)}>
-            <InboxIcon size={32} color="black" />
+            <InboxIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{inboxString}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onAdminPress(navigation)}>
-            <ReportIcon size={32} color="black" />
+            <ReportIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{adminString}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     marginBottom: 20,
+    color: 'white',
   },
   grid: {
     flexDirection: 'row',
@@ -127,7 +128,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     fontWeight: '500',
+    color: 'white',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
+  icon: {
+    color: 'white',
+    shadowColor: 'black',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  }
 });
 
 export default LandingPage;

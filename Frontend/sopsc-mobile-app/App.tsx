@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <NavigationContainer theme={AppTheme}>
-      <ImageBackground source={backgroundImage} style={styles.background}>
+      <ImageBackground source={backgroundImage} style={styles.background} imageStyle={{ resizeMode: 'cover' }}>
         <Stack.Navigator
           id={undefined}
           screenOptions={{
@@ -97,6 +97,5 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
 });

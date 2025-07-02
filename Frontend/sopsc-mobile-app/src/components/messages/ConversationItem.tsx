@@ -61,16 +61,17 @@ const styles = StyleSheet.create({
   },
   name: {
     fontWeight: 'bold',
+    color: 'white',
   },
   message: {
-    color: '#555',
+    color: '#DED3C4',
   },
   time: {
-    color: '#666',
+    color: '#DED3C4',
     fontSize: 12,
   },
   status: {
-    color: '#666',
+    color: '#DED3C4',
     fontSize: 12,
   },
   badge: {

@@ -155,16 +155,18 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    borderColor: '#ccc',
+    borderColor: 'white',
     borderWidth: 1,
     marginRight: 8,
     paddingHorizontal: 8,
     borderRadius: 4,
+    color: 'white',
   },
   header: {
     fontWeight: 'bold',
     fontSize: 24,
     marginBottom: 8,
+    color: 'white',
   },
 });
 
