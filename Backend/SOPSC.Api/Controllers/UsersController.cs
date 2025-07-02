@@ -4,7 +4,7 @@ using SOPSC.Api.Controllers;
 using SOPSC.Api.Data;
 using SOPSC.Api.Models.Domains.Users;
 using SOPSC.Api.Models.Interfaces.Users;
-using SOPSC.Api.Models.Requests;
+using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Requests.Users;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
@@ -29,7 +29,7 @@ public class UsersController : BaseApiController
     private IUserService _userService = null;
     private ITokenService _tokenService = null;
     private IAuthenticationService<int> _authenticationService = null;
-
+    private IMessagesService _messagesService = null;
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersController"/> class.
     /// </summary>
@@ -38,15 +38,17 @@ public class UsersController : BaseApiController
     public UsersController(
         IUserService userService,
         ITokenService tokenService,
+        IMessagesService messagesService,
         ILogger<UsersController> logger,
         IAuthenticationService<int> authService) : base(logger)
     {
         _userService = userService;
         _tokenService = tokenService;
+        _messagesService = messagesService;
         _authenticationService = authService;
     }
 
-#region POST
+    #region POST
 
     [AllowAnonymous]
     [HttpPost("login")]
@@ -128,6 +130,14 @@ public class UsersController : BaseApiController
             var requestUrl = HttpContext.Request.Headers["Referer"].ToString();
             _userService.UserAccountValidation(id, model, requestUrl);
 
+            // Notify all admins a new user has registered
+            var adminIds = _userService.GetUserIdsByRole(2); // 2 = Admin
+            foreach (var adminId in adminIds)
+            {
+                string content = $"{model.FirstName} {model.LastName} has joined the app.";
+                _messagesService.SendMessage(id, adminId, content);
+            }
+
             result = Ok200(response);
         }
         catch (Exception ex)
@@ -147,12 +157,12 @@ public class UsersController : BaseApiController
         BaseResponse response = null;
         try
         {
-            
+
             // Log the first portion of idToken for debugging purposes
             var tokenPreview = model.IdToken != null && model.IdToken.Length > 10
                 ? model.IdToken.Substring(0, 10) + "..."
                 : model.IdToken;
-           base.Logger.LogError($"GoogleSignIn called with IdToken: {tokenPreview}");
+            base.Logger.LogError($"GoogleSignIn called with IdToken: {tokenPreview}");
 
             string token;
             string deviceId;
@@ -269,9 +279,9 @@ public class UsersController : BaseApiController
         return StatusCode(iCode, response);
     }
 
-#endregion
+    #endregion
 
-#region GET    
+    #region GET    
     [AllowAnonymous]
     [HttpGet("logout")]
     public async Task<ActionResult<ItemResponse<bool>>> LogOut()
@@ -332,8 +342,8 @@ public class UsersController : BaseApiController
                 response = new ErrorResponse("User not found.");
                 return StatusCode(statusCode, response);
             }
-            else 
-            { 
+            else
+            {
                 response = new ItemResponse<UserWithRole>() { Item = user };
             }
         }
@@ -381,7 +391,8 @@ public class UsersController : BaseApiController
                 response = new ErrorResponse("Found no records of users");
                 sCode = 404;
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             base.Logger.LogError(ex.ToString());
             response = new ErrorResponse(ex.Message);
@@ -390,13 +401,41 @@ public class UsersController : BaseApiController
         return StatusCode(sCode, response);
     }
 
-#endregion
+    [Authorize]
+    [HttpGet("search")]
+    public ActionResult<ItemResponse<Paged<User>>> Search(int pageIndex, int pageSize, string query)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            Paged<User> paged = _userService.SearchUsers(pageIndex, pageSize, query);
+            if (paged == null)
+            {
+                code = 404;
+                response = new ErrorResponse("Records not found.");
+            }
+            else
+            {
+                response = new ItemResponse<Paged<User>> { Item = paged };
+            }
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+        return StatusCode(code, response);
+    }
 
-#region UPDATE
+    #endregion
 
-#endregion
+    #region UPDATE
 
-#region DELETE
+    #endregion
 
-#endregion
+    #region DELETE
+
+    #endregion
 }

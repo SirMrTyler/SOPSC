@@ -391,6 +391,66 @@ namespace SOPSC.Api.Services
             return pagedUserList;
         }
 
+        public Paged<User> SearchUsers(int pageIndex, int pageSize, string query)
+        {
+            Paged<User> paged = null;
+            List<User> list = null;
+            int totalCount = 0;
+            string procName = "[dbo].[Users_SelectBySearch]";
+
+            _dataProvider.ExecuteCmd(procName,
+                param =>
+                {
+                    param.AddWithValue("@PageIndex", pageIndex);
+                    param.AddWithValue("@PageSize", pageSize);
+                    param.AddWithValue("@Query", query);
+                },
+                (reader, set) =>
+                {
+                    int startingIndex = 0;
+                    User user = new User
+                    {
+                        UserId = reader.GetSafeInt32(startingIndex++),
+                        FirstName = reader.GetSafeString(startingIndex++),
+                        LastName = reader.GetSafeString(startingIndex++),
+                        Email = reader.GetSafeString(startingIndex++),
+                        DateCreated = reader.GetSafeDateTime(startingIndex++),
+                        LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
+                        IsActive = reader.GetSafeBool(startingIndex++),
+                        RoleId = reader.GetSafeInt32(startingIndex++)
+                    };
+                    totalCount = reader.GetSafeInt32(startingIndex++);
+                    if (list == null)
+                        list = new List<User>();
+                    list.Add(user);
+                });
+
+            if (list != null && list.Count > 0)
+            {
+                paged = new Paged<User>(list, pageIndex, pageSize, totalCount);
+            }
+
+            return paged;
+        }
+
+        public List<int> GetUserIdsByRole(int roleId)
+        {
+            List<int> ids = null;
+            string procName = "[dbo].[Roles_SelectAllUsersByRole]";
+
+            _dataProvider.ExecuteCmd(procName,
+                param => { param.AddWithValue("@RoleId", roleId); },
+                (reader, set) =>
+                {
+                    int id = reader.GetSafeInt32(0);
+                    if (ids == null)
+                        ids = new List<int>();
+                    ids.Add(id);
+                });
+
+            return ids ?? new List<int>();
+        }
+
         public bool IsGoogleUser(string email)
         {
             bool isGoogle = false;

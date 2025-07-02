@@ -81,6 +81,22 @@ const logout = (token, deviceId) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+// Search users by name
+const search = async (query, pageIndex = 0, pageSize = 20) => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'GET',
+    url: `${endpoint}/search?pageIndex=${pageIndex}&pageSize=${pageSize}&query=${encodeURIComponent(query)}`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 export {
   login,
   googleLogin,
@@ -88,4 +104,5 @@ export {
   autoLogin,
   logout,
   getCurrent,
+  search,
 };

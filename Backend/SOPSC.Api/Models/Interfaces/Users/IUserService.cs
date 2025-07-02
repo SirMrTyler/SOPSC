@@ -33,6 +33,22 @@ namespace SOPSC.Api.Models.Interfaces.Users
         /// along with pagination metadata.
         /// </returns>
         Paged<User> GetAllUsers(int pageIndex, int pageSize);
+
+        /// <summary>
+        /// Searches users by first or last name.
+        /// </summary>
+        /// <param name="pageIndex">Index of the results page.</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="query">Text to search for in first or last name.</param>
+        /// <returns>Paged list of matching users.</returns>
+        Paged<User> SearchUsers(int pageIndex, int pageSize, string query);
+
+        /// <summary>
+        /// Retrieves user ids for the specified role.
+        /// </summary>
+        /// <param name="roleId">Role identifier.</param>
+        /// <returns>List of user ids matching that role.</returns>
+        List<int> GetUserIdsByRole(int roleId);
         int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId);
         Task<string> LogInAsync(string email, string password, string? deviceId);
         Task LogOutAsync(UserLogOutRequest request);
