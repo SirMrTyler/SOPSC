@@ -3,7 +3,7 @@ import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Activity
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
-import { search } from '../../services/userService.js';
+import { getAll } from '../../services/userService';
 import { useAuth } from '../../hooks/useAuth';
 import { UserResult } from '../../types/user';
 
@@ -11,38 +11,43 @@ const UserList: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { user } = useAuth();
     const [query, setQuery] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [users, setUsers] = useState<UserResult[]>([]);
     const [results, setResults] = useState<UserResult[]>([]);
 
-    const handleSearch = async () => {
-        setLoading(true);
-        try {
-            const data = await search(query.trim(), 0, 20);
-            const fetched = data?.item?.pagedItems || [];
-            console.log('[UserList] Fetched users:', fetched);
-            const filtered = user ? fetched.filter(u => u.userId !== user.userId) : fetched;
-            setResults(filtered);
-        } catch (err: any) {
-            const sCode = err.response?.status;
-            console.log('[UserList] sCode: ', sCode);
-            if (sCode === 404) {
+    // Load all users once on mount
+    useEffect(() => {
+        const loadUsers = async () => {
+            setLoading(true);
+            try {
+                const data = await getAll(0, 200);
+                const fetched = data?.item?.pagedItems || [];
+                const filtered = user ? fetched.filter(u => u.userId !== user.userId) : fetched;
+                setUsers(filtered);
+                setResults(filtered);
+            } catch (err: any) {
+                const sCode = err.response?.status;
+                console.log('[UserList] sCode: ', sCode);
+                setUsers([]);
                 setResults([]);
-            } 
-        } finally {
-            setLoading(false);
-        }
-    };
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadUsers();
+    }, []);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            if (query.trim()) {
-                handleSearch();
+            const q = query.trim().toLowerCase();
+            if (q) {
+                setResults(users.filter(u => `${u.firstName} ${u.lastName}`.toLowerCase().includes(q)));
             } else {
-                setResults([]);
+                setResults(users);
             }
-        }, 400);
+        }, 300);
         return () => clearTimeout(timeout);
-    }, [query]);
+    }, [query, users]);
 
     const handleUserPress = (u: UserResult) => {
         navigation.navigate('Conversation', {
