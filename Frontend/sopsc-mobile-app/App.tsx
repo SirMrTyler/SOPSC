@@ -3,7 +3,7 @@
 
 // Libraries
 import React, { useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ImageBackground, StyleSheet } from 'react-native';
 
@@ -29,13 +29,26 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const backgroundImage = require('./assets/images/backgroundImage.png');
 
+const AppTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'transparent', // Set background to transparent for the ImageBackground
+  },
+};
+
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={AppTheme}>
       <ImageBackground source={backgroundImage} style={styles.background}>
-        <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
+        <Stack.Navigator
+          id={undefined}
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: 'transparent' },
+          }}>
           {user ? (
             <>
               <Stack.Screen name="Landing">
