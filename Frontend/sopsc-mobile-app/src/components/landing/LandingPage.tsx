@@ -122,6 +122,12 @@ const styles = StyleSheet.create({
     width: '30%',
     alignItems: 'center',
     marginVertical: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
   },
   gridLabel: {
     marginTop: 5,

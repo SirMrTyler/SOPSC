@@ -10,37 +10,47 @@ interface Props {
 
 const ConversationItem: React.FC<Props> = ({ conversation, onPress }) => {
   return (
+    <View style={styles.messageBox}>
       <TouchableOpacity style={styles.container} onPress={onPress}>
         <Image
           source={conversation.otherUserProfilePicturePath ? { uri: conversation.otherUserProfilePicturePath } : defaultAvatar}
           style={styles.avatar}
         />
-      <View style={styles.content}>
-        <View style={styles.row}>
-          <Text style={styles.name}>{conversation.otherUserName}</Text>
-          <Text style={styles.time}>{formatTimestamp(conversation.sentTimestamp)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.message} numberOfLines={1}>
-            {conversation.mostRecentMessage}
-          </Text>
-            {conversation.isLastMessageFromUser && (
-            <Text style={styles.status}>
-              {conversation.isRead ? 'Read' : 'Unread'}
+        <View style={styles.content}>
+          <View style={styles.row}>
+            <Text style={styles.name}>{conversation.otherUserName}</Text>
+            <Text style={styles.time}>{formatTimestamp(conversation.sentTimestamp)}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.message} numberOfLines={1}>
+              {conversation.mostRecentMessage}
             </Text>
-          )}
+              {conversation.isLastMessageFromUser && (
+              <Text style={styles.status}>
+                {conversation.isRead ? 'Read' : 'Unread'}
+              </Text>
+            )}
+          </View>
         </View>
-      </View>
-      {conversation.numMessages > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{conversation.numMessages}</Text>
-        </View>
-      )}
-    </TouchableOpacity>
+        {conversation.numMessages > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{conversation.numMessages}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  messageBox: {
+    backgroundColor: 'rgba(255, 255, 255, .05)',
+    borderRadius: 12,
+    padding: 6,
+    marginVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, .07)',
+  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
