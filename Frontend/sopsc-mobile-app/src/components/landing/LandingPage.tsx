@@ -28,7 +28,7 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const { signOut } = useAuth();
   const welcomeString = "Welcome to SOPSC";
   const homeString = "Home";
-  const reportsString = "Report Writing";
+  const reportsString = "Reports";
   const scheduleString = "Schedule";
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
@@ -50,43 +50,56 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
       <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
       <Suspense fallback={<Text>Loading...</Text>}>
         <View style={styles.grid}>
+
+          { /* Home button, visible to all users */ }
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onHomePress(navigation)}>
             <HomeIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{homeString}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onReportPress(navigation)}>
-            <ReportIcon style={styles.icon} size={32} color="white" />
-            <Text style={styles.gridLabel}>{reportsString}</Text>
+          { /* Inbox button, visible to all users */ }
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onInboxPress(navigation)}>
+            <InboxIcon style={styles.icon} size={32} color="white" />
+            <Text style={styles.gridLabel}>{inboxString}</Text>
           </TouchableOpacity>
 
+          { /* Schedule button, visible only to Developers, Admins, and Members */ }
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onSchedulePress(navigation)}>
             <CalendarIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{scheduleString}</Text>
           </TouchableOpacity>
 
+          { /* Report Writing button, visible only to Developers, Admins, and Members */ }
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onReportPress(navigation)}>
+            <ReportIcon style={styles.icon} size={32} color="white" />
+            <Text style={styles.gridLabel}>{reportsString}</Text>
+          </TouchableOpacity>
+
+          { /* Public Post button, visible to all users */ }
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onPublicPostPress(navigation)}>
             <ChatBubbleLeftIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{publicPostString}</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onInboxPress(navigation)}>
-            <InboxIcon style={styles.icon} size={32} color="white" />
-            <Text style={styles.gridLabel}>{inboxString}</Text>
-          </TouchableOpacity>
+          
+          {/* Admin Dashboard button, only visible if user is an admin */}
           <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onAdminPress(navigation)}>
             <ReportIcon style={styles.icon} size={32} color="white" />
             <Text style={styles.gridLabel}>{adminString}</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.gridItem} 
-            onPress={async () => { 
-              await signOut(); 
-              onLogout(); 
+          
+          {/* Placeholder for the last item to maintain grid structure */}
+          <View style={[styles.gridItem, { opacity: 0 }]} />
+          <TouchableOpacity
+            style={styles.gridItem}
+            onPress={async () => {
+              await signOut();
+              onLogout();
             }}>
             <LogoutIcon size={32} color="red" />
             <Text style={[styles.gridLabel, { color: 'red' }]}>Logout</Text>
           </TouchableOpacity>
+          {/* Placeholder for the last item to maintain grid structure */}
+          <View style={[styles.gridItem, { opacity: 0 }]} />
         </View>
       </Suspense>
     </ScrollView>
@@ -119,13 +132,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   gridItem: {
-    width: '30%',
+    width: '28%',
     alignItems: 'center',
     marginVertical: 15,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
+    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 7,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.07)',
   },
@@ -142,11 +155,7 @@ const styles = StyleSheet.create({
   icon: {
     color: 'white',
     shadowColor: 'black',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  }
+  },
 });
 
 export default LandingPage;
