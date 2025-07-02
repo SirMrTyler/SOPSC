@@ -94,7 +94,8 @@ const Messages: React.FC = () => {
             <View style={styles.searchRow}>
                 <TextInput
                     style={styles.searchInput}
-                    placeholder='Search users'
+                    placeholder='Search users...'
+                    placeholderTextColor={'#DED3C4'}
                     value={query}
                     onChangeText={setQuery}
                 />

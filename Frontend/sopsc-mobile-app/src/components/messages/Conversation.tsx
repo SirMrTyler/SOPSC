@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 8,
+    color: 'white'
   },
   messageLeft: {
     alignSelf: 'flex-start',
