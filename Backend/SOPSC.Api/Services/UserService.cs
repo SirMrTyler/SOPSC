@@ -147,7 +147,7 @@ namespace SOPSC.Api.Services
                 paramCollection.AddWithValue("@Email", userModel.Email);
                 paramCollection.AddWithValue("@Password", hashedPassword);
                 paramCollection.AddWithValue("@IsActive", true);
-                paramCollection.AddWithValue("@RoleId", 3);
+                paramCollection.AddWithValue("@RoleId", 4);
 
                 SqlParameter idOut = new SqlParameter("@UserId", SqlDbType.Int);
                 idOut.Direction = ParameterDirection.Output;
