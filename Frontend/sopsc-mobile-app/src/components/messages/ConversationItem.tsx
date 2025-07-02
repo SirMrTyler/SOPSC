@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { MessageConversation } from '../../types/messages';
 import { formatTimestamp } from '../../utils/date';
-
+import defaultAvatar from '../../../assets/images/default-avatar.png';
 interface Props {
   conversation: MessageConversation;
   onPress: () => void;
@@ -12,7 +12,7 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress }) => {
   return (
       <TouchableOpacity style={styles.container} onPress={onPress}>
         <Image
-          source={conversation.otherUserProfilePicturePath ? { uri: conversation.otherUserProfilePicturePath } : require('../../../assets/images/default-avatar.png')}
+          source={conversation.otherUserProfilePicturePath ? { uri: conversation.otherUserProfilePicturePath } : defaultAvatar}
           style={styles.avatar}
         />
       <View style={styles.content}>

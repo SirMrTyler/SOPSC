@@ -50,6 +50,6 @@
   "main": "App.tsx",
   "repository": "https://github.com/SirMrTyler/SOPSC",
   "author": "(SirMrTyler TECH SOLUTIONS LLC) Tyler Klein",
-  "license": "231453499",
+  "license": "MIT",
   "private": true
 }
