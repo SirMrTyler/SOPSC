@@ -49,20 +49,20 @@ const Messages: React.FC = () => {
     };
 
     const handleUserSelect = (user: UserResult) => {
-        setQuery("");
+        setQuery('');
         setResults([]);
-        navigation.navigate("Conversation", {
-        conversation: {
-            messageId: 0,
-            otherUserId: user.userId,
-            otherUserName: `${user.firstName} ${user.lastName}`,
-            otherUserProfilePicturePath: "",
-            mostRecentMessage: "",
-            isRead: true,
-            sentTimestamp: "",
-            numMessages: 0,
-            isLastMessageFromUser: false,
-        },
+        navigation.navigate('Conversation', {
+            conversation: {
+                messageId: 0,
+                otherUserId: user.userId,
+                otherUserName: `${user.firstName} ${user.lastName}`,
+                otherUserProfilePicturePath: '',
+                mostRecentMessage: '',
+                isRead: true,
+                sentTimestamp: '',
+                numMessages: 0,
+                isLastMessageFromUser: false,
+            },
         });
     };
 
@@ -80,11 +80,11 @@ const Messages: React.FC = () => {
             <View style={styles.searchRow}>
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Search users"
+                    placeholder='Search users'
                     value={query}
                     onChangeText={setQuery}
                 />
-                <Button title="Search" onPress={handleSearch} disabled={searching} />
+                <Button title='Search' onPress={handleSearch} disabled={searching} />
             </View>
             {results.length > 0 && (
                 <FlatList
@@ -96,10 +96,10 @@ const Messages: React.FC = () => {
                                 messageId: 0,
                                 otherUserId: item.userId,
                                 otherUserName: `${item.firstName} ${item.lastName}`,
-                                otherUserProfilePicturePath: "",
-                                mostRecentMessage: "",
+                                otherUserProfilePicturePath: '',
+                                mostRecentMessage: '',
                                 isRead: true,
-                                sentTimestamp: "",
+                                sentTimestamp: '',
                                 numMessages: 0,
                                 isLastMessageFromUser: false,
                             }}
@@ -120,7 +120,7 @@ const Messages: React.FC = () => {
                         <ConversationItem
                             conversation={item}
                             onPress={() =>
-                                navigation.navigate("Conversation", { conversation: item })
+                                navigation.navigate('Conversation', { conversation: item })
                             }
                         />
                     )}
@@ -134,22 +134,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   searchRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 8,
   },
   searchInput: {
     flex: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderWidth: 1,
     marginRight: 8,
     paddingHorizontal: 8,
     borderRadius: 4,
   },
   header: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 24,
     marginBottom: 8,
   },
