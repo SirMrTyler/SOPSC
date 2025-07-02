@@ -47,7 +47,7 @@
     }
   },
   "description": "Currently working on messages portion of the app. Not sure how eslint works quite yet.",
-  "main": "App.tsx",
+  "main": "index.ts",
   "repository": "https://github.com/SirMrTyler/SOPSC",
   "author": "(SirMrTyler TECH SOLUTIONS LLC) Tyler Klein",
   "license": "MIT",
