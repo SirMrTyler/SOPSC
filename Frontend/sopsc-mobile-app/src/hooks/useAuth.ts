@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
 import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../services/userService.js';
@@ -55,9 +56,11 @@ export const useAuth = () => {
 
       const currentUser = await getCurrent(token, String(data.item.deviceId));
       setUser(currentUser.item);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Email login error:', error);
-      alert('Email login failed. Please try again.');
+      const message =
+        error?.response?.data?.errors?.[0] ?? 'Email login failed. Please try again.';
+      Alert.alert('Login failed', message);
       return error;
     }
   };
