@@ -5,14 +5,19 @@ const endpoint = `${process.env.EXPO_PUBLIC_API_URL}users`;
 
 // User login with email/password
 const login = (email, password, deviceId) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+
+  if (deviceId) {
+    headers.DeviceId = deviceId;
+  }
+
   const config = {
     method: 'POST',
     url: `${endpoint}/login`,
     data: { email, password },
-    headers: { 
-      'Content-Type': 'application/json',
-      DeviceId: deviceId,
-    },
+    headers,
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };

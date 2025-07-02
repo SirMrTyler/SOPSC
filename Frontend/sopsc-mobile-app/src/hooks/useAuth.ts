@@ -46,14 +46,20 @@ export const useAuth = () => {
       deviceId = Crypto.randomUUID();
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
-    const data = await emailLogin(email, password, deviceId);
-    const token = String(data.item.token);
-    
-    await SecureStore.setItemAsync('token', token);
-    await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
-    
-    const currentUser = await getCurrent(token, String(data.item.deviceId));
-    setUser(currentUser.item);
+    try {
+      const data = await emailLogin(email, password, deviceId);
+      const token = String(data.item.token);
+
+      await SecureStore.setItemAsync('token', token);
+      await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
+
+      const currentUser = await getCurrent(token, String(data.item.deviceId));
+      setUser(currentUser.item);
+    } catch (error) {
+      console.error('Email login error:', error);
+      alert('Email login failed. Please try again.');
+      return error;
+    }
   };
 
   const signInGoogle = async (idToken, name, email) => {
