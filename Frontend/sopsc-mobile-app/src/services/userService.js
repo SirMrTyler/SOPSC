@@ -4,12 +4,15 @@ import * as helper from './serviceHelpers';
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}users`;
 
 // User login with email/password
-const login = (email, password) => {
+const login = (email, password, deviceId) => {
   const config = {
     method: 'POST',
     url: `${endpoint}/login`,
     data: { email, password },
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      DeviceId: deviceId,
+    },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };

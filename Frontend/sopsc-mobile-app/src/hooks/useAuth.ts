@@ -22,7 +22,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     console.log("[useAuth] User:", user)
-  })
+  }, [user]);
   useEffect(() => {
     const tryAutoLogin = async () => {
       const deviceId = await SecureStore.getItemAsync('deviceId');
@@ -46,7 +46,7 @@ export const useAuth = () => {
       deviceId = Crypto.randomUUID();
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
-    const data = await emailLogin(email, password);
+    const data = await emailLogin(email, password, deviceId);
     const token = String(data.item.token);
     
     await SecureStore.setItemAsync('token', token);
