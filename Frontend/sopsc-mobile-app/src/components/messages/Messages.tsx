@@ -92,15 +92,29 @@ const Messages: React.FC = () => {
     return (
         <View style={styles.container}>
             <View style={styles.headerRow}>
+
+                {/* Title | Header for messages */}
                 <Text style={styles.header}>Messages</Text>
+
+                {/* Row container for group chat and create conversation icons */}
                 <View style={styles.iconRow}>
-                    <TouchableOpacity style={styles.iconButton}>
+                    {/* Group chat icon, navigates to CreateGroupChat for creating new group chats */}
+                    <TouchableOpacity 
+                        style={styles.iconButton} 
+                        onPress={() => navigation.navigate('CreateGroupChat')}
+                    >
                         <UsersIcon size={28} color="white" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconButton}>
+                    
+                    {/* Create conversation icon, navigates to UserList for finding and selecting users */}
+                    <TouchableOpacity 
+                        style={styles.iconButton} 
+                        onPress={() => navigation.navigate('UserList')}
+                    >
                         <PencilSquareIcon size={28} color="white" />
                     </TouchableOpacity>
                 </View>
+                
             </View>
             <View style={styles.searchRow}>
                 <TextInput

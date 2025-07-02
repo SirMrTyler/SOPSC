@@ -12,6 +12,8 @@ import Login from './src/components/user/Login';
 import Register from './src/components/user/Register';
 import LandingPage from './src/components/landing/LandingPage';
 import Messages from './src/components/messages/Messages';
+import UserList from './src/components/messages/UserList';
+import CreateGroupChat from './src/components/messages/CreateGroupChat'; // Assuming you have a CreateGroupChat component
 import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // Assuming you have an AdminDashboard component
@@ -21,6 +23,8 @@ export type RootStackParamList = {
   Register: undefined;
   Landing: { user: any} | undefined;
   Messages: undefined;
+  UserList: undefined;
+  CreateGroupChat: undefined; // Assuming you have a CreateGroupChat screen
   Conversation: { conversation: MessageConversation };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
 };
@@ -62,6 +66,8 @@ export default function App() {
               </Stack.Screen>
               
               <Stack.Screen name="Messages" component={Messages} />
+              <Stack.Screen name="UserList" component={UserList} />
+              <Stack.Screen name="CreateGroupChat" component={CreateGroupChat} />
               <Stack.Screen name="Conversation" component={Conversation} />
               <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
               {/* Add other screens here as needed */}
