@@ -5,20 +5,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/messageService.js';
-import { search } from '../../services/userService.js';
-import { useAuth } from '../../hooks/useAuth';
 import ConversationItem from './ConversationItem';
 import { MessageConversation } from '../../types/messages';
-import { UserResult } from '../../types/user';
 
 const Messages: React.FC = () => {
     const [messages, setMessages] = useState<MessageConversation[]>([]);
+    const [filteredMessages, setFilteredMessages] = useState<MessageConversation[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<UserResult[]>([]);
-    const [searching, setSearching] = useState(false);
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { user } = useAuth();
 
     useEffect(() => {
         const load = async () => {
@@ -26,8 +21,10 @@ const Messages: React.FC = () => {
                 const data = await getAll();
                 if (Array.isArray(data?.items)) {
                     setMessages(data.items);
+                    setFilteredMessages(data.items);
                 } else if (Array.isArray(data)) {
                     setMessages(data);
+                    setFilteredMessages(data);
                 }
             } catch (err) {
                 console.error('[Messages] Error fetching messages:', err);
@@ -38,48 +35,16 @@ const Messages: React.FC = () => {
         load();
     }, []);
 
-    const handleSearch = async () => {
-        if (!query.trim()) {
-            setResults([]);
-            return;
-        }
-        setSearching(true);
-        try {
-            const data = await search(query.trim(), 0, 20);
-            const fetched = data?.item?.pagedItems || [];
-            const filtered = user ? fetched.filter(u => u.userId !== user.userId) : fetched;
-            setResults(filtered);
-        } catch (err) {
-            console.error('[Messages] Search error:', err);
-        } finally {
-            setSearching(false);
-        }
-    };
-
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            handleSearch();
-        }, 500);
-        return () => clearTimeout(timeoutId);
-    }, [query]);
-
-    const handleUserSelect = (user: UserResult) => {
-        setQuery('');
-        setResults([]);
-        navigation.navigate('Conversation', {
-            conversation: {
-                messageId: 0,
-                otherUserId: user.userId,
-                otherUserName: `${user.firstName} ${user.lastName}`,
-                otherUserProfilePicturePath: '',
-                mostRecentMessage: '',
-                isRead: true,
-                sentTimestamp: '',
-                numMessages: 0,
-                isLastMessageFromUser: false,
-            },
-        });
-    };
+        const q = query.trim().toLowerCase();
+        if(!q) {
+            setFilteredMessages(messages);
+        } else {
+            setFilteredMessages(
+                messages.filter(m => m.mostRecentMessage.toLowerCase().includes(q))
+            );
+        }
+    }, [query, messages]);
 
     if (loading) {
         return (
@@ -105,7 +70,7 @@ const Messages: React.FC = () => {
                     >
                         <UsersIcon size={28} color="white" />
                     </TouchableOpacity>
-                    
+
                     {/* Create conversation icon, navigates to UserList for finding and selecting users */}
                     <TouchableOpacity 
                         style={styles.iconButton} 
@@ -119,39 +84,19 @@ const Messages: React.FC = () => {
             <View style={styles.searchRow}>
                 <TextInput
                     style={styles.searchInput}
-                    placeholder='Search users...'
+                    placeholder='Search messages...'
                     placeholderTextColor={'#DED3C4'}
                     value={query}
                     onChangeText={setQuery}
                 />
             </View>
-            {results.length > 0 && (
-                <FlatList
-                    data={results}
-                    keyExtractor={(item) => item.userId.toString()}
-                    renderItem={({ item }) => (
-                        <ConversationItem
-                            conversation={{
-                                messageId: 0,
-                                otherUserId: item.userId,
-                                otherUserName: `${item.firstName} ${item.lastName}`,
-                                otherUserProfilePicturePath: item.profilePicturePath,
-                                mostRecentMessage: '',
-                                isRead: true,
-                                sentTimestamp: '',
-                                numMessages: 0,
-                                isLastMessageFromUser: false,
-                            }}
-                            onPress={() => handleUserSelect(item)}
-                        />
-                    )}
-                />
-            )}
-            {messages.length === 0 ? (
-                <Text>No messages found.</Text>
+            {filteredMessages.length === 0 ? (
+                <View style={styles.container}>
+                    <Text style={{ color: 'white' }}>No messages found.</Text>
+                </View>
             ) : (
                 <FlatList
-                    data={messages}
+                    data={filteredMessages}
                     keyExtractor={(item, index) =>
                         item.messageId?.toString() ?? index.toString()
                     }
