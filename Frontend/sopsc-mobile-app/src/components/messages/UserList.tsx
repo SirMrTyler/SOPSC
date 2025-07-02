@@ -19,10 +19,15 @@ const UserList: React.FC = () => {
         try {
             const data = await search(query.trim(), 0, 20);
             const fetched = data?.item?.pagedItems || [];
+            console.log('[UserList] Fetched users:', fetched);
             const filtered = user ? fetched.filter(u => u.userId !== user.userId) : fetched;
             setResults(filtered);
-        } catch (err) {
-            console.error('[UserList] Search error:', err);
+        } catch (err: any) {
+            const sCode = err.response?.status;
+            console.log('[UserList] sCode: ', sCode);
+            if (sCode === 404) {
+                setResults([]);
+            } 
         } finally {
             setLoading(false);
         }
@@ -30,7 +35,11 @@ const UserList: React.FC = () => {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            handleSearch();
+            if (query.trim()) {
+                handleSearch();
+            } else {
+                setResults([]);
+            }
         }, 400);
         return () => clearTimeout(timeout);
     }, [query]);
