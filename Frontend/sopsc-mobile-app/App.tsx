@@ -14,6 +14,7 @@ import LandingPage from './src/components/landing/LandingPage';
 import Messages from './src/components/messages/Messages';
 import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
+import AdminDashboard from './src/components/admin/AdminDashboard'; // Assuming you have an AdminDashboard component
 
 export type RootStackParamList = {
   Login: undefined;
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   Landing: { user: any} | undefined;
   Messages: undefined;
   Conversation: { conversation: MessageConversation };
+  AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -48,6 +50,7 @@ export default function App() {
               
               <Stack.Screen name="Messages" component={Messages} />
               <Stack.Screen name="Conversation" component={Conversation} />
+              <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
               {/* Add other screens here as needed */}
             </>
           ) : (

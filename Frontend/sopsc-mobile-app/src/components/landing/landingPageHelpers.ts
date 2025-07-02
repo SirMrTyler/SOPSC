@@ -23,3 +23,8 @@ export const onInboxPress = (navigation: NavigationProp) => {
     console.log('Inbox Pressed');
     navigation.navigate('Messages');
 };
+
+export const onAdminPress = (navigation: NavigationProp) => {
+    console.log('Admin Dashboard Pressed');
+    navigation.navigate('AdminDashboard'); // Assuming you have an AdminDashboard screen
+};

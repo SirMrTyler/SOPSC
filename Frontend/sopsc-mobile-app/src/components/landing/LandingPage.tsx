@@ -32,6 +32,7 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const scheduleString = "Schedule";
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
+  const adminString = "Admin Dashboard";
   console.log("[LandingPage] user:", user);
 
   // Handle users coming from different API shapes
@@ -73,7 +74,10 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
             <InboxIcon size={32} color="black" />
             <Text style={styles.gridLabel}>{inboxString}</Text>
           </TouchableOpacity>
-
+          <TouchableOpacity style={styles.gridItem} onPress={() => helpers.onAdminPress(navigation)}>
+            <ReportIcon size={32} color="black" />
+            <Text style={styles.gridLabel}>{adminString}</Text>
+          </TouchableOpacity>
           <TouchableOpacity 
             style={styles.gridItem} 
             onPress={async () => { 
