@@ -48,6 +48,24 @@ const Messages: React.FC = () => {
         }
     };
 
+    const handleUserSelect = (user: UserResult) => {
+        setQuery("");
+        setResults([]);
+        navigation.navigate("Conversation", {
+        conversation: {
+            messageId: 0,
+            otherUserId: user.userId,
+            otherUserName: `${user.firstName} ${user.lastName}`,
+            otherUserProfilePicturePath: "",
+            mostRecentMessage: "",
+            isRead: true,
+            sentTimestamp: "",
+            numMessages: 0,
+            isLastMessageFromUser: false,
+        },
+        });
+    };
+
     if (loading) {
         return (
             <View style={styles.container}>
@@ -78,24 +96,14 @@ const Messages: React.FC = () => {
                                 messageId: 0,
                                 otherUserId: item.userId,
                                 otherUserName: `${item.firstName} ${item.lastName}`,
-                                otherUserProfilePicturePath: '',
-                                mostRecentMessage: '',
+                                otherUserProfilePicturePath: "",
+                                mostRecentMessage: "",
                                 isRead: true,
-                                sentTimestamp: '',
+                                sentTimestamp: "",
                                 numMessages: 0,
                                 isLastMessageFromUser: false,
                             }}
-                            onPress={() => navigation.navigate('Conversation', { conversation: {
-                                messageId: 0,
-                                otherUserId: item.userId,
-                                otherUserName: `${item.firstName} ${item.lastName}`,
-                                otherUserProfilePicturePath: '',
-                                mostRecentMessage: '',
-                                isRead: true,
-                                sentTimestamp: '',
-                                numMessages: 0,
-                                isLastMessageFromUser: false,
-                            } })}
+                            onPress={() => handleUserSelect(item)}
                         />
                     )}
                 />
@@ -104,44 +112,47 @@ const Messages: React.FC = () => {
                 <Text>No messages found.</Text>
             ) : (
                 <FlatList
-                data={messages}
-                keyExtractor={(item, index) => item.messageId?.toString() ?? index.toString()}
-                renderItem={({ item }) => (
-                    <ConversationItem
-                    conversation={item}
-                    onPress={() => 
-                        navigation.navigate('Conversation', { conversation: item })}
-                    />
-                )}
+                    data={messages}
+                    keyExtractor={(item, index) =>
+                        item.messageId?.toString() ?? index.toString()
+                    }
+                    renderItem={({ item }) => (
+                        <ConversationItem
+                            conversation={item}
+                            onPress={() =>
+                                navigation.navigate("Conversation", { conversation: item })
+                            }
+                        />
+                    )}
                 />
             )}
         </View>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-        justifyContent: 'center',
-    },
-    searchRow: {
-        flexDirection: 'row',
-        marginBottom: 8,
-    },
-    searchInput: {
-        flex: 1,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        marginRight: 8,
-        paddingHorizontal: 8,
-        borderRadius: 4,
-    },
-    header: {
-        fontWeight: 'bold',
-        fontSize: 24,
-        marginBottom: 8,
-    },
+  container: {
+    flex: 1,
+    padding: 16,
+    justifyContent: "center",
+  },
+  searchRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  searchInput: {
+    flex: 1,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    marginRight: 8,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  header: {
+    fontWeight: "bold",
+    fontSize: 24,
+    marginBottom: 8,
+  },
 });
 
 export default Messages;
