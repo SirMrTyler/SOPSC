@@ -24,7 +24,6 @@ using System.IdentityModel.Tokens.Jwt;
 /// </remarks>
 [ApiController]
 [Route("api/users")]
-[Authorize(Roles = "Member,Admin,Developer")]
 public class UsersController : BaseApiController
 {
     private IUserService _userService = null;
@@ -366,7 +365,7 @@ public class UsersController : BaseApiController
     /// An <see cref="ActionResult"/> containing an <see cref="ItemResponse{T}"/> of paged users if successful, 
     /// or an <see cref="ErrorResponse"/> if no users are found or an error occurs.
     /// </returns>
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Developer, Admin")]
     [HttpGet("paginate")]
     public ActionResult<ItemResponse<Paged<User>>> GetAllUsers(int pageIndex, int pageSize)
     {

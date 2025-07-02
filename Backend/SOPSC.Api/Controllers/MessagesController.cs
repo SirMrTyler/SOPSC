@@ -11,7 +11,7 @@ namespace SOPSC.Api.Controllers
 {
     [ApiController]
     [Route("api/messages")]
-    [Authorize]
+    [Authorize(Roles = "Member, Admin, Developer, Guest")]
     public class MessagesController : BaseApiController
     {
         private readonly IMessagesService _messagesService;
