@@ -3,6 +3,7 @@ export interface UserResult {
   firstName: string;
   lastName: string;
   email: string;
+  profilePicturePath?: string;
   dateCreated: string;
   lastLoginDate: string | null;
   isActive: boolean;

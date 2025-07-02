@@ -10,11 +10,11 @@ interface Props {
 
 const ConversationItem: React.FC<Props> = ({ conversation, onPress }) => {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image
-        source={{ uri: conversation.otherUserProfilePicturePath }}
-        style={styles.avatar}
-      />
+      <TouchableOpacity style={styles.container} onPress={onPress}>
+        <Image
+          source={conversation.otherUserProfilePicturePath ? { uri: conversation.otherUserProfilePicturePath } : require('../../../assets/images/default-avatar.png')}
+          style={styles.avatar}
+        />
       <View style={styles.content}>
         <View style={styles.row}>
           <Text style={styles.name}>{conversation.otherUserName}</Text>

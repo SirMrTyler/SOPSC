@@ -28,7 +28,12 @@ const Conversation: React.FC<Props> = ({ route }) => {
             setPageIndex(nextPage);
         }
         } catch (err) {
-        console.error('[Conversation] Error fetching messages:', err);
+        if (err?.response?.status === 404) {
+            setMessages([]);
+            setTotalCount(0);
+        } else {
+            console.error('[Conversation] Error fetching messages:', err);
+        }
         } finally {
         setLoading(false);
         }

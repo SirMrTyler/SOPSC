@@ -38,7 +38,10 @@ const Messages: React.FC = () => {
     }, []);
 
     const handleSearch = async () => {
-        if (!query.trim()) return;
+        if (!query.trim()) {
+            setResults([]);
+            return;
+        }
         setSearching(true);
         try {
             const data = await search(query.trim(), 0, 20);
@@ -51,6 +54,13 @@ const Messages: React.FC = () => {
             setSearching(false);
         }
     };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            handleSearch();
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [query]);
 
     const handleUserSelect = (user: UserResult) => {
         setQuery('');
@@ -88,7 +98,6 @@ const Messages: React.FC = () => {
                     value={query}
                     onChangeText={setQuery}
                 />
-                <Button title='Search' onPress={handleSearch} disabled={searching} />
             </View>
             {results.length > 0 && (
                 <FlatList
@@ -100,7 +109,7 @@ const Messages: React.FC = () => {
                                 messageId: 0,
                                 otherUserId: item.userId,
                                 otherUserName: `${item.firstName} ${item.lastName}`,
-                                otherUserProfilePicturePath: '',
+                                otherUserProfilePicturePath: item.profilePicturePath,
                                 mostRecentMessage: '',
                                 isRead: true,
                                 sentTimestamp: '',

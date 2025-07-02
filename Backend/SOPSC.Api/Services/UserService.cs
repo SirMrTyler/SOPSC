@@ -414,6 +414,7 @@ namespace SOPSC.Api.Services
                         FirstName = reader.GetSafeString(startingIndex++),
                         LastName = reader.GetSafeString(startingIndex++),
                         Email = reader.GetSafeString(startingIndex++),
+                        ProfilePicturePath = reader.GetSafeString(startingIndex++),
                         DateCreated = reader.GetSafeDateTime(startingIndex++),
                         LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
                         IsActive = reader.GetSafeBool(startingIndex++),
