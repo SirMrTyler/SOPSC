@@ -17,7 +17,7 @@ AS
 */
 
 BEGIN
-	DECLARE @StartingRow int = (@PageIndex-1) * @PageSize;
+	DECLARE @StartingRow int = (@PageIndex) * @PageSize;
 	SELECT 
 		[UserId],
 		[FirstName],

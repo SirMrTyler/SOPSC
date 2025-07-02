@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/messageService.js';
 import { search } from '../../services/userService.js';
+import { useAuth } from '../../hooks/useAuth';
 import ConversationItem from './ConversationItem';
 import { MessageConversation } from '../../types/messages';
 import { UserResult } from '../../types/user';
@@ -16,6 +17,7 @@ const Messages: React.FC = () => {
     const [results, setResults] = useState<UserResult[]>([]);
     const [searching, setSearching] = useState(false);
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { user } = useAuth();
 
     useEffect(() => {
         const load = async () => {
@@ -40,7 +42,9 @@ const Messages: React.FC = () => {
         setSearching(true);
         try {
             const data = await search(query.trim(), 0, 20);
-            setResults(data?.item?.pagedItems || []);
+            const fetched = data?.item?.pagedItems || [];
+            const filtered = user ? fetched.filter(u => u.userId !== user.userId) : fetched;
+            setResults(filtered);
         } catch (err) {
             console.error('[Messages] Search error:', err);
         } finally {
