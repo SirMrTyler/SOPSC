@@ -51,16 +51,9 @@ public class GroupChatsController : BaseApiController
         BaseResponse response = null;
         try
         {
-            Paged<GroupChatMessage> paged = _service.GetMessages(groupChatId, pageIndex, pageSize);
-            if (paged == null)
-            {
-                code = 404;
-                response = new ErrorResponse("Records not found.");
-            }
-            else
-            {
-                response = new ItemResponse<Paged<GroupChatMessage>> { Item = paged };
-            }
+            int userId = _authService.GetCurrentUserId();
+            Paged<GroupChatMessage> paged = _service.GetMessages(groupChatId, pageIndex, pageSize, userId);
+            response = new ItemResponse<Paged<GroupChatMessage>> { Item = paged };
         }
         catch (Exception ex)
         {

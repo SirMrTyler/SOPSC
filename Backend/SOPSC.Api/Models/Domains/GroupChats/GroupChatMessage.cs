@@ -12,4 +12,5 @@ public class GroupChatMessage
     public string MessageContent { get; set; }
     public System.DateTime SentTimestamp { get; set; }
     public System.DateTime? ReadTimestamp { get; set; }
+    public bool IsRead { get; set; }
 }
