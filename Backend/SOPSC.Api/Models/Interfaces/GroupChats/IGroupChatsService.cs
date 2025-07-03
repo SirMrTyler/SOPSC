@@ -7,7 +7,7 @@ namespace SOPSC.Api.Models.Interfaces.GroupChats;
 public interface IGroupChatsService
 {
     List<GroupChatSummary> GetByUserId(int userId);
-    Paged<GroupChatMessage> GetMessages(int groupChatId, int pageIndex, int pageSize);
+    Paged<GroupChatMessage> GetMessages(int groupChatId, int pageIndex, int pageSize, int userId);
     int Create(int creatorId, string name, List<int> memberIds);
     int SendMessage(int groupChatId, int senderId, string messageContent);
     void AddMembers(int groupChatId, List<int> memberIds);
