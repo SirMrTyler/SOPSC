@@ -6,11 +6,13 @@ import { getMessages, sendMessage, getMembers } from '../../services/groupChatSe
 import { UserPlusIcon } from 'react-native-heroicons/outline';
 import { GroupChatMessage, GroupChatMember } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
+import { useAuth } from '../../hooks/useAuth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
 
 const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const { chatId, name } = route.params;
+  const { user } = useAuth();
   const [messages, setMessages] = useState<GroupChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
@@ -71,13 +73,21 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
-  const renderItem = ({ item }: { item: GroupChatMessage }) => (
-    <View style={styles.msgBox}>
-      <Text style={styles.msgAuthor}>{item.senderName}</Text>
-      <Text>{item.messageContent}</Text>
-      <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
-    </View>
-  );
+  const renderItem = ({ item }: { item: GroupChatMessage }) => {
+    const outgoing = user ? item.senderId === user.userId : false;
+    return (
+      <View style={styles.msgBox}>
+        <Text style={styles.msgAuthor}>{item.senderName}</Text>
+        <Text>{item.messageContent}</Text>
+        <View style={styles.meta}>
+          <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
+          {outgoing && (
+            <Text style={styles.status}>{item.isRead ? ' Read' : ' Unread'}</Text>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -92,7 +102,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
       {members.length > 0 && (
         <View style={styles.memberBox}>
           <Text style={styles.memberText}>
-            {members.map(m => `${m.firstName} ${m.lastName}`).join(', ')}
+            Members: {members.map(m => `${m.firstName} ${m.lastName}`).join(', ')}
           </Text>
         </View>
       )}
@@ -145,7 +155,16 @@ const styles = StyleSheet.create({
   msgAuthor: {
     fontWeight: 'bold',
   },
+  meta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
   time: {
+    fontSize: 12,
+    color: '#666',
+  },
+  status: {
     fontSize: 12,
     color: '#666',
   },

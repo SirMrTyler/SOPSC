@@ -49,7 +49,7 @@ public class GroupChatsService : IGroupChatsService
         return list;
     }
 
-    public Paged<GroupChatMessage> GetMessages(int groupChatId, int pageIndex, int pageSize)
+    public Paged<GroupChatMessage> GetMessages(int groupChatId, int pageIndex, int pageSize, int userId)
     {
         List<GroupChatMessage> list = null;
         Paged<GroupChatMessage> pagedList = null;
@@ -60,6 +60,7 @@ public class GroupChatsService : IGroupChatsService
             delegate (SqlParameterCollection param)
             {
                 param.AddWithValue("@GroupChatId", groupChatId);
+                param.AddWithValue("@UserId", userId);
                 param.AddWithValue("@PageIndex", pageIndex);
                 param.AddWithValue("@PageSize", pageSize);
             },
@@ -74,17 +75,15 @@ public class GroupChatsService : IGroupChatsService
                     SenderName = reader.GetSafeString(startingIndex++),
                     MessageContent = reader.GetSafeString(startingIndex++),
                     SentTimestamp = reader.GetSafeUtcDateTime(startingIndex++),
-                    ReadTimestamp = reader.GetSafeUtcDateTimeNullable(startingIndex++)
+                    ReadTimestamp = reader.GetSafeUtcDateTimeNullable(startingIndex++),
+                    IsRead = reader.GetSafeBool(startingIndex++)
                 };
                 totalCount = reader.GetSafeInt32(startingIndex++);
                 list ??= new List<GroupChatMessage>();
                 list.Add(message);
             });
-
-        if (list != null && list.Count > 0)
-        {
-            pagedList = new Paged<GroupChatMessage>(list, pageIndex, pageSize, totalCount);
-        }
+        list ??= new List<GroupChatMessage>();
+        pagedList = new Paged<GroupChatMessage>(list, pageIndex, pageSize, totalCount);
 
         return pagedList;
     }

@@ -14,6 +14,7 @@ export interface GroupChatMessage {
   messageContent: string;
   sentTimestamp: string;
   readTimestamp: string | null;
+  isRead: boolean;
 }
 
 export interface GroupChatMember {
