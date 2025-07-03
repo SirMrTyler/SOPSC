@@ -154,4 +154,28 @@ public class GroupChatsService : IGroupChatsService
                 param.AddWithValue("@MemberIds", string.Join(",", memberIds));
             });
     }
+
+    public List<GroupChatMember> GetMembers(int groupChatId)
+    {
+        List<GroupChatMember> list = null;
+        string procName = "[dbo].[GroupChatMembers_SelectByGroupChatId]";
+
+        _dataProvider.ExecuteCmd(procName,
+            param => { param.AddWithValue("@GroupChatId", groupChatId); },
+            (reader, set) =>
+            {
+                int startingIndex = 0;
+                GroupChatMember member = new GroupChatMember
+                {
+                    UserId = reader.GetSafeInt32(startingIndex++),
+                    FirstName = reader.GetSafeString(startingIndex++),
+                    LastName = reader.GetSafeString(startingIndex++),
+                    RoleId = reader.GetSafeInt32(startingIndex++)
+                };
+                list ??= new List<GroupChatMember>();
+                list.Add(member);
+            });
+
+        return list ?? new List<GroupChatMember>();
+    }
 }

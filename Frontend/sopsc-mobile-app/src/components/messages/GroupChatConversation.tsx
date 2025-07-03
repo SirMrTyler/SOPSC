@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
-import { getMessages, sendMessage } from '../../services/groupChatService';
+import { getMessages, sendMessage, getMembers } from '../../services/groupChatService';
 import { UserPlusIcon } from 'react-native-heroicons/outline';
-import { GroupChatMessage } from '../../types/groupChat';
+import { GroupChatMessage, GroupChatMember } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
@@ -18,6 +18,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [members, setMembers] = useState<GroupChatMember[]>([]);
 
   const load = async (nextPage = 0) => {
     try {
@@ -37,6 +38,19 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const data = await getMembers(chatId);
+        const list = data?.items || [];
+        setMembers(list as GroupChatMember[]);
+      } catch (err) {
+        console.error('[GroupChatConversation] Error fetching members:', err);
+      }
+    };
+    fetchMembers();
+  }, []);
+  
   const handleEndReached = () => {
     if (!loading && messages.length < totalCount) {
       load(pageIndex + 1);
@@ -75,6 +89,13 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
           <UserPlusIcon size={24} color="white" />
         </TouchableOpacity>
       </View>
+      {members.length > 0 && (
+        <View style={styles.memberBox}>
+          <Text style={styles.memberText}>
+            {members.map(m => `${m.firstName} ${m.lastName}`).join(', ')}
+          </Text>
+        </View>
+      )}
       {loading && messages.length === 0 ? (
         <ActivityIndicator />
       ) : (
@@ -104,6 +125,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     color: 'white',
+  },
+   memberBox: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 4,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  memberText: {
+    color: 'white',
+    fontSize: 12,
   },
   msgBox: {
     backgroundColor: '#eee',

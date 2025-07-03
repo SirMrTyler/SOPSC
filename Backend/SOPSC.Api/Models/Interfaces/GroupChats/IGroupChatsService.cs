@@ -11,4 +11,5 @@ public interface IGroupChatsService
     int Create(int creatorId, string name, List<int> memberIds);
     int SendMessage(int groupChatId, int senderId, string messageContent);
     void AddMembers(int groupChatId, List<int> memberIds);
+    List<GroupChatMember> GetMembers(int groupChatId);
 }

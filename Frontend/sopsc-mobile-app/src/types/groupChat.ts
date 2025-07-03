@@ -15,3 +15,10 @@ export interface GroupChatMessage {
   sentTimestamp: string;
   readTimestamp: string | null;
 }
+
+export interface GroupChatMember {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  roleId: number;
+}
