@@ -110,4 +110,23 @@ public class GroupChatsController : BaseApiController
         }
         return StatusCode(code, response);
     }
+
+    [HttpPost("{groupChatId:int}/members")]
+    public ActionResult<SuccessResponse> AddMembers(int groupChatId, AddGroupChatMembersRequest model)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            _service.AddMembers(groupChatId, model.UserIds);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+        return StatusCode(code, response);
+    }
 }

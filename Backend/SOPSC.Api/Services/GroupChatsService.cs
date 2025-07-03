@@ -142,4 +142,16 @@ public class GroupChatsService : IGroupChatsService
 
         return messageId;
     }
+
+    public void AddMembers(int groupChatId, List<int> memberIds)
+    {
+        string procName = "[dbo].[GroupChatMembers_Insert]";
+
+        _dataProvider.ExecuteNonQuery(procName,
+            delegate (SqlParameterCollection param)
+            {
+                param.AddWithValue("@GroupChatId", groupChatId);
+                param.AddWithValue("@MemberIds", string.Join(",", memberIds));
+            });
+    }
 }

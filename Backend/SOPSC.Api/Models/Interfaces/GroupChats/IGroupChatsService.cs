@@ -10,4 +10,5 @@ public interface IGroupChatsService
     Paged<GroupChatMessage> GetMessages(int groupChatId, int pageIndex, int pageSize);
     int Create(int creatorId, string name, List<int> memberIds);
     int SendMessage(int groupChatId, int senderId, string messageContent);
+    void AddMembers(int groupChatId, List<int> memberIds);
 }

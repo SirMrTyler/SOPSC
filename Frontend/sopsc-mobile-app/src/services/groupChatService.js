@@ -65,4 +65,20 @@ const sendMessage = async (id, messageContent) => {
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-export { getAll, getMessages, create, sendMessage };
+const addMembers = async (id, userIds) => {
+    const token = await helper.getToken();
+    const deviceId = await helper.getDeviceId();
+    const config = {
+        method: 'POST',
+        url: `${endpoint}/${id}/members`,
+        data: { userIds },
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            DeviceId: deviceId,
+        },
+    };
+    return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
+export { getAll, getMessages, create, sendMessage, addMembers };
