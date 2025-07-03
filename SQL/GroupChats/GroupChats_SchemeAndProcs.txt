@@ -1,0 +1,161 @@
+-- SQL definitions for Group Chat feature
+-- Includes table creation and stored procedures
+
+-- Create GroupChats table
+IF OBJECT_ID('dbo.GroupChats') IS NULL
+BEGIN
+    CREATE TABLE dbo.GroupChats(
+        GroupChatId INT IDENTITY(1,1) PRIMARY KEY,
+        Name NVARCHAR(100) NOT NULL,
+        CreatorId INT NOT NULL,
+        CreatedTimestamp DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
+    );
+END
+GO
+
+-- Create GroupChatMembers table
+IF OBJECT_ID('dbo.GroupChatMembers') IS NULL
+BEGIN
+    CREATE TABLE dbo.GroupChatMembers(
+        GroupChatId INT NOT NULL,
+        UserId INT NOT NULL,
+        JoinedTimestamp DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        LastReadTimestamp DATETIME2(7) NULL,
+        CONSTRAINT PK_GroupChatMembers PRIMARY KEY (GroupChatId, UserId)
+    );
+END
+GO
+
+-- Create GroupChatMessages table
+IF OBJECT_ID('dbo.GroupChatMessages') IS NULL
+BEGIN
+    CREATE TABLE dbo.GroupChatMessages(
+        MessageId INT IDENTITY(1,1) PRIMARY KEY,
+        GroupChatId INT NOT NULL,
+        SenderId INT NOT NULL,
+        MessageContent NVARCHAR(MAX) NOT NULL,
+        SentTimestamp DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        ReadTimestamp DATETIME2(7) NULL
+    );
+END
+GO
+
+-------------------------------------------------------------------------------
+-- STORED PROCEDURES ----------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-- Inserts a new group chat and members
+ALTER PROC dbo.GroupChats_Insert
+        @Id INT OUTPUT,
+        @CreatorId INT,
+        @Name NVARCHAR(100),
+        @MemberIds NVARCHAR(MAX)
+AS
+BEGIN
+        INSERT INTO dbo.GroupChats (Name, CreatorId, CreatedTimestamp)
+        VALUES (@Name, @CreatorId, SYSDATETIME());
+        SET @Id = SCOPE_IDENTITY();
+
+        INSERT INTO dbo.GroupChatMembers (GroupChatId, UserId)
+        VALUES (@Id, @CreatorId);
+
+        IF @MemberIds IS NOT NULL AND LEN(@MemberIds) > 0
+        BEGIN
+                INSERT INTO dbo.GroupChatMembers (GroupChatId, UserId)
+                SELECT @Id, TRY_CAST(value AS INT)
+                FROM STRING_SPLIT(@MemberIds, ',')
+                WHERE TRY_CAST(value AS INT) IS NOT NULL;
+        END
+
+        SELECT GroupChatId, Name, CreatorId, CreatedTimestamp
+        FROM dbo.GroupChats
+        WHERE GroupChatId = @Id;
+END
+GO
+
+-- Inserts a message into a group chat
+ALTER PROC dbo.GroupChatMessages_Insert
+        @Id INT OUTPUT,
+        @GroupChatId INT,
+        @SenderId INT,
+        @MessageContent NVARCHAR(MAX)
+AS
+BEGIN
+        INSERT INTO dbo.GroupChatMessages (
+                GroupChatId,
+                SenderId,
+                MessageContent,
+                SentTimestamp)
+        VALUES (
+                @GroupChatId,
+                @SenderId,
+                @MessageContent,
+                SYSDATETIME());
+        SET @Id = SCOPE_IDENTITY();
+
+        UPDATE dbo.GroupChatMembers
+        SET LastReadTimestamp = SYSDATETIME()
+        WHERE GroupChatId = @GroupChatId AND UserId = @SenderId;
+
+        SELECT MessageId, GroupChatId, SenderId, MessageContent, SentTimestamp
+        FROM dbo.GroupChatMessages
+        WHERE MessageId = @Id;
+END
+GO
+
+-- Gets summaries of group chats for a user
+ALTER PROC dbo.GroupChats_SelectByUserId
+        @UserId INT
+AS
+BEGIN
+        SELECT
+                gc.GroupChatId,
+                gc.Name,
+                ISNULL(lm.MessageContent, '') AS LastMessage,
+                ISNULL(lm.SentTimestamp, SYSDATETIME()) AS LastSentTimestamp,
+                COUNT(CASE WHEN gcm.SentTimestamp > ISNULL(m.LastReadTimestamp, '1900-01-01') AND gcm.SenderId <> @UserId THEN 1 END) AS UnreadCount
+        FROM dbo.GroupChatMembers m
+        JOIN dbo.GroupChats gc ON gc.GroupChatId = m.GroupChatId
+        OUTER APPLY (
+                SELECT TOP 1 MessageContent, SentTimestamp
+                FROM dbo.GroupChatMessages
+                WHERE GroupChatId = gc.GroupChatId
+                ORDER BY SentTimestamp DESC
+        ) lm
+        LEFT JOIN dbo.GroupChatMessages gcm ON gcm.GroupChatId = gc.GroupChatId
+        WHERE m.UserId = @UserId
+        GROUP BY gc.GroupChatId, gc.Name, lm.MessageContent, lm.SentTimestamp, m.LastReadTimestamp;
+END
+GO
+
+-- Gets paged messages for a group chat
+ALTER PROC dbo.GroupChatMessages_SelectByGroupChatId
+        @GroupChatId INT,
+        @PageIndex INT,
+        @PageSize INT
+AS
+BEGIN
+        DECLARE @Offset INT = @PageIndex * @PageSize;
+
+        SELECT
+                gm.MessageId,
+                gm.GroupChatId,
+                gm.SenderId,
+                u.FirstName + ' ' + u.LastName AS SenderName,
+                gm.MessageContent,
+                gm.SentTimestamp,
+                gm.ReadTimestamp,
+                COUNT(1) OVER() AS TotalCount
+        FROM dbo.GroupChatMessages gm
+        JOIN dbo.Users u ON gm.SenderId = u.UserId
+        WHERE gm.GroupChatId = @GroupChatId
+        ORDER BY gm.SentTimestamp ASC
+        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
+        UPDATE dbo.GroupChatMembers
+        SET LastReadTimestamp = SYSDATETIME()
+        WHERE GroupChatId = @GroupChatId AND UserId IN (
+                SELECT UserId FROM dbo.GroupChatMembers WHERE GroupChatId = @GroupChatId
+        );
+END
+GO
