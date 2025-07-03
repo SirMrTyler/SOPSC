@@ -129,4 +129,23 @@ public class GroupChatsController : BaseApiController
         }
         return StatusCode(code, response);
     }
+
+    [HttpGet("{groupChatId:int}/members")]
+    public ActionResult<ItemsResponse<GroupChatMember>> GetMembers(int groupChatId)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            List<GroupChatMember> list = _service.GetMembers(groupChatId);
+            response = new ItemsResponse<GroupChatMember> { Items = list };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+        return StatusCode(code, response);
+    }
 }
