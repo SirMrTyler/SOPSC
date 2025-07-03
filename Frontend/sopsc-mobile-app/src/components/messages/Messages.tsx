@@ -63,10 +63,10 @@ const Messages: React.FC = () => {
 
                 {/* Row container for group chat and create conversation icons */}
                 <View style={styles.iconRow}>
-                    {/* Group chat icon, navigates to CreateGroupChat for creating new group chats */}
-                    <TouchableOpacity 
-                        style={styles.iconButton} 
-                        onPress={() => navigation.navigate('CreateGroupChat')}
+                    {/* Group chat icon, opens list of group chats */}
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => navigation.navigate('GroupChats')}
                     >
                         <UsersIcon size={28} color="white" />
                     </TouchableOpacity>

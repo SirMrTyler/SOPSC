@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ImageBackground, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
 // Components
 import Login from './src/components/user/Login';
@@ -13,10 +14,12 @@ import Register from './src/components/user/Register';
 import LandingPage from './src/components/landing/LandingPage';
 import Messages from './src/components/messages/Messages';
 import UserList from './src/components/messages/UserList';
-import CreateGroupChat from './src/components/messages/CreateGroupChat'; // Assuming you have a CreateGroupChat component
+import CreateGroupChat from './src/components/messages/CreateGroupChat';
+import GroupChats from './src/components/messages/GroupChats';
+import GroupChatConversation from './src/components/messages/GroupChatConversation';
 import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
-import AdminDashboard from './src/components/admin/AdminDashboard'; // Assuming you have an AdminDashboard component
+import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
 
 export type RootStackParamList = {
   Login: undefined;
@@ -24,7 +27,9 @@ export type RootStackParamList = {
   Landing: { user: any} | undefined;
   Messages: undefined;
   UserList: undefined;
-  CreateGroupChat: undefined; // Assuming you have a CreateGroupChat screen
+  CreateGroupChat: undefined;
+  GroupChats: undefined;
+  GroupChatConversation: { chatId: number; name: string };
   Conversation: { conversation: MessageConversation };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
 };
@@ -46,6 +51,7 @@ export default function App() {
 
   return (
     <NavigationContainer theme={AppTheme}>
+      <StatusBar style="light" translucent={false} />
       <ImageBackground source={backgroundImage} style={styles.background} imageStyle={{ resizeMode: 'cover' }}>
         <Stack.Navigator
           id={undefined}
@@ -67,7 +73,9 @@ export default function App() {
               
               <Stack.Screen name="Messages" component={Messages} />
               <Stack.Screen name="UserList" component={UserList} />
+              <Stack.Screen name="GroupChats" component={GroupChats} />
               <Stack.Screen name="CreateGroupChat" component={CreateGroupChat} />
+              <Stack.Screen name="GroupChatConversation" component={GroupChatConversation} />
               <Stack.Screen name="Conversation" component={Conversation} />
               <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
               {/* Add other screens here as needed */}
