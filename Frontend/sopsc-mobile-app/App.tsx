@@ -17,6 +17,7 @@ import UserList from './src/components/messages/UserList';
 import CreateGroupChat from './src/components/messages/CreateGroupChat';
 import GroupChats from './src/components/messages/GroupChats';
 import GroupChatConversation from './src/components/messages/GroupChatConversation';
+import AddGroupChatMembers from './src/components/messages/AddGroupChatMembers';
 import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
@@ -30,6 +31,7 @@ export type RootStackParamList = {
   CreateGroupChat: undefined;
   GroupChats: undefined;
   GroupChatConversation: { chatId: number; name: string };
+  AddGroupChatMembers: { chatId: number };
   Conversation: { conversation: MessageConversation };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
 };
@@ -76,6 +78,7 @@ export default function App() {
               <Stack.Screen name="GroupChats" component={GroupChats} />
               <Stack.Screen name="CreateGroupChat" component={CreateGroupChat} />
               <Stack.Screen name="GroupChatConversation" component={GroupChatConversation} />
+              <Stack.Screen name="AddGroupChatMembers" component={AddGroupChatMembers} />
               <Stack.Screen name="Conversation" component={Conversation} />
               <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
               {/* Add other screens here as needed */}

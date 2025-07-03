@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { getMessages, sendMessage } from '../../services/groupChatService';
+import { UserPlusIcon } from 'react-native-heroicons/outline';
 import { GroupChatMessage } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
 
-const GroupChatConversation: React.FC<Props> = ({ route }) => {
+const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const { chatId, name } = route.params;
   const [messages, setMessages] = useState<GroupChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,14 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{name}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>{name}</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('AddGroupChatMembers', { chatId })}
+        >
+          <UserPlusIcon size={24} color="white" />
+        </TouchableOpacity>
+      </View>
       {loading && messages.length === 0 ? (
         <ActivityIndicator />
       ) : (
@@ -84,6 +92,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   header: {
     fontWeight: 'bold',
