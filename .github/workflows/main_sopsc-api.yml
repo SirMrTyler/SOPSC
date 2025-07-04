@@ -24,10 +24,11 @@ jobs:
           dotnet-version: 'v8.0'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build Backend/SOPSC.Api/SOPSC.Api.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish Backend/SOPSC.Api/SOPSC.Api.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -62,5 +63,6 @@ jobs:
         with:
           app-name: 'sopsc-api'
           slot-name: 'Production'
-          package: .
+          package: ${{ github.workspace }}/myapp
+
           
