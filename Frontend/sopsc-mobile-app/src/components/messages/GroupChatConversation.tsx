@@ -76,7 +76,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const renderItem = ({ item }: { item: GroupChatMessage }) => {
     const outgoing = user ? item.senderId === user.userId : false;
     return (
-      <View style={styles.msgBox}>
+      <View style={[styles.msgBox, outgoing ? styles.msgRight : styles.msgLeft]}>
         <Text style={styles.msgAuthor}>{item.senderName}</Text>
         <Text>{item.messageContent}</Text>
         <View style={styles.meta}>
@@ -151,6 +151,16 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     padding: 8,
     borderRadius: 4,
+  },
+  msgLeft: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+  },
+  msgRight: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#cfe9ff',
   },
   msgAuthor: {
     fontWeight: 'bold',
