@@ -37,16 +37,19 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
     setGoogleLoading(true);
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true})
-      const userInfo = await GoogleSignin.signIn();
+      const userInfo: any = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
       const idToken = tokens.idToken;
+
+      const googleUser = 
+        userInfo.user || userInfo.data?.user || userInfo.data || {};
 
       const {
         givenName = '',
         familyName = '',
         email = '',
         photo = '',
-      } = (userInfo.data || userInfo.data?.user || {}) as any;
+      } = googleUser;
 
       const name = { firstName: givenName, lastName: familyName };
 

@@ -53,13 +53,16 @@ useEffect(() => {
     setGoogleLoading(true);
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const userInfo = await GoogleSignin.signIn();
+      const userInfo: any = await GoogleSignin.signIn();
+
+      const googleUser = 
+        userInfo.user || userInfo.data?.user || userInfo.data || {};
 
       const {
         givenName = '',
         familyName = '',
         email = '',
-      } = (userInfo.data || userInfo.data?.user || userInfo.user || {}) as any;
+      } = googleUser;
 
       // Auto-fill the registration fields
       setFirstName(givenName);
