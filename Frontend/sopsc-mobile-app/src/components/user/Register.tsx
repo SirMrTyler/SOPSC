@@ -78,7 +78,6 @@ useEffect(() => {
       if (!idToken) throw new Error('No ID token returned from Google Sign Up');
 
       await signInGoogle(idToken, name, email);
-      onRegisterSuccess({ name, email, photo });
 
     } catch (error: any) {
       if (error.code === statusCodes.IN_PROGRESS) {
