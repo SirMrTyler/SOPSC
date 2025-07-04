@@ -156,6 +156,7 @@ Navigate to your [GitHub Actions tab](https://github.com/SirMrTyler/SOPSC/action
 - Go to **GitHub → Actions → Latest Workflow**
 - Ensure both `build` and `deploy` jobs succeed
 - If successful, your API is now live at:
+  https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net
 
 ### ⚙️ Troubleshooting:
 
