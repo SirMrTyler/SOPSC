@@ -36,7 +36,8 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
     }
     setGoogleLoading(true);
     try {
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true})
+      await GoogleSignin.signOut();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
       const userInfo: any = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
       const idToken = tokens.idToken;

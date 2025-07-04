@@ -20,7 +20,7 @@ const Register: React.FC<RegisterProps> = ({ navigation, onRegisterSuccess }) =>
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [googleLoading, setGoogleLoading] = useState(false);
-    const { user } = useAuth();
+    const { user, signInGoogle } = useAuth();
 
 useEffect(() => {
     GoogleSignin.configure({
@@ -52,8 +52,11 @@ useEffect(() => {
     }
     setGoogleLoading(true);
     try {
+      await GoogleSignin.signOut(); // Ensure previous session is cleared
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo: any = await GoogleSignin.signIn();
+      const tokens = await GoogleSignin.getTokens();
+      const idToken = tokens.idToken;
 
       const googleUser = 
         userInfo.user || userInfo.data?.user || userInfo.data || {};
@@ -62,12 +65,20 @@ useEffect(() => {
         givenName = '',
         familyName = '',
         email = '',
+        photo = '',
       } = googleUser;
 
       // Auto-fill the registration fields
       setFirstName(givenName);
       setLastName(familyName);
       setEmail(email);
+
+      const name = { firstName: givenName, lastName: familyName };
+
+      if (!idToken) throw new Error('No ID token returned from Google Sign Up');
+
+      await signInGoogle(idToken, name, email);
+      onRegisterSuccess({ name, email, photo });
 
     } catch (error: any) {
       if (error.code === statusCodes.IN_PROGRESS) {
