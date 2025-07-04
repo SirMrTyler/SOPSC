@@ -139,6 +139,36 @@ Requires: .NET 8 SDK
 
 ---
 
+## Deploy Updates:
+
+Navigate to your [GitHub Actions tab](https://github.com/SirMrTyler/SOPSC/actions) after pushing to `main`.
+
+### ✅ To deploy updates:
+
+1. Make your code changes in the `main` branch (or merge PRs into it).
+2. Push to GitHub.
+3. GitHub Actions will automatically trigger:
+   - `build` → compiles the .NET backend
+   - `deploy` → publishes the API to Azure Web App
+
+### 🔍 To verify:
+
+- Go to **GitHub → Actions → Latest Workflow**
+- Ensure both `build` and `deploy` jobs succeed
+- If successful, your API is now live at:
+
+### ⚙️ Troubleshooting:
+
+- Failed deploy? Check that:
+  - `.env` values are valid
+  - Your GitHub secrets (`client-id`, `tenant-id`, `subscription-id`) are correct
+  - No syntax errors exist in the `.yml` workflow
+- If needed, re-run the workflow manually from GitHub using **"Run workflow"**
+
+> NOTE: Only the backend is deployed via this flow. The frontend must be built and deployed separately using Expo EAS.
+
+---
+
 ## ⚠️ Dev Warnings
 
 - **Do not expose JWTs or sensitive keys.**
