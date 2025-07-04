@@ -19,7 +19,7 @@ const Register: React.FC<RegisterProps> = ({ navigation, onRegisterSuccess }) =>
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
-    const { user, signInGoogle } = useAuth();
+    const { user } = useAuth();
 
 useEffect(() => {
     GoogleSignin.configure({
@@ -48,12 +48,18 @@ useEffect(() => {
   const googleSignUp = async () => {
     try {
       const userInfo = await GoogleSignin.signIn();
-      const tokens = await GoogleSignin.getTokens();
-      const idToken = tokens.idToken;
-      const { name = { firstName: userInfo.data.user.givenName, lastName: userInfo.data.user.familyName }, email, photo } = userInfo.data.user;
-      if (!idToken) throw new Error('No ID token returned from Google Sign In');
-      await signInGoogle(idToken, name, email);
-      onRegisterSuccess({ name, email, photo });
+
+      const {
+        givenName = '',
+        familyName = '',
+        email = '',
+      } = (userInfo.data || userInfo.data?.user || {}) as any;
+
+      // Auto-fill the registration fields
+      setFirstName(givenName);
+      setLastName(familyName);
+      setEmail(email);
+
     } catch (error) {
       console.error(`Google Sign Up Error: ${JSON.stringify(error)}`);
       alert(`Google Sign Up Error: ${JSON.stringify(error)}`);
