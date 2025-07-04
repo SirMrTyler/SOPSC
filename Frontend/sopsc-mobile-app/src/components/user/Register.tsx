@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput } from 'react-native';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { useAuth } from '../../hooks/useAuth';
 import { register as registerUser } from '../../services/userService.js';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,6 +19,7 @@ const Register: React.FC<RegisterProps> = ({ navigation, onRegisterSuccess }) =>
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [googleLoading, setGoogleLoading] = useState(false);
     const { user } = useAuth();
 
 useEffect(() => {
@@ -46,23 +47,34 @@ useEffect(() => {
   };
 
   const googleSignUp = async () => {
+    if (googleLoading) {
+      return;
+    }
+    setGoogleLoading(true);
     try {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo = await GoogleSignin.signIn();
 
       const {
         givenName = '',
         familyName = '',
         email = '',
-      } = (userInfo.data || userInfo.data?.user || {}) as any;
+      } = (userInfo.data || userInfo.data?.user || userInfo.user || {}) as any;
 
       // Auto-fill the registration fields
       setFirstName(givenName);
       setLastName(familyName);
       setEmail(email);
 
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === statusCodes.IN_PROGRESS) {
+        // ignore multiple sign-in attempts
+        return;
+      }
       console.error(`Google Sign Up Error: ${JSON.stringify(error)}`);
       alert(`Google Sign Up Error: ${JSON.stringify(error)}`);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -109,7 +121,7 @@ useEffect(() => {
         />
         <Button title="Create Account" onPress={handleRegister} />
         <View style={{ height: 10 }} />
-        <Button title="Register with Google" onPress={googleSignUp} />
+        <Button title="Register with Google" onPress={googleSignUp} disabled={googleLoading} />
     </View>
     );
 };

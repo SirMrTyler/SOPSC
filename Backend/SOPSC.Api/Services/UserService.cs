@@ -8,7 +8,6 @@ using SOPSC.Api.Models.Requests.Users;
 using SOPSC.Api.Models.Domains.Users;
 using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Data.Interfaces;
-using Microsoft.AspNetCore.Authentication;
 using Google.Apis.Auth;
 
 namespace SOPSC.Api.Services
@@ -282,10 +281,9 @@ namespace SOPSC.Api.Services
                     throw new Exception("Logout failed: Token still exists in DB.");
                 }
 
-                // Remove the authentication cookie
+                // Remove the authentication cookie if present
                 var httpContext = _httpContextAccessor.HttpContext;
-                httpContext.Response.Cookies.Delete("AuthToken");
-                await httpContext.SignOutAsync();
+                httpContext?.Response.Cookies.Delete("AuthToken");
             }
 
             await Task.CompletedTask;
