@@ -9,6 +9,8 @@ using SOPSC.Api.Models.Domains.Users;
 using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Data.Interfaces;
 using Google.Apis.Auth;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace SOPSC.Api.Services
 {
@@ -24,6 +26,7 @@ namespace SOPSC.Api.Services
         private readonly IEmailService _emailService;
         private readonly string _connectionString;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<UserService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService"/> class.
@@ -32,11 +35,12 @@ namespace SOPSC.Api.Services
         /// <param name="dataProvider">The data provider for interacting with the database.</param>
         /// <param name="configuration">The application configuration for retrieving the connection string.</param>
         public UserService(
-            IAuthenticationService<int> authService, 
-            IDataProvider dataProvider, 
+            IAuthenticationService<int> authService,
+            IDataProvider dataProvider,
             IConfiguration configuration,
             ITokenService tokenService,
             IEmailService emailService,
+            ILogger<UserService> logger,
             IHttpContextAccessor httpContextAccessor)
         {
             _authenticationService = authService;
@@ -46,6 +50,7 @@ namespace SOPSC.Api.Services
             _emailService = emailService;
             _connectionString = configuration.GetConnectionString("DefaultConnection");
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
 #region CREATE
@@ -162,11 +167,14 @@ namespace SOPSC.Api.Services
 
         public int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId)
         {
-            Console.WriteLine("Running GoogleSignIn");
+            _logger.LogInformation($"GoogleSignIn request: {JsonConvert.SerializeObject(model)}");
 
             int userId = 0;
             token = null;
             deviceId = model.DeviceId ?? Guid.NewGuid().ToString();
+
+            try
+            {
 
             // Validate the Google IdToken
             GoogleJsonWebSignature.Payload payload = GoogleJsonWebSignature
@@ -198,7 +206,6 @@ namespace SOPSC.Api.Services
             firstName ??= string.Empty;
             lastName ??= string.Empty;
             string avatarUrl = payload.Picture;
-            Console.WriteLine("userId before SQL query: " + userId);
             // Look up user by email
             string procName = "[dbo].[Users_SelectByEmail]";
             _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
@@ -209,8 +216,6 @@ namespace SOPSC.Api.Services
                 int startingIndex = 0;
                 userId = reader.GetSafeInt32(startingIndex++);
             });
-            // Console.WriteLine($"UserId from DB: {userId}");
-            Console.WriteLine("userId after SQL query: " + userId);
             // If user not found/does not exist, create a new user
             if (userId == 0 || userId == 1)
             {
@@ -258,6 +263,12 @@ namespace SOPSC.Api.Services
             _tokenService.CreateToken(token, userId, deviceId);
 
             return userId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during GoogleSignIn.");
+            throw;
+        }
         }
 
         #endregion
