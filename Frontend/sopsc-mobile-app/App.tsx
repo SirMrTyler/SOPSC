@@ -21,6 +21,7 @@ import AddGroupChatMembers from './src/components/messages/AddGroupChatMembers';
 import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -52,60 +53,62 @@ export default function App() {
   const [user, setUser] = useState<any | null>(null);
 
   return (
-    <NavigationContainer theme={AppTheme}>
-      <StatusBar style="light" translucent={false} />
-      <ImageBackground source={backgroundImage} style={styles.background} imageStyle={{ resizeMode: 'cover' }}>
-        <Stack.Navigator
-          id={undefined}
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: 'transparent' },
-          }}>
-          {user ? (
-            <>
-              <Stack.Screen name="Landing">
-                {(props) => (
-                  <LandingPage 
-                    {...props} 
-                    onLogout={() => setUser(null)} 
-                    user={user}
-                  />
-                )}
-              </Stack.Screen>
-              
-              <Stack.Screen name="Messages" component={Messages} />
-              <Stack.Screen name="UserList" component={UserList} />
-              <Stack.Screen name="GroupChats" component={GroupChats} />
-              <Stack.Screen name="CreateGroupChat" component={CreateGroupChat} />
-              <Stack.Screen name="GroupChatConversation" component={GroupChatConversation} />
-              <Stack.Screen name="AddGroupChatMembers" component={AddGroupChatMembers} />
-              <Stack.Screen name="Conversation" component={Conversation} />
-              <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-              {/* Add other screens here as needed */}
-            </>
-          ) : (
-            <>
-              <Stack.Screen name="Login">
-                {(props) => (
-                  <Login
-                    {...props}
-                    onLoginSuccess={(userData: any) => setUser(userData)}
-                  />
-                )}
-              </Stack.Screen>
-              <Stack.Screen name="Register">
-                {(props) => (
-                  <Register
-                    {...props}
-                    onRegisterSuccess={(userData: any) => setUser(userData)}
-                  />
-                )}
-              </Stack.Screen>
-            </>
-          )}
-        </Stack.Navigator>
-      </ImageBackground>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer theme={AppTheme}>
+        <StatusBar style="light" translucent={false} />
+        <ImageBackground source={backgroundImage} style={styles.background} imageStyle={{ resizeMode: 'cover' }}>
+          <Stack.Navigator
+            id={undefined}
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: 'transparent' },
+            }}>
+            {user ? (
+              <>
+                <Stack.Screen name="Landing">
+                  {(props) => (
+                    <LandingPage 
+                      {...props} 
+                      onLogout={() => setUser(null)} 
+                      user={user}
+                    />
+                  )}
+                </Stack.Screen>
+                
+                <Stack.Screen name="Messages" component={Messages} />
+                <Stack.Screen name="UserList" component={UserList} />
+                <Stack.Screen name="GroupChats" component={GroupChats} />
+                <Stack.Screen name="CreateGroupChat" component={CreateGroupChat} />
+                <Stack.Screen name="GroupChatConversation" component={GroupChatConversation} />
+                <Stack.Screen name="AddGroupChatMembers" component={AddGroupChatMembers} />
+                <Stack.Screen name="Conversation" component={Conversation} />
+                <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+                {/* Add other screens here as needed */}
+              </>
+            ) : (
+              <>
+                <Stack.Screen name="Login">
+                  {(props) => (
+                    <Login
+                      {...props}
+                      onLoginSuccess={(userData: any) => setUser(userData)}
+                    />
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="Register">
+                  {(props) => (
+                    <Register
+                      {...props}
+                      onRegisterSuccess={(userData: any) => setUser(userData)}
+                    />
+                  )}
+                </Stack.Screen>
+              </>
+            )}
+          </Stack.Navigator>
+        </ImageBackground>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
