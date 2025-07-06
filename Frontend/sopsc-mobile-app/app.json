@@ -13,6 +13,11 @@
     ],
     "android": {
       "package": "com.sirmrtyler.sopscmobileapp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a905a038-d584-4e7e-a7f9-cd2091702dc1"
+      }
     }
   }
 }
