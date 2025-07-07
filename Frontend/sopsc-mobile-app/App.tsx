@@ -50,6 +50,7 @@ const AppTheme = {
 };
 
 export default function App() {
+  console.error('App.tsx loaded - JS execution started');
   const [user, setUser] = useState<any | null>(null);
 
   return (
