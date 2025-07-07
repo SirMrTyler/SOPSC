@@ -16,6 +16,7 @@ yarn-error.log*
 .expo-shared/
 dist/
 build/
+PROMPTS.txt
 
 # Android
 android/.gradle/
