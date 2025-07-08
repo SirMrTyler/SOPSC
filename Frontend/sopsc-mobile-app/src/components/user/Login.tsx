@@ -61,8 +61,9 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
         if (error.code === statusCodes.IN_PROGRESS) {
           return;
         }
-        console.error(`Google Sign In Error: ${JSON.stringify(error)}`);
-        alert(`Google Sign In Error: ${JSON.stringify(error)}`);
+        console.error('WebClientId:', process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
+        console.error(`Google Sign In Error: ${JSON.stringify(error.message)}`);
+        alert(`Google Sign In Error: ${JSON.stringify(error.message)}`);
     } finally {
       setGoogleLoading(false);
     }
