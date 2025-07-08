@@ -20,6 +20,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      iosClientId: '203699688611-5uibr1f84mjjdn3b80920r21p8vuohho.apps.googleusercontent.com',
       offlineAccess: true,
     });
   }, []);
