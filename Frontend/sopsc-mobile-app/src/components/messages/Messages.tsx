@@ -5,6 +5,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/messageService.js';
+import { connectToMessagesHub, stopMessagesHub } from '../../services/socketService';
+import { useAuth } from '../../hooks/useAuth';
 import ConversationItem from './ConversationItem';
 import { MessageConversation } from '../../types/messages';
 
@@ -14,6 +16,7 @@ const Messages: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { user } = useAuth();
 
     useEffect(() => {
         const load = async () => {
@@ -33,6 +36,17 @@ const Messages: React.FC = () => {
             }
         };
         load();
+        connectToMessagesHub((msg: any) => {
+            if(msg.senderId === user?.userId || msg.recipientId === user?.userId){
+                // Reload conversations to get updated preview
+                getAll().then(data => {
+                    const list = Array.isArray(data?.items) ? data.items : data;
+                    setMessages(list);
+                    setFilteredMessages(list);
+                }).catch(err => console.error('[Messages] Error refreshing:', err));
+            }
+        });
+        return () => { stopMessagesHub(); };
     }, []);
 
     useEffect(() => {

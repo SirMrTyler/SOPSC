@@ -4,12 +4,15 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { Message } from '../../types/messages';
 import { getConversation, send } from '../../services/messageService.js';
+import { connectToMessagesHub, stopMessagesHub } from '../../services/socketService';
+import { useAuth } from '../../hooks/useAuth';
 import { formatTimestamp } from '../../utils/date';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 
 const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
+    const { user } = useAuth();
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(true);
     const [pageIndex, setPageIndex] = useState(0);
@@ -41,6 +44,15 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
     useEffect(() => {
         load();
+        connectToMessagesHub((msg: Message) => {
+            if(
+                (msg.senderId === conversation.otherUserId && msg.recipientId === user?.userId) ||
+                (msg.senderId === user?.userId && msg.recipientId === conversation.otherUserId)
+            ){
+                setMessages(prev => [msg, ...prev]);
+            }
+        });
+        return () => { stopMessagesHub(); };
     }, []);
 
     const handleEndReached = () => {
@@ -70,7 +82,6 @@ const Conversation: React.FC<Props> = ({ route }) => {
         try {
             await send(conversation.otherUserId, newMessage.trim());
             setNewMessage('');
-            load();
         } catch (err) {
             console.error('[Conversation] Error sending message:', err);
         } finally {
