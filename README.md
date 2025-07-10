@@ -176,7 +176,27 @@ Navigate to your [GitHub Actions tab](https://github.com/SirMrTyler/SOPSC/action
   - No syntax errors exist in the `.yml` workflow
 - If needed, re-run the workflow manually from GitHub using **"Run workflow"**
 
-> NOTE: Only the backend is deployed via this flow. The frontend must be built and deployed separately using Expo EAS.
+
+### Android Dev vs Production Builds
+
+The Expo project defines `development` and `production` build profiles in
+`Frontend/sopsc-mobile-app/eas.json`. Each profile sets the appropriate
+environment variables as described in the
+[Expo docs](https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds).
+
+Use the helper script in `./scripts` which sets `EAS_BUILD_PROFILE` for you:
+
+```bash
+# Development build – installs the app locally
+./scripts/build.sh dev
+
+# Production build with EAS
+./scripts/build.sh prod
+```
+
+Run `./scripts/keystore-fingerprint.sh` to print the SHA‑1 fingerprint of the
+production keystore. Add this fingerprint to your Google OAuth configuration to
+avoid `DEVELOPER_ERROR` during sign‑in.
 
 ---
 
