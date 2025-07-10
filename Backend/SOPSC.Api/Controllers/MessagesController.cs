@@ -6,6 +6,7 @@ using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Models.Requests.Messages;
 using SOPSC.Api.Services.Auth.Interfaces;
+using System.Threading.Tasks;
 
 namespace SOPSC.Api.Controllers
 {
@@ -16,14 +17,17 @@ namespace SOPSC.Api.Controllers
     {
         private readonly IMessagesService _messagesService;
         private readonly IAuthenticationService<int> _authService;
+        private readonly Microsoft.AspNetCore.SignalR.IHubContext<SOPSC.Api.Hubs.MessagesHub> _hubContext;
 
         public MessagesController(
             IMessagesService messagesService,
             IAuthenticationService<int> authService,
+            Microsoft.AspNetCore.SignalR.IHubContext<SOPSC.Api.Hubs.MessagesHub> hubContext,
             ILogger<MessagesController> logger) : base(logger)
         {
             _messagesService = messagesService;
             _authService = authService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -79,7 +83,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ItemResponse<int>> Send(SendMessageRequest model)
+        public async Task<ActionResult<ItemResponse<int>>> Send(SendMessageRequest model)
         {
             int code = 201;
             BaseResponse response = null;
@@ -87,6 +91,17 @@ namespace SOPSC.Api.Controllers
             {
                 int senderId = _authService.GetCurrentUserId();
                 int id = _messagesService.SendMessage(senderId, model.RecipientId, model.MessageContent);
+                var msg = new Message
+                {
+                    MessageId = id,
+                    SenderId = senderId,
+                    RecipientId = model.RecipientId,
+                    MessageContent = model.MessageContent,
+                    SentTimestamp = System.DateTime.UtcNow,
+                    IsRead = false
+                };
+                await _hubContext.Clients.Users(senderId.ToString(), model.RecipientId.ToString())
+                    .SendAsync("ReceiveMessage", msg);
                 response = new ItemResponse<int> { Item = id };
             }
             catch (Exception ex)

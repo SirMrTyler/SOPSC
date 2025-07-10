@@ -73,6 +73,7 @@ try
     });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddSignalR();
 
     builder.Services.RegisterCustomServices(builder.Configuration);
 
@@ -99,6 +100,8 @@ try
 
     // Map the controllers
     app.MapControllers();
+    // Map SignalR hubs
+    app.MapHub<SOPSC.Api.Hubs.MessagesHub>("/hubs/messages");
 
     app.Run();
 }
