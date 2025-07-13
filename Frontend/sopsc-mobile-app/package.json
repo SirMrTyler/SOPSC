@@ -28,9 +28,14 @@
   "name": "sopsc-mobile-app",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "start": "npx expo run",
+    "android": "npx expo run:android",
+    "ios": "npx expo run:ios",
+
+    "dev": "cross-env APP_VARIANT=development npx expo run",
+    "preview": "cross-env APP_VARIANT=preview npx expo run",
+    "prod": "cross-env APP_VARIANT=production npx expo run"
+
   },
   "devDependencies": {
     "@types/react": "~19.0.10",

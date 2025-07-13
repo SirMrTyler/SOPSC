@@ -8,15 +8,17 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com"
+        "APP_VARIANT": "development"
+        //"EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
+        //"EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com"
+        "APP_VARIANT": "preview"
+        //"EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
+        //"EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com"
       }
     },
     "production": {

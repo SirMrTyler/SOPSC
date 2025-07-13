@@ -1,4 +1,4 @@
-package com.sirmrtyler.sopscmobileapp
+package com.sopsc.sopscmobileapp
 
 import android.app.Application
 import android.content.res.Configuration
