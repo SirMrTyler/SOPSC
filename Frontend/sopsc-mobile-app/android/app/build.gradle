@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.sopsc.sopscmobileapp'
+    namespace 'com.sopsc.sopscmobileapp.dev'
     defaultConfig {
-        applicationId 'com.sopsc.sopscmobileapp'
+        applicationId 'com.sopsc.sopscmobileapp.dev'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

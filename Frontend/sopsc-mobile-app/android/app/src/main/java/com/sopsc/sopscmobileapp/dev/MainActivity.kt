@@ -1,4 +1,4 @@
-package com.sopsc.sopscmobileapp
+package com.sopsc.sopscmobileapp.dev
 
 import android.os.Build
 import android.os.Bundle

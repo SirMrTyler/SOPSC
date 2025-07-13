@@ -101,18 +101,18 @@ Detailed steps and dependencies per phase are available in [`ROADMAP.md`](./ROAD
 ```bash
 cd Frontend/sopsc-mobile-app
 yarn install
-yarn start  # Start Expo Dev Client
+yarn dev     # Start Expo Dev Client with development env
 ```
 
-Create a `.env` file in `Frontend/sopsc-mobile-app` pointing the app to your API.
-For Azure deployments the base URL looks like:
+Create environment files in `Frontend/sopsc-mobile-app` for each build variant.
+For development, create `.env.development`:
 
 ```bash
 EXPO_PUBLIC_API_URL=https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net/api/
 EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<your-google-web-client-id>
 ```
 
-Replace the host with the URL printed by your GitHub Actions deployment logs.
+For preview and production builds, create `.env.preview` and `.env.production` with the appropriate values. These files are loaded automatically based on the `APP_VARIANT` set in your npm scripts or EAS profiles.
 
 ### Backend Setup
 

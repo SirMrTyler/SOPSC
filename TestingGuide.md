@@ -62,7 +62,7 @@ yarn add react-native-vector-icons                  : "^10.2.0"
 
 ```
 
-2. Ensure the environment variables are defined. Create a `.env` file in `Frontend/sopsc-mobile-app` with the following values:
+2. Ensure the environment variables are defined. Create a `.env.development` file in `Frontend/sopsc-mobile-app` with the following values:
 
 ```bash
 EXPO_PUBLIC_API_URL=https://localhost:5001/api/
@@ -89,7 +89,7 @@ cd Frontend/sopsc-mobile-app .. unless installed globally
 ngrok http https://localhost:5001
 
 // Then copy the https://abcd-efg-hij-k-lmn.ngrok-free.app Forwarding Address
-// Paste that into .env EXPO_PUBLIC_API_URL and add '/api/' after.
+// Paste that into `.env.development` as EXPO_PUBLIC_API_URL and add '/api/' after.
 ```
 
 // For API //
@@ -118,4 +118,4 @@ npx expo-doctor--verbose    // to diagnose any expo/dependency/build issues.
    - The Expo console should display the returned user information.
    - The backend logs will show `Token validated successfully!` confirming the JWT was issued.
 
-If any errors occur, check that your Google client ID matches the one configured in the Google Developer Console and that the API URL in `.env` points to the running backend.
+If any errors occur, check that your Google client ID matches the one configured in the Google Developer Console and that the API URL in `.env.development` points to the running backend.

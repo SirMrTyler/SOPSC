@@ -8,17 +8,17 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "development"
-        //"EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
-        //"EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com"
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_API_URL": "https://6bead0305bb1.ngrok-free.app/api/",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-kafbmb6h457qcp7i40rsr1rtt293j36i.apps.googleusercontent.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "preview"
-        //"EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
-        //"EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com"
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_API_URL": "https://preview-api.example.com/api/",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "your-preview-client-id.apps.googleusercontent.com"
       }
     },
     "production": {

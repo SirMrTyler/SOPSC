@@ -1,6 +1,21 @@
-const IS_DEV = process.env.APP_VARIANT === 'development';
-const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
-// const EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
+
+const variant = process.env.APP_VARIANT || 'development';
+// Load environment variables from .env and .env.{variant} if present
+const baseEnv = path.resolve(__dirname, '.env');
+const variantEnv = path.resolve(__dirname, `.env.${variant}`);
+if (fs.existsSync(baseEnv)) {
+  dotenv.config({ path: baseEnv });
+}
+if (fs.existsSync(variantEnv)) {
+  dotenv.config({ path: variantEnv });
+}
+
+const IS_DEV = variant === 'development';
+const IS_PREVIEW = variant === 'preview';
+
 const getUniqueIdentifier = () => {
 
     if (IS_DEV) {
