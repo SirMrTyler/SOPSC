@@ -10,9 +10,9 @@ if (!variant) {
 
 let source;
 if (variant === 'development') {
-  source = path.join(__dirname, '..', 'config', 'android', 'google-services.dev.json');
+  source = path.join(__dirname, '..', 'config', 'google-services.dev.json');
 } else if (variant === 'production') {
-  source = path.join(__dirname, '..', 'config', 'android', 'google-services.prod.json');
+  source = path.join(__dirname, '..', 'config', 'google-services.prod.json');
 } else {
   console.error(`Unknown APP_VARIANT: ${variant}`);
   process.exit(1);

@@ -66,6 +66,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
         console.error(
           `\n
           ----------------------------------
+          \nEnvironment: ${process.env.EXPO_PUBLIC_APP_VARIANT}
           \nWebClientId: ${process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}
           \nAndroid Package Name: ${Constants.expoConfig?.android?.package}
           \nGoogle Sign In Error Code: ${error.code}
