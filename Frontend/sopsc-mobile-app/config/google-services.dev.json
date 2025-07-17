@@ -1,3 +1,15 @@
 {
-  "placeholder": "Add development google services config outside repo"
+  "client": [
+    {
+      "client_info": {
+        "package_name": "com.sopsc.sopscmobileapp.dev"
+      },
+      "oauth_client": [
+        {
+          "client_id": "203699688611-ee6rlsbav8mgrkp7sudre4gpebk3q4gm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ]
+    }
+  ]
 }

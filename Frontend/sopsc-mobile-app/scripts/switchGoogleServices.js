@@ -18,6 +18,11 @@ if (variant === 'development') {
   process.exit(1);
 }
 
+if (!fs.existsSync(source)) {
+  console.error(`Missing google-services file for variant '${variant}': ${source}`);
+  process.exit(1);
+}
+
 const dest = path.join(__dirname, '..', 'android', 'app', 'google-services.json');
 fs.copyFileSync(source, dest);
 console.log(`Copied ${source} to ${dest}`);

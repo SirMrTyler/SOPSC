@@ -52,5 +52,5 @@ export default ({ config }) => ({
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
-  }
+  },
 });
