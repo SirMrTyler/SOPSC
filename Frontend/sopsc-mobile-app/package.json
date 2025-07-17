@@ -32,9 +32,9 @@
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
 
-    "dev": "cross-env APP_VARIANT=development npx expo run",
+    "dev": "cross-env APP_VARIANT=development node scripts/switchGoogleServices.js && npx expo run",
     "preview": "cross-env APP_VARIANT=preview npx expo run",
-    "prod": "cross-env APP_VARIANT=production npx expo run"
+    "prod": "cross-env APP_VARIANT=production node scripts/switchGoogleServices.js && npx expo run"
 
   },
   "devDependencies": {
