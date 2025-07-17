@@ -4,6 +4,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import { useAuth } from '../../hooks/useAuth';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App'; // Adjust the import path as necessary
+import Constants from 'expo-constants';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -62,8 +63,15 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
         if (error.code === statusCodes.IN_PROGRESS) {
           return;
         }
-        console.error('WebClientId:', process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
-        console.error(`Google Sign In Error: ${JSON.stringify(error.message)}`);
+        console.error(
+          `\n
+          ----------------------------------
+          \nWebClientId: ${process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}
+          \nAndroid Package Name: ${Constants.expoConfig?.android?.package}
+          \nGoogle Sign In Error Code: ${error.code}
+          \nGoogle Sign In Error Message: ${JSON.stringify(error.message)}
+          \nGoogle Sign In Error: ${JSON.stringify(error)}`
+        );
         alert(`Google Sign In Error: ${JSON.stringify(error.message)}`);
     } finally {
       setGoogleLoading(false);
