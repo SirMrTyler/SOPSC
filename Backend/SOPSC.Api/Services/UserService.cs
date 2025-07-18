@@ -175,100 +175,109 @@ namespace SOPSC.Api.Services
 
             try
             {
-
-            // Validate the Google IdToken
-            GoogleJsonWebSignature.Payload payload = GoogleJsonWebSignature
-                .ValidateAsync(model.IdToken, new GoogleJsonWebSignature.ValidationSettings()
+                var audience = new List<string>
                 {
-                    Audience = new[] { _configuration["GoogleOAuth:WebClientId"] } // Add this in appsettings.json
-                }).GetAwaiter().GetResult();
-
-            // Extract user info from the payload
-            string email = payload.Email;
-            string firstName = payload.GivenName;
-            string lastName = payload.FamilyName;
-
-            // Fallback to the full name if given/family names are missing
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
-            {
-                var nameParts = (payload.Name ?? string.Empty)
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (string.IsNullOrWhiteSpace(firstName) && nameParts.Length > 0)
-                {
-                    firstName = nameParts[0];
-                }
-                if (string.IsNullOrWhiteSpace(lastName) && nameParts.Length > 1)
-                {
-                    lastName = string.Join(" ", nameParts.Skip(1));
-                }
-            }
-
-            firstName ??= string.Empty;
-            lastName ??= string.Empty;
-            string avatarUrl = payload.Picture;
-            // Look up user by email
-            string procName = "[dbo].[Users_SelectByEmail]";
-            _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
-            {
-                paramCollection.AddWithValue("@Email", email);
-            }, delegate (IDataReader reader, short set)
-            {
-                int startingIndex = 0;
-                userId = reader.GetSafeInt32(startingIndex++);
-            });
-            // If user not found/does not exist, create a new user
-            if (userId == 0 || userId == 1)
-            {
-                string insertProc = "[dbo].[Users_InsertGoogle]";
-                _dataProvider.ExecuteNonQuery(insertProc, inputParamMapper: delegate (SqlParameterCollection paramCollection)
-                {
-                    paramCollection.AddWithValue("@FirstName", firstName);
-                    paramCollection.AddWithValue("@LastName", lastName);
-                    paramCollection.AddWithValue("@Email", email);
-                    paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
-                    paramCollection.AddWithValue("@IsGoogleUser", true);
-                    SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
-                    idOut.Direction = ParameterDirection.Output;
-                    paramCollection.Add(idOut);
-                },
-                returnParameters: delegate (SqlParameterCollection returnCollection)
-                {
-                    object oId = returnCollection["@Id"].Value;
-                    int.TryParse(oId.ToString(), out userId);
-                });
-            }
-            else
-            {
-                // Existing user — update profile + active + last login
-                _dataProvider.ExecuteNonQuery("[dbo].[Users_UpdateGoogle]", inputParamMapper: delegate (SqlParameterCollection paramCollection)
-                {
-                    paramCollection.AddWithValue("@UserId", userId);
-                    paramCollection.AddWithValue("@FirstName", firstName);
-                    paramCollection.AddWithValue("@LastName", lastName);
-                    paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
-                    paramCollection.AddWithValue("@IsGoogleUser", true);
-                });
-            }
-            // Generate a JWT token for the user
-            IUserAuthData userAuth = new UserBase
-                {
-                    UserId = userId,
-                    Name = email,
-                    Roles = new List<string> { "Guest" }
+                    _configuration["GoogleOAuth:WebClientId"]
                 };
+                var androidClientIds = _configuration.GetSection("GoogleOAuth:AndroidClientIds").Get<string[]>();
+                if (androidClientIds != null)
+                {
+                    audience.AddRange(androidClientIds);
+                }
 
-            token = _authenticationService.GenerateJwtToken(userAuth, deviceId).GetAwaiter().GetResult();
+                // Validate the Google IdToken
+                GoogleJsonWebSignature.Payload payload = GoogleJsonWebSignature
+                    .ValidateAsync(model.IdToken, new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = audience
+                    }).GetAwaiter().GetResult();
 
-            // Save token to UserTokens table
-            _tokenService.CreateToken(token, userId, deviceId);
+                // Extract user info from the payload
+                string email = payload.Email;
+                string firstName = payload.GivenName;
+                string lastName = payload.FamilyName;
 
-            return userId;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during GoogleSignIn.");
-            throw;
-        }
+                // Fallback to the full name if given/family names are missing
+                if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+                {
+                    var nameParts = (payload.Name ?? string.Empty)
+                        .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (string.IsNullOrWhiteSpace(firstName) && nameParts.Length > 0)
+                    {
+                        firstName = nameParts[0];
+                    }
+                    if (string.IsNullOrWhiteSpace(lastName) && nameParts.Length > 1)
+                    {
+                        lastName = string.Join(" ", nameParts.Skip(1));
+                    }
+                }
+
+                firstName ??= string.Empty;
+                lastName ??= string.Empty;
+                string avatarUrl = payload.Picture;
+                // Look up user by email
+                string procName = "[dbo].[Users_SelectByEmail]";
+                _dataProvider.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@Email", email);
+                }, delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    userId = reader.GetSafeInt32(startingIndex++);
+                });
+                // If user not found/does not exist, create a new user
+                if (userId == 0 || userId == 1)
+                {
+                    string insertProc = "[dbo].[Users_InsertGoogle]";
+                    _dataProvider.ExecuteNonQuery(insertProc, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                    {
+                        paramCollection.AddWithValue("@FirstName", firstName);
+                        paramCollection.AddWithValue("@LastName", lastName);
+                        paramCollection.AddWithValue("@Email", email);
+                        paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
+                        paramCollection.AddWithValue("@IsGoogleUser", true);
+                        SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
+                        idOut.Direction = ParameterDirection.Output;
+                        paramCollection.Add(idOut);
+                    },
+                    returnParameters: delegate (SqlParameterCollection returnCollection)
+                    {
+                        object oId = returnCollection["@Id"].Value;
+                        int.TryParse(oId.ToString(), out userId);
+                    });
+                }
+                else
+                {
+                    // Existing user — update profile + active + last login
+                    _dataProvider.ExecuteNonQuery("[dbo].[Users_UpdateGoogle]", inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                    {
+                        paramCollection.AddWithValue("@UserId", userId);
+                        paramCollection.AddWithValue("@FirstName", firstName);
+                        paramCollection.AddWithValue("@LastName", lastName);
+                        paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
+                        paramCollection.AddWithValue("@IsGoogleUser", true);
+                    });
+                }
+                // Generate a JWT token for the user
+                IUserAuthData userAuth = new UserBase
+                    {
+                        UserId = userId,
+                        Name = email,
+                        Roles = new List<string> { "Guest" }
+                    };
+
+                token = _authenticationService.GenerateJwtToken(userAuth, deviceId).GetAwaiter().GetResult();
+
+                // Save token to UserTokens table
+                _tokenService.CreateToken(token, userId, deviceId);
+
+                return userId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during GoogleSignIn.");
+                throw;
+            }
         }
 
         #endregion
