@@ -7,12 +7,14 @@ import { UserPlusIcon } from 'react-native-heroicons/outline';
 import { GroupChatMessage, GroupChatMember } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
 
 const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const { chatId, name } = route.params;
   const { user } = useAuth();
+  const socketRef = useSocket(user?.userId ?? null);
   const [messages, setMessages] = useState<GroupChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
@@ -41,6 +43,20 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
+    if (!socketRef.current) return;
+    socketRef.current.emit('joinGroup', { groupChatId: chatId });
+    const handler = (msg: GroupChatMessage) => {
+      if (msg.groupChatId === chatId) {
+        setMessages(prev => [...prev, msg]);
+      }
+    };
+    socketRef.current.on('newGroupMessage', handler);
+    return () => {
+      socketRef.current?.off('newGroupMessage', handler);
+    };
+  }, [socketRef.current, chatId]);
+
+  useEffect(() => {
     const fetchMembers = async () => {
       try {
         const data = await getMembers(chatId);
@@ -63,9 +79,20 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     if (!newMessage.trim() || sending) return;
     setSending(true);
     try {
-      await sendMessage(chatId, newMessage.trim());
+      const result = await sendMessage(chatId, newMessage.trim());
+      const message: GroupChatMessage = {
+        messageId: result?.item || Date.now(),
+        groupChatId: chatId,
+        senderId: user?.userId || 0,
+        senderName: user ? `${user.name.firstName} ${user.name.lastName}` : '',
+        messageContent: newMessage.trim(),
+        sentTimestamp: new Date().toISOString(),
+        readTimestamp: null,
+        isRead: false,
+      };
+      setMessages(prev => [...prev, message]);
+      socketRef.current?.emit('sendGroupMessage', message);
       setNewMessage('');
-      load();
     } catch (err) {
       console.error('[GroupChatConversation] Error sending message:', err);
     } finally {

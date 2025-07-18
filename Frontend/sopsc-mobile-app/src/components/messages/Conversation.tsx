@@ -5,11 +5,16 @@ import type { RootStackParamList } from '../../../App';
 import { Message } from '../../types/messages';
 import { getConversation, send } from '../../services/messageService.js';
 import { formatTimestamp } from '../../utils/date';
+import { useAuth } from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 
 const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
+    const { user } = useAuth();
+    const socketRef = useSocket(user?.userId ?? null);
+
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(true);
     const [pageIndex, setPageIndex] = useState(0);
@@ -43,6 +48,19 @@ const Conversation: React.FC<Props> = ({ route }) => {
         load();
     }, []);
 
+    useEffect(() => {
+        if (!socketRef.current) return;
+        const handler = (msg: Message) => {
+            if (msg.senderId === conversation.otherUserId) {
+                setMessages(prev => [...prev, msg]);
+            }
+        };
+        socketRef.current.on('newDirectMessage', handler);
+        return () => {
+            socketRef.current?.off('newDirectMessage', handler);
+        };
+    }, [socketRef.current]);
+
     const handleEndReached = () => {
         if (!loading && messages.length < totalCount) {
         load(pageIndex + 1);
@@ -68,9 +86,21 @@ const Conversation: React.FC<Props> = ({ route }) => {
         if (!newMessage.trim() || sending) return;
         setSending(true);
         try {
-            await send(conversation.otherUserId, newMessage.trim());
+            const result = await send(conversation.otherUserId, newMessage.trim());
+            const message: Message = {
+                messageId: result?.item || Date.now(),
+                senderId: user?.userId || 0,
+                senderName: user ? `${user.name.firstName} ${user.name.lastName}` : '',
+                recipientId: conversation.otherUserId,
+                recipientName: conversation.otherUserName,
+                messageContent: newMessage.trim(),
+                sentTimestamp: new Date().toISOString(),
+                readTimestamp: null,
+                isRead: false,
+            };
+            setMessages(prev => [...prev, message]);
+            socketRef.current?.emit('sendDirectMessage', message);
             setNewMessage('');
-            load();
         } catch (err) {
             console.error('[Conversation] Error sending message:', err);
         } finally {

@@ -77,7 +77,7 @@ Detailed steps and dependencies per phase are available in [`ROADMAP.md`](./ROAD
 | Backend   | ASP.NET Core Web API (C#)          |
 | Database  | Microsoft SQL Server 2022          |
 | Auth      | OAuth 2.0 (Google, Apple, Email)   |
-| Messaging | Expo WebSockets (Realtime comms)   |
+| Messaging | Socket.IO+Node.js (Realtime comms) |
 | Storage   | Expo SecureStore (JWT tokens)      |
 | Email     | SendGrid / SMTP (for verification) |
 
@@ -110,6 +110,7 @@ For development, create `.env.development`:
 ```bash
 EXPO_PUBLIC_API_URL=https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net/api/
 EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<your-google-web-client-id>
+EXPO_PUBLIC_WS_URL=http://localhost:3001
 ```
 
 For preview and production builds, create `.env.preview` and `.env.production` with the appropriate values. These files are loaded automatically based on the `APP_VARIANT` set in your npm scripts or EAS profiles.
@@ -123,6 +124,16 @@ dotnet run
 ```
 
 Requires: .NET 8 SDK
+
+### Realtime Socket Server Setup
+
+```bash
+cd RealtimeServer
+yarn install
+yarn start
+```
+
+This starts a lightweight Node.js server using Socket.IO on port `3001`. Set `EXPO_PUBLIC_WS_URL` in your `.env.*` files if running on a different host.
 
 ### Database Setup
 
