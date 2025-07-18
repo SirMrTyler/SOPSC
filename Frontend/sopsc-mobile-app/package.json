@@ -30,11 +30,12 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npx expo run",
+    "clean": "rm -rf android .expo .gradle build node_modules && yarn install",
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
-    "dev": "cross-env APP_VARIANT=development node scripts/switchGoogleServices.js && npx expo run",
-    "preview": "cross-env APP_VARIANT=preview npx expo run",
-    "prod": "cross-env APP_VARIANT=production node scripts/switchGoogleServices.js && npx expo run"
+    "preandroid": "cross-env APP_VARIANT=development node scripts/switchGoogleServices.js",
+    "dev": "npx expo run:android",
+    "prod": "cross-env APP_VARIANT=production eas build --profile production --platform android && node scripts/switchGoogleServices.js"
   },
   "devDependencies": {
     "@types/react": "~19.0.10",

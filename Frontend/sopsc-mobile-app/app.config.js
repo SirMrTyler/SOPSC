@@ -53,4 +53,9 @@ export default ({ config }) => ({
     ...config.android,
     package: getUniqueIdentifier(),
   },
+  extra: {
+    APP_VARIANT: variant,
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL,
+  }
 });

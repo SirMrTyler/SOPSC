@@ -18,9 +18,12 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   const [password, setPassword] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const { user, loading, signInEmail, signInGoogle } = useAuth();
+
+  const config = Constants.expoConfig?.extra || {};
+  
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      webClientId: config.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
       iosClientId: '203699688611-5uibr1f84mjjdn3b80920r21p8vuohho.apps.googleusercontent.com',
       offlineAccess: true,
     });
@@ -63,11 +66,10 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
         if (error.code === statusCodes.IN_PROGRESS) {
           return;
         }
+        console.log("✅ Runtime Config:", config);
         console.error(
           `\n
           ----------------------------------
-          \nEnvironment: ${process.env.EXPO_PUBLIC_APP_VARIANT}
-          \nWebClientId: ${process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}
           \nAndroid Package Name: ${Constants.expoConfig?.android?.package}
           \nGoogle Sign In Error Code: ${error.code}
           \nGoogle Sign In Error Message: ${JSON.stringify(error.message)}
