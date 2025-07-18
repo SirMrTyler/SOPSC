@@ -22,9 +22,6 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("[useAuth] User:", user)
-  }, [user]);
-  useEffect(() => {
     const tryAutoLogin = async () => {
       const deviceId = await SecureStore.getItemAsync('deviceId');
       if (deviceId) {

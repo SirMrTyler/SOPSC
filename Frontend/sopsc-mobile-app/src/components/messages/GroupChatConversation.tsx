@@ -7,7 +7,7 @@ import { UserPlusIcon } from 'react-native-heroicons/outline';
 import { GroupChatMessage, GroupChatMember } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
-import useSocket from '../../hooks/useSocket';
+import { useSocket } from '../../hooks/useSocket';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
 

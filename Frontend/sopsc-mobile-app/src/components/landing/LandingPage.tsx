@@ -33,7 +33,6 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const publicPostString = "Prayer Requests";
   const inboxString = "Inbox";
   const adminString = "Admin Dashboard";
-  console.log("[LandingPage] user:", user);
 
   // Handle users coming from different API shapes
   const displayName =

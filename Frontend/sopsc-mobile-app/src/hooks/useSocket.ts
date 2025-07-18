@@ -1,32 +1,47 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import * as SecureStore from 'expo-secure-store';
 
-const WS_URL = process.env.EXPO_PUBLIC_WS_URL || 'http://localhost:3001';
+export const useSocket = (user: any) => {
+    const socketRef = useRef<Socket | null>(null);
+    const EXPO_PUBLIC_SOCKET_URL = 'https://192.168.1.175:3001';
 
-export const useSocket = (userId: number | null) => {
-  const socketRef = useRef<Socket | null>(null);
+    useEffect(() => {
+        if (!user || socketRef.current) return;
+        
 
-  useEffect(() => {
-    let mounted = true;
-    const connect = async () => {
-      if (!userId) return;
-      const token = await SecureStore.getItemAsync('token');
-      if (!mounted) return;
-      socketRef.current = io(WS_URL, {
-        autoConnect: true,
-        auth: { token },
-        query: { userId: String(userId) },
-      });
-    };
-    connect();
-    return () => {
-      mounted = false;
-      socketRef.current?.disconnect();
-      socketRef.current = null;
-    };
-  }, [userId]);
+        // Establish socket connection with userId query
+        socketRef.current = io(EXPO_PUBLIC_SOCKET_URL, {
+        query: {
+            userId: user?.userId?.toString(),
+        },
+        transports: ['websocket'],
+        });
 
-  return socketRef;
+        // Connection status logs
+        socketRef.current.on('connect', () => {
+        console.log('[Socket.IO] Connected:', socketRef.current?.id);
+        });
+
+        socketRef.current.on('connect_error', err => {
+        console.error('[Socket.IO] Connection error:', err.message);
+        });
+
+        socketRef.current.on('disconnect', () => {
+        console.warn('[Socket.IO] Disconnected');
+        });
+
+        // Listen for new direct messages
+        socketRef.current.on('newDirectMessage', (msg) => {
+        console.log('[Socket.IO] Received newDirectMessage:', msg);
+        // TODO: forward msg to state, callback, or event emitter
+        });
+
+        // Cleanup
+        return () => {
+        socketRef.current?.disconnect();
+        socketRef.current = null;
+        };
+    }, [user]);
+
+    return socketRef;
 };
-export default useSocket;

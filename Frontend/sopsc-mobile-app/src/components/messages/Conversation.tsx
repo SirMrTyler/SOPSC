@@ -1,12 +1,16 @@
+// Library imports
 import React, {useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
+// Components
 import { Message } from '../../types/messages';
+// Services
 import { getConversation, send } from '../../services/messageService.js';
+// Hooks and Utils
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
-import useSocket from '../../hooks/useSocket';
+import {useSocket} from '../../hooks/useSocket';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 
@@ -83,14 +87,21 @@ const Conversation: React.FC<Props> = ({ route }) => {
     };
 
     const handleSend = async () => {
-        if (!newMessage.trim() || sending) return;
+        if (!newMessage.trim() || sending || !user) return;
         setSending(true);
         try {
             const result = await send(conversation.otherUserId, newMessage.trim());
+            
+            const senderName =
+              'firstName' in user && 'lastName' in user
+                ? `${(user as any).firstName} ${(user as any).lastName}`
+                : user?.email || '';
+            console.log('[Conversation] Sender Name:', senderName);
+            
             const message: Message = {
                 messageId: result?.item || Date.now(),
-                senderId: user?.userId || 0,
-                senderName: user ? `${user.name.firstName} ${user.name.lastName}` : '',
+                senderId: user.userId,
+                senderName: senderName,
                 recipientId: conversation.otherUserId,
                 recipientName: conversation.otherUserName,
                 messageContent: newMessage.trim(),
