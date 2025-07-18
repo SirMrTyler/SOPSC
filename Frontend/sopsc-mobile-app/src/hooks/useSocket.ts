@@ -3,14 +3,14 @@ import { io, Socket } from 'socket.io-client';
 
 export const useSocket = (user: any) => {
     const socketRef = useRef<Socket | null>(null);
-    const EXPO_PUBLIC_SOCKET_URL = 'https://192.168.1.175:3001';
+    const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://192.168.1.175:3001'; // Fallback for local development
 
     useEffect(() => {
         if (!user || socketRef.current) return;
         
 
         // Establish socket connection with userId query
-        socketRef.current = io(EXPO_PUBLIC_SOCKET_URL, {
+        socketRef.current = io(socketUrl, {
         query: {
             userId: user?.userId?.toString(),
         },
