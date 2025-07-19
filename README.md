@@ -110,7 +110,7 @@ For development, create `.env.development`:
 ```bash
 EXPO_PUBLIC_API_URL=https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net/api/
 EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<your-google-web-client-id>
-EXPO_PUBLIC_WS_URL=http://localhost:3001
+EXPO_PUBLIC_SOCKET_URL=http://192.168.1.175:3001
 ```
 
 For preview and production builds, create `.env.preview` and `.env.production` with the appropriate values. These files are loaded automatically based on the `APP_VARIANT` set in your npm scripts or EAS profiles.

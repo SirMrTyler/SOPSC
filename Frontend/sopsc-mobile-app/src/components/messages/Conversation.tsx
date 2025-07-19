@@ -1,5 +1,5 @@
 // Library imports
-import React, {useEffect, useState } from 'react';
+import React, {useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
@@ -20,6 +20,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const socketRef = useSocket(user);
 
     const [messages, setMessages] = useState<Message[]>([]);
+    const flatListRef = useRef<FlatList<Message>>(null);
     const [loading, setLoading] = useState(true);
     const [pageIndex, setPageIndex] = useState(0);
     const pageSize = 20;
@@ -57,6 +58,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         const handler = (msg: Message) => {
             if (msg.senderId === conversation.otherUserId) {
                 setMessages(prev => [...prev, msg]);
+                flatListRef.current?.scrollToEnd({ animated: true });
             }
         };
         socketRef.current.on('newDirectMessage', handler);
@@ -65,6 +67,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
         };
     }, [socketRef.current]);
 
+    useEffect(() => {
+      if (!loading && messages.length > 0) {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }
+    }, [messages]);
     const handleEndReached = () => {
         if (!loading && messages.length < totalCount) {
         load(pageIndex + 1);
@@ -111,6 +118,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
             };
             setMessages(prev => [...prev, message]);
             socketRef.current?.emit('sendDirectMessage', message);
+            flatListRef.current?.scrollToEnd({ animated: true });
             setNewMessage('');
         } catch (err) {
             console.error('[Conversation] Error sending message:', err);
@@ -126,6 +134,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
                 <ActivityIndicator />
             ) : (
                 <FlatList
+                ref={flatListRef}
                 data={messages}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.messageId.toString()}

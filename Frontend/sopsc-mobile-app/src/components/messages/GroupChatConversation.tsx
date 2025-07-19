@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
@@ -23,6 +23,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [members, setMembers] = useState<GroupChatMember[]>([]);
+  const flatListRef = useRef<FlatList<GroupChatMessage>>(null);
 
   const load = async (nextPage = 0) => {
     try {
@@ -48,6 +49,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     const handler = (msg: GroupChatMessage) => {
       if (msg.groupChatId === chatId) {
         setMessages(prev => [...prev, msg]);
+        flatListRef.current?.scrollToEnd({ animated: true });
       }
     };
     socketRef.current.on('newGroupMessage', handler);
@@ -56,6 +58,12 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     };
   }, [socketRef.current, chatId]);
 
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+  
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -92,6 +100,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
       };
       setMessages(prev => [...prev, message]);
       socketRef.current?.emit('sendGroupMessage', message);
+      flatListRef.current?.scrollToEnd({ animated: true });
       setNewMessage('');
     } catch (err) {
       console.error('[GroupChatConversation] Error sending message:', err);
@@ -136,7 +145,13 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
       {loading && messages.length === 0 ? (
         <ActivityIndicator />
       ) : (
-        <FlatList data={messages} renderItem={renderItem} keyExtractor={item => item.messageId.toString()} onEndReached={handleEndReached} />
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={item => item.messageId.toString()}
+          onEndReached={handleEndReached}
+        />
       )}
       <View style={styles.inputContainer}>
         <TextInput style={styles.input} placeholder="Type a message" placeholderTextColor="#999" value={newMessage} onChangeText={setNewMessage} editable={!sending} />
