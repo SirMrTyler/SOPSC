@@ -7,6 +7,7 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
+    Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +29,16 @@ const Messages: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+    const handleDeleteConversation = (otherUserId: number) => {
+        Alert.alert('Delete Conversation', 'Are you sure you want to delete this conversation?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', style: 'destructive', onPress: () => {
+                setMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
+                setFilteredMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
+            }}
+        ]);
+    };
 
     const load = async () => {
         try {
@@ -138,6 +149,7 @@ const Messages: React.FC = () => {
                             onPress={() =>
                                 navigation.navigate('Conversation', { conversation: item })
                             }
+                            onLongPress={() => handleDeleteConversation(item.otherUserId)}
                         />
                     )}
                 />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { getMessages, sendMessage, getMembers } from '../../services/groupChatService';
@@ -23,6 +23,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [members, setMembers] = useState<GroupChatMember[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const flatListRef = useRef<FlatList<GroupChatMessage>>(null);
 
   const load = async (nextPage = 0) => {
@@ -83,6 +84,29 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const deleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    Alert.alert('Delete Messages', 'Delete selected messages?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          setMessages(prev => prev.filter(m => !selectedIds.includes(m.messageId)));
+          setSelectedIds([]);
+        },
+      },
+    ]);
+  };
+
+  const cancelSelection = () => setSelectedIds([]);
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
     setSending(true);
@@ -111,22 +135,41 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
 
   const renderItem = ({ item }: { item: GroupChatMessage }) => {
     const outgoing = user ? item.senderId === user.userId : false;
+    const selected = selectedIds.includes(item.messageId);
     return (
-      <View style={[styles.msgBox, outgoing ? styles.msgRight : styles.msgLeft]}>
-        <Text style={styles.msgAuthor}>{item.senderName}</Text>
-        <Text>{item.messageContent}</Text>
-        <View style={styles.meta}>
-          <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
-          {outgoing && (
-            <Text style={styles.status}>{item.isRead ? ' Read' : ' Unread'}</Text>
-          )}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onLongPress={() => toggleSelect(item.messageId)}
+      >
+        <View
+          style={[
+            styles.msgBox,
+            outgoing ? styles.msgRight : styles.msgLeft,
+            selected && styles.selected,
+          ]}
+        >
+          <Text style={styles.msgAuthor}>{item.senderName}</Text>
+          <Text>{item.messageContent}</Text>
+          <View style={styles.meta}>
+            <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
+            {outgoing && (
+              <Text style={styles.status}>{item.isRead ? ' Read' : ' Unread'}</Text>
+            )}
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.container}>
+      {selectedIds.length > 0 && (
+        <View style={styles.selectionBar}>
+          <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
+          <Button title="Delete" onPress={deleteSelected} />
+          <Button title="Cancel" onPress={cancelSelection} />
+        </View>
+      )}
       <View style={styles.headerRow}>
         <Text style={styles.header}>{name}</Text>
         <TouchableOpacity
@@ -204,6 +247,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     backgroundColor: '#cfe9ff',
   },
+  selected: {
+    opacity: 0.6,
+  },
   msgAuthor: {
     fontWeight: 'bold',
   },
@@ -233,6 +279,16 @@ const styles = StyleSheet.create({
     marginRight: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
+  },
+  selectionBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  selectionText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

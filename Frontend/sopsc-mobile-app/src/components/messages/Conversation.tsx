@@ -1,6 +1,6 @@
 // Library imports
 import React, {useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 // Components
@@ -27,7 +27,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const [totalCount, setTotalCount] = useState(0);
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
-
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    
     const load = async (nextPage = 0) => {
         try {
         const data = await getConversation(conversation.otherUserId, nextPage, pageSize);
@@ -72,24 +73,53 @@ const Conversation: React.FC<Props> = ({ route }) => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }
     }, [messages]);
+    
     const handleEndReached = () => {
         if (!loading && messages.length < totalCount) {
         load(pageIndex + 1);
         }
     };
 
+    const toggleSelect = (id: number) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const deleteSelected = () => {
+        if (selectedIds.length === 0) return;
+        Alert.alert('Delete Messages', 'Delete selected messages?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', style: 'destructive', onPress: () => {
+                setMessages(prev => prev.filter(m => !selectedIds.includes(m.messageId)));
+                setSelectedIds([]);
+            }}
+        ]);
+    };
+
+    const cancelSelection = () => setSelectedIds([]);
+
     const renderItem = ({ item }: { item: Message }) => {
         const incoming = item.senderId === conversation.otherUserId;
+        const selected = selectedIds.includes(item.messageId);
         return (
-        <View style={incoming ? styles.messageLeft : styles.messageRight}>
-            <Text>{item.messageContent}</Text>
-            <View style={styles.meta}>
-            <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
-            {!incoming && (
-                <Text style={styles.status}>{item.isRead ? ' Read' : ' Unread'}</Text>
-            )}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onLongPress={() => toggleSelect(item.messageId)}
+            >
+              <View style={[
+                  incoming ? styles.messageLeft : styles.messageRight,
+                  selected && styles.selected
+                ]}>
+                <Text>{item.messageContent}</Text>
+                <View style={styles.meta}>
+                    <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
+                    {!incoming && (
+                        <Text style={styles.status}>{item.isRead ? ' Read' : ' Unread'}</Text>
+                    )}
+                </View>
             </View>
-        </View>
+        </TouchableOpacity>
         );
     };
 
@@ -129,6 +159,13 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
     return (
         <View style={styles.container}>
+          {selectedIds.length > 0 && (
+                <View style={styles.selectionBar}>
+                    <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
+                    <Button title="Delete" onPress={deleteSelected} />
+                    <Button title="Cancel" onPress={cancelSelection} />
+                </View>
+            )}
             <Text style={styles.header}>Conversation with {conversation.otherUserName}</Text>
             {loading && messages.length === 0 ? (
                 <ActivityIndicator />
@@ -181,6 +218,9 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 4,
   },
+  selected: {
+    opacity: 0.6,
+  },
   meta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -207,6 +247,16 @@ const styles = StyleSheet.create({
     marginRight: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
+  },
+  selectionBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  selectionText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

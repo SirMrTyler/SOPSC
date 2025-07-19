@@ -17,18 +17,19 @@ export const useSocket = (user: any) => {
         transports: ['websocket'],
         });
 
-        // Connection status logs
+        /* Connection status logs
         socketRef.current.on('connect', () => {
         console.log('[Socket.IO] Connected:', socketRef.current?.id);
         });
 
-        socketRef.current.on('connect_error', err => {
-        console.error('[Socket.IO] Connection error:', err.message);
-        });
-
+        
         socketRef.current.on('disconnect', () => {
-        console.warn('[Socket.IO] Disconnected');
-        });
+            console.warn('[Socket.IO] Disconnected');
+            });
+            */
+       socketRef.current.on('connect_error', err => {
+       console.error('[Socket.IO] Connection error:', err.message);
+       });
 
         // Listen for new direct messages
         socketRef.current.on('newDirectMessage', (msg) => {

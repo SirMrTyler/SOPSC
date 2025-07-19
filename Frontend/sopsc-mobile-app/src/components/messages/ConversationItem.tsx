@@ -6,12 +6,13 @@ import defaultAvatar from '../../../assets/images/default-avatar.png';
 interface Props {
   conversation: MessageConversation;
   onPress: () => void;
+  onLongPress?: () => void;
 }
 
-const ConversationItem: React.FC<Props> = ({ conversation, onPress }) => {
+const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress }) => {
   return (
     <View style={styles.messageBox}>
-      <TouchableOpacity style={styles.container} onPress={onPress}>
+      <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
         <Image
           source={conversation.otherUserProfilePicturePath ? { uri: conversation.otherUserProfilePicturePath } : defaultAvatar}
           style={styles.avatar}
