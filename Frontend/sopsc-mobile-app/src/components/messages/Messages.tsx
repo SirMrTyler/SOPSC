@@ -1,39 +1,71 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Text,
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/messageService.js';
 import ConversationItem from './ConversationItem';
-import { MessageConversation } from '../../types/messages';
+import { MessageConversation, Message } from '../../types/messages';
+import { useAuth } from '../../hooks/useAuth';
+import { useSocket } from '../../hooks/useSocket';
+
+const PREVIEW_LENGTH = 50; // Characters to show in preview
 
 const Messages: React.FC = () => {
+    const { user } = useAuth();
+    const socketRef = useSocket(user);
     const [messages, setMessages] = useState<MessageConversation[]>([]);
     const [filteredMessages, setFilteredMessages] = useState<MessageConversation[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await getAll();
-                if (Array.isArray(data?.items)) {
-                    setMessages(data.items);
-                    setFilteredMessages(data.items);
-                } else if (Array.isArray(data)) {
-                    setMessages(data);
-                    setFilteredMessages(data);
-                }
-            } catch (err) {
-                console.error('[Messages] Error fetching messages:', err);
-            } finally {
-                setLoading(false);
+    const load = async () => {
+        try {
+            const data = await getAll();
+            let list: MessageConversation[] = [];
+            if (Array.isArray(data?.items)) {
+                list = data.items as MessageConversation[];
+            } else if (Array.isArray(data)) {
+                list = data as MessageConversation[];
             }
-        };
+            list = list.map(item => ({
+                ...item,
+                mostRecentMessage:
+                    item.mostRecentMessage.length > PREVIEW_LENGTH
+                        ? item.mostRecentMessage.slice(0, PREVIEW_LENGTH) + '...'
+                        : item.mostRecentMessage,
+            }));
+            setMessages(list);
+            setFilteredMessages(list);
+        } catch (err) {
+            console.error('[Messages] Error fetching messages:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         load();
     }, []);
+
+    useEffect(() => {
+        if (!socketRef.current) return;
+        const handler = (_msg: Message) => load();
+        socketRef.current.on('newDirectMessage', handler);
+        return () => {
+            socketRef.current?.off('newDirectMessage', handler);
+        };
+    }, [socketRef.current]);
 
     useEffect(() => {
         const q = query.trim().toLowerCase();
