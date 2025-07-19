@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
-import { getAll } from '../../services/messageService.js';
+import { getAll, deleteConversation } from '../../services/messageService.js';
 import ConversationItem from './ConversationItem';
 import { MessageConversation, Message } from '../../types/messages';
 import { useAuth } from '../../hooks/useAuth';
@@ -33,10 +33,19 @@ const Messages: React.FC = () => {
     const handleDeleteConversation = (otherUserId: number) => {
         Alert.alert('Delete Conversation', 'Are you sure you want to delete this conversation?', [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Delete', style: 'destructive', onPress: () => {
-                setMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
-                setFilteredMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
-            }}
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        await deleteConversation(otherUserId);
+                        setMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
+                        setFilteredMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
+                    } catch (err) {
+                        console.error('[Messages] Error deleting conversation:', err);
+                    }
+                },
+            },
         ]);
     };
 

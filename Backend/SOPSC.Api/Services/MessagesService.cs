@@ -140,5 +140,25 @@ namespace SOPSC.Api.Services
 
             return messageId;
         }
+
+        public void DeleteMessages(string messageIds)
+        {
+            string procName = "[dbo].[Messages_DeleteById]";
+
+            _dataProvider.ExecuteNonQuery(procName,
+                param => { param.AddWithValue("@MessageIds", messageIds); });
+        }
+
+        public void DeleteConversation(int userId, int otherUserId)
+        {
+            string procName = "[dbo].[Messages_DeleteConversation]";
+
+            _dataProvider.ExecuteNonQuery(procName,
+                param =>
+                {
+                    param.AddWithValue("@UserId", userId);
+                    param.AddWithValue("@OtherUserId", otherUserId);
+                });
+        }
     }
 }

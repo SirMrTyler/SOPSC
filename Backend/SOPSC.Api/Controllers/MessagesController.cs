@@ -118,5 +118,47 @@ namespace SOPSC.Api.Controllers
 
             return StatusCode(code, response);
         }
+
+        [HttpDelete]
+        public ActionResult<SuccessResponse> DeleteMessages(DeleteMessagesRequest model)
+        {
+            int code = 200;
+            BaseResponse response = null;
+            try
+            {
+                string ids = string.Join(',', model.MessageIds);
+                _messagesService.DeleteMessages(ids);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
+            return StatusCode(code, response);
+        }
+
+        [HttpDelete("conversation/{otherUserId:int}")]
+        public ActionResult<SuccessResponse> DeleteConversation(int otherUserId)
+        {
+            int code = 200;
+            BaseResponse response = null;
+            try
+            {
+                int userId = _authService.GetCurrentUserId();
+                _messagesService.DeleteConversation(userId, otherUserId);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
+            return StatusCode(code, response);
+        }
     }
 }

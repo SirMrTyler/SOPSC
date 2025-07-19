@@ -17,5 +17,16 @@ namespace SOPSC.Api.Models.Interfaces.Messages
         Paged<Message> GetConversationByUserId(int userId, int otherUserId, int pageIndex, int pageSize);
         void UpdateReadStatus(int messageId, bool isRead);
         int SendMessage(int senderId, int recipientId, string messageContent);
+
+        /// <summary>
+        /// Deletes messages by their ids.
+        /// </summary>
+        /// <param name="messageIds">Comma separated list of message ids.</param>
+        void DeleteMessages(string messageIds);
+
+        /// <summary>
+        /// Deletes an entire conversation between two users.
+        /// </summary>
+        void DeleteConversation(int userId, int otherUserId);
     }
 }

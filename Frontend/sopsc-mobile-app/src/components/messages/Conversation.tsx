@@ -6,7 +6,7 @@ import type { RootStackParamList } from '../../../App';
 // Components
 import { Message } from '../../types/messages';
 // Services
-import { getConversation, send } from '../../services/messageService.js';
+import { getConversation, send, deleteMessages } from '../../services/messageService.js';
 // Hooks and Utils
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
@@ -90,10 +90,19 @@ const Conversation: React.FC<Props> = ({ route }) => {
         if (selectedIds.length === 0) return;
         Alert.alert('Delete Messages', 'Delete selected messages?', [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Delete', style: 'destructive', onPress: () => {
-                setMessages(prev => prev.filter(m => !selectedIds.includes(m.messageId)));
-                setSelectedIds([]);
-            }}
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        await deleteMessages(selectedIds);
+                        setMessages(prev => prev.filter(m => !selectedIds.includes(m.messageId)));
+                        setSelectedIds([]);
+                    } catch (err) {
+                        console.error('[Conversation] Error deleting messages:', err);
+                    }
+                },
+            },
         ]);
     };
 

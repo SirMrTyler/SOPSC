@@ -48,4 +48,35 @@ const send = async (recipientId, messageContent) => {
     };
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
-export { getAll, getConversation, send };
+
+const deleteMessages = async (messageIds) => {
+    const token = await helper.getToken();
+    const deviceId = await helper.getDeviceId();
+    const config = {
+        method: 'DELETE',
+        url: endpoint,
+        data: { messageIds },
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            DeviceId: deviceId,
+        },
+    };
+    return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
+const deleteConversation = async (otherUserId) => {
+    const token = await helper.getToken();
+    const deviceId = await helper.getDeviceId();
+    const config = {
+        method: 'DELETE',
+        url: `${endpoint}/conversation/${otherUserId}`,
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            DeviceId: deviceId,
+        },
+    };
+    return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+export { getAll, getConversation, send, deleteMessages, deleteConversation };
