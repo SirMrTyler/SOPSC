@@ -14,7 +14,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>
 const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const { chatId, name } = route.params;
   const { user } = useAuth();
-  const socketRef = useSocket(user?.userId ?? null);
+  const socketRef = useSocket(user);
   const [messages, setMessages] = useState<GroupChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);

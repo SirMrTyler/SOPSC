@@ -17,7 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
     const { user } = useAuth();
-    const socketRef = useSocket(user?.userId ?? null);
+    const socketRef = useSocket(user);
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(true);
