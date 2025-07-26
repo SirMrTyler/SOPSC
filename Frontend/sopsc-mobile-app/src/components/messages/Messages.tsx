@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     View,
     Text,
@@ -17,13 +17,13 @@ import { getAll, deleteConversation } from '../../services/messageService.js';
 import ConversationItem from './ConversationItem';
 import { MessageConversation, Message } from '../../types/messages';
 import { useAuth } from '../../hooks/useAuth';
-import { useSocket } from '../../hooks/useSocket';
+import { SocketContext } from '../../hooks/SocketContext';
 
 const PREVIEW_LENGTH = 50; // Characters to show in preview
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
-    const socketRef = useSocket(user);
+    const socket = useContext(SocketContext);
     const [messages, setMessages] = useState<MessageConversation[]>([]);
     const [filteredMessages, setFilteredMessages] = useState<MessageConversation[]>([]);
     const [loading, setLoading] = useState(true);
@@ -79,13 +79,13 @@ const Messages: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (!socketRef.current) return;
+        if (!socket) return;
         const handler = (_msg: Message) => load();
-        socketRef.current.on('newDirectMessage', handler);
+        socket.on('newDirectMessage', handler);
         return () => {
-            socketRef.current?.off('newDirectMessage', handler);
+            socket.off('newDirectMessage', handler);
         };
-    }, [socketRef.current]);
+    }, [socket]);
 
     useEffect(() => {
         const q = query.trim().toLowerCase();

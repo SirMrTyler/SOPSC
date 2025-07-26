@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
@@ -7,14 +7,14 @@ import { UserPlusIcon } from 'react-native-heroicons/outline';
 import { GroupChatMessage, GroupChatMember } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
-import { useSocket } from '../../hooks/useSocket';
+import { SocketContext } from '../../hooks/SocketContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
 
 const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const { chatId, name } = route.params;
   const { user } = useAuth();
-  const socketRef = useSocket(user);
+  const socket = useContext(SocketContext);
   const [messages, setMessages] = useState<GroupChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
@@ -45,19 +45,19 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
-    if (!socketRef.current) return;
-    socketRef.current.emit('joinGroup', { groupChatId: chatId });
+    if (!socket) return;
+    socket.emit('joinGroup', { groupChatId: chatId });
     const handler = (msg: GroupChatMessage) => {
       if (msg.groupChatId === chatId) {
         setMessages(prev => [...prev, msg]);
         flatListRef.current?.scrollToEnd({ animated: true });
       }
     };
-    socketRef.current.on('newGroupMessage', handler);
+    socket.on('newGroupMessage', handler);
     return () => {
-      socketRef.current?.off('newGroupMessage', handler);
+      socket.off('newGroupMessage', handler);
     };
-  }, [socketRef.current, chatId]);
+  }, [socket, chatId]);
 
   useEffect(() => {
     if (!loading && messages.length > 0) {
@@ -123,7 +123,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
         isRead: false,
       };
       setMessages(prev => [...prev, message]);
-      socketRef.current?.emit('sendGroupMessage', message);
+      socket?.emit('sendGroupMessage', message);
       flatListRef.current?.scrollToEnd({ animated: true });
       setNewMessage('');
     } catch (err) {

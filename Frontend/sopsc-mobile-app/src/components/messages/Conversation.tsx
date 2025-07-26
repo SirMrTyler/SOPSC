@@ -1,5 +1,5 @@
 // Library imports
-import React, {useEffect, useState, useRef } from 'react';
+import React, {useEffect, useState, useRef, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
@@ -10,14 +10,14 @@ import { getConversation, send, deleteMessages } from '../../services/messageSer
 // Hooks and Utils
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
-import {useSocket} from '../../hooks/useSocket';
+import { SocketContext } from '../../hooks/SocketContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 
 const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
     const { user } = useAuth();
-    const socketRef = useSocket(user);
+    const socket = useContext(SocketContext);
 
     const [messages, setMessages] = useState<Message[]>([]);
     const flatListRef = useRef<FlatList<Message>>(null);
@@ -55,18 +55,18 @@ const Conversation: React.FC<Props> = ({ route }) => {
     }, []);
 
     useEffect(() => {
-        if (!socketRef.current) return;
+        if (!socket) return;
         const handler = (msg: Message) => {
             if (msg.senderId === conversation.otherUserId) {
                 setMessages(prev => [...prev, msg]);
                 flatListRef.current?.scrollToEnd({ animated: true });
             }
         };
-        socketRef.current.on('newDirectMessage', handler);
+        socket.on('newDirectMessage', handler);
         return () => {
-            socketRef.current?.off('newDirectMessage', handler);
+            socket.off('newDirectMessage', handler);
         };
-    }, [socketRef.current]);
+    }, [socket]);
 
     useEffect(() => {
       if (!loading && messages.length > 0) {
@@ -156,7 +156,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
                 isRead: false,
             };
             setMessages(prev => [...prev, message]);
-            socketRef.current?.emit('sendDirectMessage', message);
+            socket?.emit('sendDirectMessage', message);
             flatListRef.current?.scrollToEnd({ animated: true });
             setNewMessage('');
         } catch (err) {
