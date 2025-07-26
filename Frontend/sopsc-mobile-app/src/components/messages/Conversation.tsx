@@ -6,7 +6,7 @@ import type { RootStackParamList } from '../../../App';
 // Components
 import { Message } from '../../types/messages';
 // Services
-import { getConversation, send, deleteMessages } from '../../services/messageService.js';
+import { getConversation, send, deleteMessages, updateReadStatus } from '../../services/messageService.js';
 // Hooks and Utils
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
@@ -56,10 +56,15 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
     useEffect(() => {
         if (!socket) return;
-        const handler = (msg: Message) => {
+        const handler = async (msg: Message) => {
             if (msg.senderId === conversation.otherUserId) {
-                setMessages(prev => [...prev, msg]);
-                flatListRef.current?.scrollToEnd({ animated: true });
+              setMessages(prev => [...prev, {...msg, isRead: true}]);
+              flatListRef.current?.scrollToEnd({ animated: true });
+              try {
+                await updateReadStatus(msg.messageId, true);
+              } catch (err) {
+                console.error('[Conversation] Error updating read status:', err);
+              }
             }
         };
         socket.on('newDirectMessage', handler);

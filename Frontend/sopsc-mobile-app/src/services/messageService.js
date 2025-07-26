@@ -79,4 +79,20 @@ const deleteConversation = async (otherUserId) => {
     };
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
-export { getAll, getConversation, send, deleteMessages, deleteConversation };
+
+const updateReadStatus = async (messageId, isRead) => {
+    const token = await helper.getToken();
+    const deviceId = await helper.getDeviceId();
+    const config = {
+        method: 'PUT',
+        url: `${endpoint}/${messageId}/read?isRead=${isRead}`,
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            DeviceId: deviceId,
+        },
+    };
+    return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
+export { getAll, getConversation, send, deleteMessages, deleteConversation, updateReadStatus };

@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     Alert
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
@@ -29,6 +29,7 @@ const Messages: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
 
     const handleDeleteConversation = (otherUserId: number) => {
         Alert.alert('Delete Conversation', 'Are you sure you want to delete this conversation?', [
@@ -73,6 +74,12 @@ const Messages: React.FC = () => {
             setLoading(false);
         }
     };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            load();
+        }, [])
+    );
 
     useEffect(() => {
         load();
