@@ -22,7 +22,7 @@ import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SocketProvider } from './src/context/SocketProvider';
+import { SocketProvider } from './src/hooks/SocketContext';
 
 export type RootStackParamList = {
   Login: undefined;
