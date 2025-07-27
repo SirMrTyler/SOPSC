@@ -29,24 +29,49 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const [sending, setSending] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     
+    const uniqueById = (list: Message[]) => {
+        const seen = new Set<number>();
+        return list.filter(m => {
+            if (seen.has(m.messageId)) return false;
+            seen.add(m.messageId);
+            return true;
+        });
+    };
+
     const load = async (nextPage = 0) => {
         try {
         const data = await getConversation(conversation.otherUserId, nextPage, pageSize);
-        const paged = data?.item;
-        if (paged) {
-            setTotalCount(paged.totalCount);
-            setMessages(prev => nextPage === 0 ? paged.pagedItems : [...prev, ...paged.pagedItems]);
-            setPageIndex(nextPage);
-        }
+          const paged = data?.item;
+          if (paged) {
+              let items: Message[] = await Promise.all(
+                  paged.pagedItems.map(async m => {
+                      if (!m.isRead && m.senderId === conversation.otherUserId) {
+                          try {
+                              await updateReadStatus(m.messageId, true);
+                          } catch (err) {
+                              console.error('[Conversation] Error updating read status:', err);
+                          }
+                          return { ...m, isRead: true };
+                      }
+                      return m;
+                  })
+              );
+              setTotalCount(paged.totalCount);
+              setMessages(prev => {
+                  const combined = nextPage === 0 ? items : [...prev, ...items];
+                  return uniqueById(combined);
+              });
+              setPageIndex(nextPage);
+          }
         } catch (err) {
-        if (err?.response?.status === 404) {
-            setMessages([]);
-            setTotalCount(0);
-        } else {
-            console.error('[Conversation] Error fetching messages:', err);
-        }
+          if (err?.response?.status === 404) {
+              setMessages([]);
+              setTotalCount(0);
+          } else {
+              console.error('[Conversation] Error fetching messages:', err);
+          }
         } finally {
-        setLoading(false);
+          setLoading(false);
         }
     };
 
@@ -58,7 +83,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
         if (!socket) return;
         const handler = async (msg: Message) => {
             if (msg.senderId === conversation.otherUserId) {
-              setMessages(prev => [...prev, {...msg, isRead: true}]);
+              setMessages(prev => {
+                const combined = [...prev, { ...msg, isRead: true }];
+                return uniqueById(combined);
+              });
               flatListRef.current?.scrollToEnd({ animated: true });
               try {
                 await updateReadStatus(msg.messageId, true);
@@ -160,7 +188,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
                 readTimestamp: null,
                 isRead: false,
             };
-            setMessages(prev => [...prev, message]);
+            setMessages(prev => {
+              const combined = [...prev, message];
+              return uniqueById(combined);
+            });
             socket?.emit('sendDirectMessage', message);
             flatListRef.current?.scrollToEnd({ animated: true });
             setNewMessage('');
