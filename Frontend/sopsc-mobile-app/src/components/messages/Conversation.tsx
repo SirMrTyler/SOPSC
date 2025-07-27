@@ -18,7 +18,6 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
     const { user } = useAuth();
     const socket = useContext(SocketContext);
-
     const [messages, setMessages] = useState<Message[]>([]);
     const flatListRef = useRef<FlatList<Message>>(null);
     const [loading, setLoading] = useState(true);
@@ -30,12 +29,12 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     
     const uniqueById = (list: Message[]) => {
-        const seen = new Set<number>();
-        return list.filter(m => {
-            if (seen.has(m.messageId)) return false;
-            seen.add(m.messageId);
-            return true;
-        });
+      const seen = new Set<number>();
+      return list.filter(m => {
+        if (seen.has(m.messageId)) return false;
+        seen.add(m.messageId);
+        return true;
+      });
     };
 
     const load = async (nextPage = 0) => {
@@ -44,29 +43,34 @@ const Conversation: React.FC<Props> = ({ route }) => {
           const paged = data?.item;
           if (paged) {
               let items: Message[] = await Promise.all(
-                  paged.pagedItems.map(async m => {
-                      if (!m.isRead && m.senderId === conversation.otherUserId) {
-                          try {
-                              await updateReadStatus(m.messageId, true);
-                          } catch (err) {
-                              console.error('[Conversation] Error updating read status:', err);
-                          }
-                          return { ...m, isRead: true };
-                      }
-                      return m;
-                  })
+                paged.pagedItems.map(async m => {
+                  if (!m.isRead && m.senderId === conversation.otherUserId) {
+                    try {
+                      await updateReadStatus(m.messageId, true);
+                      socket?.emit('directMessageRead', {
+                        messageId: m.messageId,
+                        senderId: m.senderId,
+                        readerId: user?.userId,
+                      });
+                    } catch (err) {
+                        console.error('[Conversation] Error updating read status:', err);
+                    }
+                    return { ...m, isRead: true };
+                  }
+                  return m;
+                })
               );
               setTotalCount(paged.totalCount);
               setMessages(prev => {
-                  const combined = nextPage === 0 ? items : [...prev, ...items];
-                  return uniqueById(combined);
+                const combined = nextPage === 0 ? items : [...prev, ...items];
+                return uniqueById(combined);
               });
               setPageIndex(nextPage);
           }
         } catch (err) {
           if (err?.response?.status === 404) {
-              setMessages([]);
-              setTotalCount(0);
+            setMessages([]);
+            setTotalCount(0);
           } else {
               console.error('[Conversation] Error fetching messages:', err);
           }
@@ -80,26 +84,46 @@ const Conversation: React.FC<Props> = ({ route }) => {
     }, []);
 
     useEffect(() => {
-        if (!socket) return;
-        const handler = async (msg: Message) => {
-            if (msg.senderId === conversation.otherUserId) {
-              setMessages(prev => {
-                const combined = [...prev, { ...msg, isRead: true }];
-                return uniqueById(combined);
-              });
-              flatListRef.current?.scrollToEnd({ animated: true });
-              try {
-                await updateReadStatus(msg.messageId, true);
-              } catch (err) {
-                console.error('[Conversation] Error updating read status:', err);
-              }
-            }
-        };
-        socket.on('newDirectMessage', handler);
-        return () => {
-            socket.off('newDirectMessage', handler);
-        };
+      if (!socket) return;
+      const handler = async (msg: Message) => {
+        if (msg.senderId === conversation.otherUserId) {
+          setMessages(prev => {
+            const combined = [...prev, { ...msg, isRead: true }];
+            return uniqueById(combined);
+          });
+          flatListRef.current?.scrollToEnd({ animated: true });
+          try {
+            await updateReadStatus(msg.messageId, true);
+            socket?.emit('directMessageRead', {
+              messageId: msg.messageId,
+              senderId: msg.senderId,
+              readerId: user?.userId,
+            });
+          } catch (err) {
+            console.error('[Conversation] Error updating read status:', err);
+          }
+        }
+      };
+      socket.on('newDirectMessage', handler);
+      return () => {
+          socket.off('newDirectMessage', handler);
+      };
     }, [socket]);
+
+    useEffect(() => {
+        if (!socket) return;
+        const handler = (payload: { messageId: number; senderId: number; readerId: number }) => {
+          if (payload.senderId === user?.userId && payload.readerId === conversation.otherUserId) {
+            setMessages(prev => prev.map(m =>
+                m.messageId === payload.messageId ? { ...m, isRead: true } : m
+            ));
+          }
+        };
+        socket.on('directMessageRead', handler);
+        return () => {
+            socket.off('directMessageRead', handler);
+        };
+    }, [socket, user, conversation.otherUserId]);
 
     useEffect(() => {
       if (!loading && messages.length > 0) {

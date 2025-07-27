@@ -22,6 +22,7 @@ io.on('connection', socket => {
     console.log(`[socket.io] Joined room user:${userId}`);
   }
 
+  // Handle direct message
   socket.on('sendDirectMessage', payload => {
     const { recipientId, senderId, messageContent } = payload;
     console.log(`[sendDirectMessage] ${senderId} → ${recipientId}: ${messageContent}`);
@@ -31,6 +32,7 @@ io.on('connection', socket => {
     }
   });
 
+  // Handle group message
   socket.on('sendGroupMessage', payload => {
     const { groupChatId } = payload;
     console.log(`[sendGroupMessage] Group ${groupChatId}: ${payload.messageContent}`);
@@ -39,6 +41,16 @@ io.on('connection', socket => {
     }
   });
 
+  // Handle direct message read status
+  socket.on('directMessageRead', payload => {
+    const { messageId, senderId, readerId } = payload;
+    console.log(`[directMessageRead] messageId=${messageId} read by ${readerId}`);
+    if (senderId) {
+      io.to(`user:${senderId}`).emit('directMessageRead', payload);
+    }
+  });
+
+  // Handle group join
   socket.on('joinGroup', ({ groupChatId }) => {
     console.log(`[joinGroup] socket.id=${socket.id} joining group:${groupChatId}`);
     if (groupChatId) {
