@@ -140,11 +140,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
     useEffect(() => {
         if (!socket) return;
         const handler = (payload: { messageId: number; senderId: number; readerId: number }) => {
-          if (payload.senderId === user?.userId && payload.readerId === conversation.otherUserId) {
-            setMessages(prev => prev.map(m =>
-                m.messageId === payload.messageId ? { ...m, isRead: true } : m
-            ));
-          }
+            if (payload.senderId === user?.userId) {
+                setMessages(prev => prev.map(m =>
+                    m.messageId === payload.messageId ? { ...m, isRead: true } : m
+                ));
+            }
         };
         socket.on('directMessageRead', handler);
         return () => {
