@@ -8,6 +8,7 @@ import { GroupChatMessage, GroupChatMember } from '../../types/groupChat';
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
 import { SocketContext } from '../../hooks/SocketContext';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'>;
 
@@ -162,45 +163,47 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {selectedIds.length > 0 && (
-        <View style={styles.selectionBar}>
-          <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
-          <Button title="Delete" onPress={deleteSelected} />
-          <Button title="Cancel" onPress={cancelSelection} />
+    <ScreenContainer showBottomBar={false} showBack title={name}>
+      <View style={styles.container}>
+        {selectedIds.length > 0 && (
+          <View style={styles.selectionBar}>
+            <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
+            <Button title="Delete" onPress={deleteSelected} />
+            <Button title="Cancel" onPress={cancelSelection} />
+          </View>
+        )}
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>{name}</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('AddGroupChatMembers', { chatId })}
+          >
+            <UserPlusIcon size={24} color="white" />
+          </TouchableOpacity>
         </View>
-      )}
-      <View style={styles.headerRow}>
-        <Text style={styles.header}>{name}</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('AddGroupChatMembers', { chatId })}
-        >
-          <UserPlusIcon size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-      {members.length > 0 && (
-        <View style={styles.memberBox}>
-          <Text style={styles.memberText}>
-            Members: {members.map(m => `${m.firstName} ${m.lastName}`).join(', ')}
-          </Text>
+        {members.length > 0 && (
+          <View style={styles.memberBox}>
+            <Text style={styles.memberText}>
+              Members: {members.map(m => `${m.firstName} ${m.lastName}`).join(', ')}
+            </Text>
+          </View>
+        )}
+        {loading && messages.length === 0 ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderItem}
+            keyExtractor={item => item.messageId.toString()}
+            onEndReached={handleEndReached}
+          />
+        )}
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} placeholder="Type a message" placeholderTextColor="#999" value={newMessage} onChangeText={setNewMessage} editable={!sending} />
+          <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
         </View>
-      )}
-      {loading && messages.length === 0 ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderItem}
-          keyExtractor={item => item.messageId.toString()}
-          onEndReached={handleEndReached}
-        />
-      )}
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Type a message" placeholderTextColor="#999" value={newMessage} onChangeText={setNewMessage} editable={!sending} />
-        <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
       </View>
-    </View>
+    </ScreenContainer>
   );
 };
 

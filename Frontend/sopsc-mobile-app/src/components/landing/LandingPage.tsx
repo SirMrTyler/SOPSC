@@ -9,7 +9,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../hooks/useAuth';
 import * as helpers from './landingPageHelpers';
 import type { RootStackParamList } from '../../../App';
-
+import ScreenContainer from '../navigation/ScreenContainer';
 // Icon imports lazy loaded to reduce initial bundle size
 const HomeIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.HomeIcon })));
 const ReportIcon = lazy(() => import('react-native-heroicons/outline').then(m => ({ default: m.DocumentTextIcon })));
@@ -44,7 +44,7 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
     user?.Email ||
     "";
 
-  return user ? (
+  const content = user ? (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.overlay}>
         <Text style={styles.title}>{welcomeString + ' ' + displayName}</Text>
@@ -105,10 +105,12 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
       </View>
     </ScrollView>
   ) : (
-      <View style={styles.container}>
-        <Text style={styles.title}>Login</Text>
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
+    </View>
   );
+
+  return <ScreenContainer>{content}</ScreenContainer>;
 };
 
 const styles = StyleSheet.create({

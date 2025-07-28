@@ -5,6 +5,7 @@ import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/userService';
 import { addMembers } from '../../services/groupChatService';
 import { UserResult } from '../../types/user';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 const roleNames: Record<number, string> = {
   1: 'Developer',
@@ -75,23 +76,25 @@ const AddGroupChatMembers: React.FC<Props> = ({ route, navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchRow}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder='Search users...'
-          placeholderTextColor='#DED3C4'
-          value={query}
-          onChangeText={setQuery}
-        />
+    <ScreenContainer>
+      <View style={styles.container}>
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder='Search users...'
+            placeholderTextColor='#DED3C4'
+            value={query}
+            onChangeText={setQuery}
+          />
+        </View>
+        {loading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList data={results} keyExtractor={item => item.userId.toString()} renderItem={renderItem} />
+        )}
+        <Button title='Add Members' onPress={handleAdd} disabled={selected.length === 0} />
       </View>
-      {loading ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList data={results} keyExtractor={item => item.userId.toString()} renderItem={renderItem} />
-      )}
-      <Button title='Add Members' onPress={handleAdd} disabled={selected.length === 0} />
-    </View>
+    </ScreenContainer>
   );
 };
 

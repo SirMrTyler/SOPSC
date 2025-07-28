@@ -2,6 +2,7 @@
 import React, {useEffect, useState, useRef, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../App';
 // Components
 import { Message } from '../../types/messages';
@@ -11,6 +12,7 @@ import { getConversation, send, deleteMessages, updateReadStatus } from '../../s
 import { formatTimestamp } from '../../utils/date';
 import { useAuth } from '../../hooks/useAuth';
 import { SocketContext } from '../../hooks/SocketContext';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
 
@@ -37,51 +39,76 @@ const Conversation: React.FC<Props> = ({ route }) => {
       });
     };
 
+    const markAllRead = async (list: Message[]) => {
+      const unread = list.filter(m => !m.isRead && m.senderId === conversation.otherUserId);
+      if (unread.length === 0) return;
+      for (const m of unread) {
+        try {
+          await updateReadStatus(m.messageId, true);
+          socket?.emit('directMessageRead', {
+            messageId: m.messageId,
+            senderId: m.senderId,
+            readerId: user?.userId,
+          });
+        } catch (err) {
+            console.error('[Conversation] Error updating read status:', err);
+        }
+      }
+      setMessages(prev => prev.map(m => unread.some(u => u.messageId === m.messageId) ? { ...m, isRead: true } : m));
+    };
+
     const load = async (nextPage = 0) => {
         try {
         const data = await getConversation(conversation.otherUserId, nextPage, pageSize);
-          const paged = data?.item;
-          if (paged) {
-              let items: Message[] = await Promise.all(
-                paged.pagedItems.map(async m => {
-                  if (!m.isRead && m.senderId === conversation.otherUserId) {
-                    try {
-                      await updateReadStatus(m.messageId, true);
-                      socket?.emit('directMessageRead', {
-                        messageId: m.messageId,
-                        senderId: m.senderId,
-                        readerId: user?.userId,
-                      });
-                    } catch (err) {
-                        console.error('[Conversation] Error updating read status:', err);
-                    }
-                    return { ...m, isRead: true };
-                  }
-                  return m;
-                })
-              );
-              setTotalCount(paged.totalCount);
-              setMessages(prev => {
-                const combined = nextPage === 0 ? items : [...prev, ...items];
-                return uniqueById(combined);
-              });
-              setPageIndex(nextPage);
-          }
-        } catch (err) {
-          if (err?.response?.status === 404) {
-            setMessages([]);
-            setTotalCount(0);
-          } else {
-              console.error('[Conversation] Error fetching messages:', err);
-          }
-        } finally {
-          setLoading(false);
+        const paged = data?.item;
+        if (paged) {
+          let items: Message[] = await Promise.all(
+            paged.pagedItems.map(async m => {
+              if (!m.isRead && m.senderId === conversation.otherUserId) {
+                try {
+                  await updateReadStatus(m.messageId, true);
+                  socket?.emit('directMessageRead', {
+                    messageId: m.messageId,
+                    senderId: m.senderId,
+                    readerId: user?.userId,
+                  });
+                } catch (err) {
+                    console.error('[Conversation] Error updating read status:', err);
+                }
+                return { ...m, isRead: true };
+              }
+              return m;
+            })
+          );
+            setTotalCount(paged.totalCount);
+            setMessages(prev => {
+              const combined = nextPage === 0 ? items : [...prev, ...items];
+              return uniqueById(combined);
+            });
+            setPageIndex(nextPage);
         }
+      } catch (err) {
+        if (err?.response?.status === 404) {
+          setMessages([]);
+          setTotalCount(0);
+        } else {
+            console.error('[Conversation] Error fetching messages:', err);
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
     useEffect(() => {
         load();
     }, []);
+    useFocusEffect(
+      React.useCallback(() => {
+        if (messages.length > 0) {
+            markAllRead(messages);
+        }
+      }, [messages])
+    );
 
     useEffect(() => {
       if (!socket) return;
@@ -227,38 +254,40 @@ const Conversation: React.FC<Props> = ({ route }) => {
     };
 
     return (
+      <ScreenContainer showBottomBar={false} showBack title={conversation.otherUserName}>
         <View style={styles.container}>
           {selectedIds.length > 0 && (
-                <View style={styles.selectionBar}>
-                    <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
-                    <Button title="Delete" onPress={deleteSelected} />
-                    <Button title="Cancel" onPress={cancelSelection} />
-                </View>
-            )}
-            <Text style={styles.header}>Conversation with {conversation.otherUserName}</Text>
-            {loading && messages.length === 0 ? (
-                <ActivityIndicator />
-            ) : (
-                <FlatList
-                ref={flatListRef}
-                data={messages}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.messageId.toString()}
-                onEndReached={handleEndReached}
-                />
-            )}
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Type a message"
-                    placeholderTextColor={'#999'}
-                    value={newMessage}
-                    onChangeText={setNewMessage}
-                    editable={!sending}
-                />
-                <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
-            </View>
+              <View style={styles.selectionBar}>
+                <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
+                <Button title="Delete" onPress={deleteSelected} />
+                <Button title="Cancel" onPress={cancelSelection} />
+              </View>
+          )}
+          {/* title handled by top bar */}
+          {loading && messages.length === 0 ? (
+              <ActivityIndicator />
+          ) : (
+              <FlatList
+              ref={flatListRef}
+              data={messages}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.messageId.toString()}
+              onEndReached={handleEndReached}
+              />
+          )}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Type a message"
+              placeholderTextColor={'#999'}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              editable={!sending}
+            />
+            <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
+          </View>
         </View>
+      </ScreenContainer>
     );
 };
 

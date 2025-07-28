@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { create } from '../../services/groupChatService';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 const CreateGroupChat: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -25,16 +26,18 @@ const CreateGroupChat: React.FC = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <TextInput
-                style={styles.input}
-                placeholder="Group name"
-                placeholderTextColor="#999"
-                value={name}
-                onChangeText={setName}
-            />
-            <Button title="Create" onPress={handleCreate} disabled={saving || !name.trim()} />
-        </View>
+        <ScreenContainer>
+            <View style={styles.container}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Group name"
+                    placeholderTextColor="#999"
+                    value={name}
+                    onChangeText={setName}
+                />
+                <Button title="Create" onPress={handleCreate} disabled={saving || !name.trim()} />
+            </View>
+        </ScreenContainer>
     );
 };
 

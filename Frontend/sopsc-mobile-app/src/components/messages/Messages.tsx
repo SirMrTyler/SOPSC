@@ -18,6 +18,7 @@ import ConversationItem from './ConversationItem';
 import { MessageConversation, Message } from '../../types/messages';
 import { useAuth } from '../../hooks/useAuth';
 import { SocketContext } from '../../hooks/SocketContext';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 const PREVIEW_LENGTH = 50; // Characters to show in preview
 
@@ -30,6 +31,14 @@ const Messages: React.FC = () => {
     const [query, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+    const uniqueById = (list: MessageConversation[]) => {
+        const seen = new Set<number>();
+        return list.filter(item => {
+            if (seen.has(item.messageId)) return false;
+            seen.add(item.messageId);
+            return true;
+        });
+    };
 
     const handleDeleteConversation = (otherUserId: number) => {
         Alert.alert('Delete Conversation', 'Are you sure you want to delete this conversation?', [
@@ -66,6 +75,7 @@ const Messages: React.FC = () => {
                         ? item.mostRecentMessage.slice(0, PREVIEW_LENGTH) + '...'
                         : item.mostRecentMessage,
             }));
+            list = uniqueById(list);
             setMessages(list);
             setFilteredMessages(list);
         } catch (err) {
@@ -93,7 +103,28 @@ const Messages: React.FC = () => {
             socket.off('newDirectMessage', handler);
         };
     }, [socket]);
-
+        
+    useEffect(() => {
+        if (!socket) return;
+        const handler = (payload: { messageId: number; senderId: number; readerId: number }) => {
+            if (payload.senderId === user?.userId) {
+                setMessages(prev => {
+                    const updated = prev.map(c =>
+                        c.otherUserId === payload.readerId
+                            ? { ...c, isRead: true, numMessages: Math.max(0, c.numMessages - 1) }
+                            : c
+                    );
+                    setFilteredMessages(updated);
+                    return updated;
+                });
+            }
+        };
+        socket.on('directMessageRead', handler);
+        return () => {
+            socket.off('directMessageRead', handler);
+        };
+    }, [socket, user]);
+    
     useEffect(() => {
         const q = query.trim().toLowerCase();
         if(!q) {
@@ -114,63 +145,65 @@ const Messages: React.FC = () => {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.headerRow}>
+        <ScreenContainer>
+            <View style={styles.container}>
+                <View style={styles.headerRow}>
 
-                {/* Title | Header for messages */}
-                <Text style={styles.header}>Messages</Text>
+                    {/* Title | Header for messages */}
+                    <Text style={styles.header}>Messages</Text>
 
-                {/* Row container for group chat and create conversation icons */}
-                <View style={styles.iconRow}>
-                    {/* Group chat icon, opens list of group chats */}
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={() => navigation.navigate('GroupChats')}
-                    >
-                        <UsersIcon size={28} color="white" />
-                    </TouchableOpacity>
+                    {/* Row container for group chat and create conversation icons */}
+                    <View style={styles.iconRow}>
+                        {/* Group chat icon, opens list of group chats */}
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={() => navigation.navigate('GroupChats')}
+                        >
+                            <UsersIcon size={28} color="white" />
+                        </TouchableOpacity>
 
-                    {/* Create conversation icon, navigates to UserList for finding and selecting users */}
-                    <TouchableOpacity 
-                        style={styles.iconButton} 
-                        onPress={() => navigation.navigate('UserList')}
-                    >
-                        <PencilSquareIcon size={28} color="white" />
-                    </TouchableOpacity>
+                        {/* Create conversation icon, navigates to UserList for finding and selecting users */}
+                        <TouchableOpacity 
+                            style={styles.iconButton} 
+                            onPress={() => navigation.navigate('UserList')}
+                        >
+                            <PencilSquareIcon size={28} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                    
                 </View>
-                
-            </View>
-            <View style={styles.searchRow}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder='Search messages...'
-                    placeholderTextColor={'#DED3C4'}
-                    value={query}
-                    onChangeText={setQuery}
-                />
-            </View>
-            {filteredMessages.length === 0 ? (
-                <View style={styles.container}>
-                    <Text style={{ color: 'white' }}>No messages found.</Text>
+                <View style={styles.searchRow}>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder='Search messages...'
+                        placeholderTextColor={'#DED3C4'}
+                        value={query}
+                        onChangeText={setQuery}
+                    />
                 </View>
-            ) : (
-                <FlatList
-                    data={filteredMessages}
-                    keyExtractor={(item, index) =>
-                        item.messageId?.toString() ?? index.toString()
-                    }
-                    renderItem={({ item }) => (
-                        <ConversationItem
-                            conversation={item}
-                            onPress={() =>
-                                navigation.navigate('Conversation', { conversation: item })
-                            }
-                            onLongPress={() => handleDeleteConversation(item.otherUserId)}
-                        />
-                    )}
-                />
-            )}
-        </View>
+                {filteredMessages.length === 0 ? (
+                    <View style={styles.container}>
+                        <Text style={{ color: 'white' }}>No messages found.</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={filteredMessages}
+                        keyExtractor={(item, index) =>
+                            item.messageId?.toString() ?? index.toString()
+                        }
+                        renderItem={({ item }) => (
+                            <ConversationItem
+                                conversation={item}
+                                onPress={() =>
+                                    navigation.navigate('Conversation', { conversation: item })
+                                }
+                                onLongPress={() => handleDeleteConversation(item.otherUserId)}
+                            />
+                        )}
+                    />
+                )}
+            </View>
+        </ScreenContainer>
     );
 };
 

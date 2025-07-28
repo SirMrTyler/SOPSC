@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/groupChatService';
 import { GroupChatSummary } from '../../types/groupChat';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 const GroupChats: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -37,19 +38,21 @@ const GroupChats: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.header}>Group Chats</Text>
-        <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('CreateGroupChat')}>
-          <Text style={styles.createText}>New</Text>
-        </TouchableOpacity>
+    <ScreenContainer>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>Group Chats</Text>
+          <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('CreateGroupChat')}>
+            <Text style={styles.createText}>New</Text>
+          </TouchableOpacity>
+        </View>
+        {loading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList data={chats} keyExtractor={(item) => item.groupChatId.toString()} renderItem={renderItem} />
+        )}
       </View>
-      {loading ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList data={chats} keyExtractor={(item) => item.groupChatId.toString()} renderItem={renderItem} />
-      )}
-    </View>
+    </ScreenContainer>
   );
 };
 

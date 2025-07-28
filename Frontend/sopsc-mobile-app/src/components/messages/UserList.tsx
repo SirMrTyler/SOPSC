@@ -6,6 +6,7 @@ import type { RootStackParamList } from '../../../App';
 import { getAll } from '../../services/userService';
 import { useAuth } from '../../hooks/useAuth';
 import { UserResult } from '../../types/user';
+import ScreenContainer from '../navigation/ScreenContainer';
 
 const UserList: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -66,30 +67,32 @@ const UserList: React.FC = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.searchRow}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder='Search users...'
-                    placeholderTextColor={'#DED3C4'}
-                    value={query}
-                    onChangeText={setQuery}
-                />
+        <ScreenContainer>
+            <View style={styles.container}>
+                <View style={styles.searchRow}>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder='Search users...'
+                        placeholderTextColor={'#DED3C4'}
+                        value={query}
+                        onChangeText={setQuery}
+                    />
+                </View>
+                {loading ? (
+                    <ActivityIndicator />
+                ) : (
+                    <FlatList
+                        data={results}
+                        keyExtractor={(item) => item.userId.toString()}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity style={styles.item} onPress={() => handleUserPress(item)}>
+                                <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
+                            </TouchableOpacity>
+                        )}
+                    />
+                )}
             </View>
-            {loading ? (
-                <ActivityIndicator />
-            ) : (
-                <FlatList
-                    data={results}
-                    keyExtractor={(item) => item.userId.toString()}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.item} onPress={() => handleUserPress(item)}>
-                            <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
-                        </TouchableOpacity>
-                    )}
-                />
-            )}
-        </View>
+        </ScreenContainer>
     );
 };
 

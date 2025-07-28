@@ -21,8 +21,13 @@ import AddGroupChatMembers from './src/components/messages/AddGroupChatMembers';
 import Conversation from './src/components/messages/Conversation';
 import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
+import PrayerRequests from './src/components/posts/Post'; // TODO: Make Prayer Requests component logic
+import Reports from './src/components/reports/Reports'; // TODO: Make Reports component logic
+import Schedule from './src/components/schedule/Schedule'; // TODO: Make Schedule component logic
+import Profile from './src/components/profile/Profile'; // TODO: Make Profile component logic
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SocketProvider } from './src/hooks/SocketContext';
+import Posts from './src/components/posts/Post';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -36,6 +41,10 @@ export type RootStackParamList = {
   AddGroupChatMembers: { chatId: number };
   Conversation: { conversation: MessageConversation };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
+  Posts: undefined;
+  Reports: undefined;
+  Schedule: undefined;
+  Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -85,6 +94,10 @@ export default function App() {
                   <Stack.Screen name="AddGroupChatMembers" component={AddGroupChatMembers} />
                   <Stack.Screen name="Conversation" component={Conversation} />
                   <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+                  <Stack.Screen name="Posts" component={Posts} />
+                  <Stack.Screen name="Reports" component={Reports} />
+                  <Stack.Screen name="Schedule" component={Schedule} />
+                  <Stack.Screen name="Profile" component={Profile} />
                   {/* Add other screens here as needed */}
                 </>
               ) : (
