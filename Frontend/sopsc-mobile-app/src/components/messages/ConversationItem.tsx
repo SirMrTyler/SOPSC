@@ -26,6 +26,7 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
             <Text style={styles.message} numberOfLines={1}>
               {conversation.mostRecentMessage}
             </Text>
+            {/** I need this piece of information to display the read status in real time */}
               {conversation.isLastMessageFromUser && (
               <Text style={styles.status}>
                 {conversation.isRead ? 'Read' : 'Unread'}
