@@ -23,7 +23,7 @@ import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
 import PrayerRequests from './src/components/posts/Post'; // TODO: Make Prayer Requests component logic
 import Reports from './src/components/reports/Reports'; // TODO: Make Reports component logic
-import Schedule from './src/components/schedule/Schedule'; // TODO: Make Schedule component logic
+import Schedule from './src/components/schedule/Schedule';
 import Profile from './src/components/profile/Profile'; // TODO: Make Profile component logic
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SocketProvider } from './src/hooks/SocketContext';

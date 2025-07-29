@@ -12,7 +12,7 @@ export const onReportPress = (navigation: NavigationProp) => {
 };
 
 export const onSchedulePress = (navigation: NavigationProp) => {
-    console.log('Schedule Pressed');
+    navigation.navigate('Schedule');
 };
 
 export const onPublicPostPress = (navigation: NavigationProp) => {
