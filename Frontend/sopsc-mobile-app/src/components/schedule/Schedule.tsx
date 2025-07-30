@@ -176,7 +176,7 @@ const Schedule: React.FC = () => {
           numColumns={viewMode === 'day' ? 1 : viewMode === '3day' ? 3 : 7}
           renderItem={renderItem}
           scrollEnabled={false}
-          columnWrapperStyle={styles.weekRow}
+          columnWrapperStyle={viewMode === 'day' ? undefined : styles.weekRow}
         />
         {isAdmin && (
           <TouchableOpacity
