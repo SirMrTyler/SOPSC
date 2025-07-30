@@ -13,11 +13,12 @@ import {
   CalendarIcon,
   PlusIcon,
 } from 'react-native-heroicons/outline';
+import Constants from 'expo-constants';
+import { BlurView } from 'expo-blur';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
 import EventModal, { EventData } from './EventModal';
 import FilterMenu from './FilterMenu';
-import Constants from 'expo-constants';
 
 interface DayCell {
   date: Date;
@@ -170,14 +171,17 @@ const Schedule: React.FC = () => {
             <CalendarIcon color="white" size={24} />
           )}
         </View>
-        <FlatList
-          data={days}
-          keyExtractor={(_, i) => String(i)}
-          numColumns={viewMode === 'day' ? 1 : viewMode === '3day' ? 3 : 7}
-          renderItem={renderItem}
-          scrollEnabled={false}
-          columnWrapperStyle={viewMode === 'day' ? undefined : styles.weekRow}
-        />
+        <BlurView intensity={40} tint='dark' style={styles.calendarWrapper}>
+          <FlatList
+            data={days}
+            key={viewMode}
+            keyExtractor={(_, i) => String(i)}
+            numColumns={viewMode === 'day' ? 1 : viewMode === '3day' ? 3 : 7}
+            renderItem={renderItem}
+            scrollEnabled={false}
+            columnWrapperStyle={viewMode === 'day' ? undefined : styles.weekRow}
+          />
+        </BlurView>
         {isAdmin && (
           <TouchableOpacity
             style={styles.fab}
@@ -217,6 +221,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  calendarWrapper: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)', // semi-transparent white
+    borderRadius: 24,
+    overflow: 'hidden',
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   monthSwitch: {
     flexDirection: 'row',
