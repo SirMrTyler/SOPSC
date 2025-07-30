@@ -16,14 +16,17 @@ import {
 import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
 import EventModal, { EventData } from './EventModal';
+import FilterMenu from './FilterMenu';
+import Constants from 'expo-constants';
 
 interface DayCell {
   date: Date;
   inMonth: boolean;
 }
 
-const GOOGLE_CALENDAR_ID = '';
-const GOOGLE_API_KEY = '';
+const runtime = Constants.expoConfig?.extra || {};
+const GOOGLE_CALENDAR_ID = runtime.EXPO_PUBLIC_GOOGLE_CALENDAR_ID || '';
+const GOOGLE_API_KEY = runtime.EXPO_PUBLIC_GOOGLE_API_KEY || '';
 
 const Schedule: React.FC = () => {
   const { user } = useAuth();
@@ -32,8 +35,31 @@ const Schedule: React.FC = () => {
   const [events, setEvents] = useState<EventData[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<'day' | '3day' | 'week' | 'month'>('month');
+  const [activeTags, setActiveTags] = useState<string[]>(['Agencies', 'Events', 'Prayer Meetings']);
 
   const days = useMemo(() => {
+    const base = selectedDate || new Date();
+    if (viewMode === 'day') {
+      return [{ date: base, inMonth: true }];
+    }
+    if (viewMode === '3day') {
+      return Array.from({ length: 3 }, (_, i) => {
+        const d = new Date(base);
+        d.setDate(base.getDate() + i);
+        return { date: d, inMonth: true };
+      });
+    }
+    if (viewMode === 'week') {
+      const start = new Date(base);
+      start.setDate(base.getDate() - start.getDay());
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        return { date: d, inMonth: true };
+      });
+    }
     const start = new Date(month.getFullYear(), month.getMonth(), 1);
     const end = new Date(month.getFullYear(), month.getMonth() + 1, 0);
     const startDay = start.getDay();
@@ -48,7 +74,7 @@ const Schedule: React.FC = () => {
       cells.push({ date: d, inMonth: d.getMonth() === month.getMonth() });
     }
     return cells;
-  }, [month]);
+  }, [month, viewMode, selectedDate]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -125,7 +151,7 @@ const Schedule: React.FC = () => {
     <ScreenContainer showBottomBar={true}>
       <View style={styles.container}>
         <View style={styles.navRow}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setMenuVisible(true)}>
             <Bars3Icon color="white" size={24} />
           </TouchableOpacity>
           <View style={styles.monthSwitch}>
@@ -147,7 +173,7 @@ const Schedule: React.FC = () => {
         <FlatList
           data={days}
           keyExtractor={(_, i) => String(i)}
-          numColumns={7}
+          numColumns={viewMode === 'day' ? 1 : viewMode === '3day' ? 3 : 7}
           renderItem={renderItem}
           scrollEnabled={false}
           columnWrapperStyle={styles.weekRow}
@@ -160,6 +186,18 @@ const Schedule: React.FC = () => {
             <PlusIcon color="white" size={32} />
           </TouchableOpacity>
         )}
+        <FilterMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          view={viewMode}
+          onViewChange={v => {
+            setViewMode(v as any);
+            setMenuVisible(false);
+          }}
+          tags={['Agencies', 'Events', 'Prayer Meetings']}
+          selectedTags={activeTags}
+          onTagsChange={setActiveTags}
+        />
         <EventModal
           visible={modalVisible}
           date={selectedDate}
