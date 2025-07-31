@@ -31,7 +31,9 @@ const GOOGLE_API_KEY = runtime.EXPO_PUBLIC_GOOGLE_API_KEY || '';
 
 const Schedule: React.FC = () => {
   const { user } = useAuth();
-  const isAdmin = user?.Roles?.some(r => r.roleName === 'Admin');
+  const canCreateEvents = user?.Roles?.some(
+    r => r.roleName === 'Admin' || r.roleName === 'Developer'
+  );
   const [month, setMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -116,7 +118,6 @@ const Schedule: React.FC = () => {
   };
 
   const openModal = (date: Date) => {
-    if (!isAdmin) return;
     setSelectedDate(date);
     setModalVisible(true);
   };
@@ -189,7 +190,7 @@ const Schedule: React.FC = () => {
             columnWrapperStyle={viewMode === 'day' ? undefined : styles.weekRow}
           />
         </BlurView>
-        {isAdmin && (
+        {canCreateEvents && (
           <TouchableOpacity
             style={styles.fab}
             onPress={() => openModal(new Date())}
@@ -214,7 +215,7 @@ const Schedule: React.FC = () => {
           date={selectedDate}
           onAdd={handleAddEvent}
           onClose={() => setModalVisible(false)}
-          isAdmin={!!isAdmin}
+          isAdmin={!!canCreateEvents}
         />
       </View>
     </ScreenContainer>
