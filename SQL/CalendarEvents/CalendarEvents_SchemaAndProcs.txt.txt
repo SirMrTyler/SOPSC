@@ -1,0 +1,119 @@
+-- SQL definitions for Calendar Events feature
+-- Table creation
+IF OBJECT_ID('dbo.CalendarEvents') IS NULL
+BEGIN
+    CREATE TABLE dbo.CalendarEvents(
+        EventId INT IDENTITY(1,1) PRIMARY KEY,
+        GoogleEventId NVARCHAR(255) NULL,
+        StartDateTime DATETIME2(7) NOT NULL,
+        EndDateTime DATETIME2(7) NOT NULL,
+        Title NVARCHAR(255) NOT NULL,
+        Description NVARCHAR(MAX) NULL,
+        Category NVARCHAR(100) NULL,
+        MeetLink NVARCHAR(255) NULL,
+        CreatedBy INT NOT NULL,
+        CreatedTimestamp DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
+    );
+END
+GO
+
+-------------------------------------------------------------------------------
+-- STORED PROCEDURES ----------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-- Inserts a new calendar event
+ALTER PROC dbo.CalendarEvents_Insert
+        @EventId INT OUTPUT,
+        @GoogleEventId NVARCHAR(255) = NULL,
+        @StartDateTime DATETIME2(7),
+        @EndDateTime DATETIME2(7),
+        @Title NVARCHAR(255),
+        @Description NVARCHAR(MAX) = NULL,
+        @Category NVARCHAR(100) = NULL,
+        @MeetLink NVARCHAR(255) = NULL,
+        @CreatedBy INT
+AS
+BEGIN
+        INSERT INTO dbo.CalendarEvents (
+                GoogleEventId,
+                StartDateTime,
+                EndDateTime,
+                Title,
+                Description,
+                Category,
+                MeetLink,
+                CreatedBy,
+                CreatedTimestamp)
+        VALUES (
+                @GoogleEventId,
+                @StartDateTime,
+                @EndDateTime,
+                @Title,
+                @Description,
+                @Category,
+                @MeetLink,
+                @CreatedBy,
+                SYSDATETIME());
+        SET @EventId = SCOPE_IDENTITY();
+        SELECT *
+        FROM dbo.CalendarEvents
+        WHERE EventId = @EventId;
+END
+GO
+
+-- Returns all calendar events
+ALTER PROC dbo.CalendarEvents_SelectAll
+AS
+BEGIN
+        SELECT *
+        FROM dbo.CalendarEvents;
+END
+GO
+
+-- Returns a calendar event by Id
+ALTER PROC dbo.CalendarEvents_SelectById
+        @EventId INT
+AS
+BEGIN
+        SELECT *
+        FROM dbo.CalendarEvents
+        WHERE EventId = @EventId;
+END
+GO
+
+-- Updates a calendar event
+ALTER PROC dbo.CalendarEvents_Update
+        @EventId INT,
+        @GoogleEventId NVARCHAR(255) = NULL,
+        @StartDateTime DATETIME2(7),
+        @EndDateTime DATETIME2(7),
+        @Title NVARCHAR(255),
+        @Description NVARCHAR(MAX) = NULL,
+        @Category NVARCHAR(100) = NULL,
+        @MeetLink NVARCHAR(255) = NULL
+AS
+BEGIN
+        UPDATE dbo.CalendarEvents
+        SET GoogleEventId = @GoogleEventId,
+            StartDateTime = @StartDateTime,
+            EndDateTime = @EndDateTime,
+            Title = @Title,
+            Description = @Description,
+            Category = @Category,
+            MeetLink = @MeetLink
+        WHERE EventId = @EventId;
+        SELECT *
+        FROM dbo.CalendarEvents
+        WHERE EventId = @EventId;
+END
+GO
+
+-- Deletes a calendar event
+ALTER PROC dbo.CalendarEvents_Delete
+        @EventId INT
+AS
+BEGIN
+        DELETE FROM dbo.CalendarEvents
+        WHERE EventId = @EventId;
+END
+GO
