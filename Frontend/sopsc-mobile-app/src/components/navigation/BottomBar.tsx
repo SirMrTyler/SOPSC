@@ -5,7 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import {
   HomeIcon,
-  ChatBubbleLeftRightIcon,
+  UserGroupIcon,
   DocumentTextIcon,
   CalendarDaysIcon,
 } from 'react-native-heroicons/outline';
@@ -19,37 +19,44 @@ const BottomBar: React.FC = () => {
     user?.name?.[0] ||
     user?.email?.[0] ||
     'U';
+  const homeScreenString = 'Home';
+  const postScreenString = 'Prayer';
+  const reportScreenString = 'Reports';
+  const scheduleScreenString = 'Schedule';
+  const profileScreenString = 'Profile';
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.iconButton}
-        onPress={() => navigation.navigate('Landing')}
-      >
+    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Landing')}>
+      <View style={styles.centered}>
         <HomeIcon color="white" size={24} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.iconButton}
-        onPress={() => navigation.navigate('Posts')}
-      >
-        <ChatBubbleLeftRightIcon color="white" size={24} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.iconButton}
-        onPress={() => navigation.navigate('Reports')}
-      >
+        <Text style={styles.label}>Home</Text>
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Posts')}>
+      <View style={styles.centered}>
+        <UserGroupIcon color="white" size={24} />
+        <Text style={styles.label}>Prayer</Text>
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Reports')}>
+      <View style={styles.centered}>
         <DocumentTextIcon color="white" size={24} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.iconButton}
-        onPress={() => navigation.navigate('Schedule')}
-      >
+        <Text style={styles.label}>Reports</Text>
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Schedule')}>
+      <View style={styles.centered}>
         <CalendarDaysIcon color="white" size={24} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.iconButton}
-        onPress={() => navigation.navigate('Profile')}
-      >
+        <Text style={styles.label}>Schedule</Text>
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Profile')}>
+      <View style={styles.centered}>
         {user?.profilePicturePath ? (
           <Image source={{ uri: user.profilePicturePath }} style={styles.avatar} />
         ) : (
@@ -57,8 +64,10 @@ const BottomBar: React.FC = () => {
             <Text style={styles.letter}>{displayLetter}</Text>
           </View>
         )}
-      </TouchableOpacity>
-    </View>
+        <Text style={styles.label}>Profile</Text>
+      </View>
+    </TouchableOpacity>
+  </View>
   );
 };
 
@@ -72,6 +81,15 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 6,
+  },
+  label: {
+    fontSize: 9,
+    color: 'white',
+    marginTop: 2,
+  },
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     width: 24,

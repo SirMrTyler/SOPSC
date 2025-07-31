@@ -4,6 +4,7 @@ using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Interfaces.GroupChats;
 using SOPSC.Api.Models.Interfaces.Users;
+using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Services.Auth;
 using SOPSC.Api.Services.Auth.Interfaces;
 using SOPSC.Api.Services;
@@ -56,6 +57,7 @@ namespace SOPSC.Api.Services.Extensions
 
             services.AddScoped<IMessagesService, MessagesService>();
             services.AddScoped<IGroupChatsService, GroupChatsService>();
+            services.AddScoped<ICalendarService, CalendarService>();
             /// <summary>
             /// Adds HTTP context accessor for accessing the current HTTP context.
             /// </summary>

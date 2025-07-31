@@ -19,7 +19,7 @@ import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
 import EventModal, { EventData } from './EventModal';
 import FilterMenu from './FilterMenu';
-
+import * as calendarService from '../../services/calendarService';
 interface DayCell {
   date: Date;
   inMonth: boolean;
@@ -121,9 +121,16 @@ const Schedule: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleAddEvent = (event: EventData) => {
-    setEvents(prev => [...prev, event]);
-    setModalVisible(false);
+  const handleAddEvent = async (event: EventData) => {
+    try {
+      const result = await calendarService.addEvent(event);
+      const saved = { ...event, id: result.id };
+      setEvents(prev => [...prev, saved]);
+    } catch (err) {
+      console.error('[Schedule] Failed to add event:', err);
+    } finally {
+      setModalVisible(false);
+    }
   };
 
   const renderItem = ({ item }: { item: DayCell }) => {
