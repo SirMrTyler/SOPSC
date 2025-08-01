@@ -26,7 +26,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost("events")]
-        public async Task<ActionResult<ItemResponse<CalendarEvent>>> Create(CalendarEventAddRequest model)
+        public async Task<ActionResult<ItemResponse<CalendarEvent>>> Create([FromBody] CalendarEventAddRequest model)
         {
             int code = 201;
             BaseResponse response = null;
