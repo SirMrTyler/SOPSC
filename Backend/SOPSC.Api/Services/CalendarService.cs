@@ -19,10 +19,12 @@ namespace SOPSC.Api.Services
     public class CalendarService : ICalendarService
     {
         private readonly IConfiguration _config;
+        private readonly ILogger<CalendarService> _logger;
 
-        public CalendarService(IConfiguration config)
+        public CalendarService(IConfiguration config, ILogger<CalendarService> logger)
         {
             _config = config;
+            _logger = logger;
         }
 
         public async Task<CalendarEvent> AddEventAsync(CalendarEventAddRequest model)
@@ -53,10 +55,28 @@ namespace SOPSC.Api.Services
                 ApplicationName = "SOPSC.Api"
             });
 
-            var start = System.DateTime.Parse($"{model.Date}T{model.StartTime}");
-            int.TryParse(model.Duration, out var mins);
-            mins = mins == 0 ? 60 : mins;
+            // Validate and parse date + time
+            if (!DateTime.TryParse($"{model.Date}T{model.StartTime}", out var start))
+            {
+                throw new FormatException($"Invalid data/time format: '{model.Date}T{model.StartTime}'");
+            }
+
+            if (!int.TryParse(model.Duration, out var mins) || mins <= 0)
+            {
+                mins = 60; // Default to 1 hour
+            }
+
             var end = start.AddMinutes(mins);
+
+            // Log what we're sending to google
+            _logger.LogInformation("[CalendarService] Creating calendar event with:");
+            _logger.LogInformation($"- Title: {model.Title}");
+            _logger.LogInformation($"- Description: {model.Description}");
+            _logger.LogInformation($"- Start: {start:o}");
+            _logger.LogInformation($"- End: {end:o}");
+            _logger.LogInformation($"- MeetLink: {model.MeetLink}");
+            _logger.LogInformation($"- Category: {model.Category}");
+            _logger.LogInformation($"- Calendar ID: {calendarId}");
 
             var body = new Event
             {
@@ -64,22 +84,33 @@ namespace SOPSC.Api.Services
                 Description = model.Description,
                 Start = new EventDateTime { DateTime = start },
                 End = new EventDateTime { DateTime = end },
-                Location = model.MeetLink
+                Location = string.IsNullOrWhiteSpace(model.MeetLink) ? null : model.MeetLink
             };
 
             var request = service.Events.Insert(body, calendarId);
-            var created = await request.ExecuteAsync();
-
-            return new CalendarEvent
+            try
             {
-                Id = created.Id,
-                Start = start,
-                End = end,
-                Title = model.Title,
-                Description = model.Description,
-                Category = model.Category,
-                MeetLink = model.MeetLink
-            };
+                var created = await request.ExecuteAsync();
+
+                return new CalendarEvent
+                {
+                    Id = created.Id,
+                    Start = start,
+                    End = end,
+                    Title = model.Title,
+                    Description = model.Description,
+                    Category = model.Category,
+                    MeetLink = model.MeetLink
+                };
+            }
+            catch (Google.GoogleApiException ex)
+            {
+                _logger.LogError("[CalendarService] Google API Error:");
+                _logger.LogError($"- StatusCode: {ex.HttpStatusCode}");
+                _logger.LogError($"- Message: {ex.Message}");
+                _logger.LogError($"- Errors: {ex.Error?.Errors?.FirstOrDefault()?.Message}");
+                throw;
+            }
         }
     }
 }

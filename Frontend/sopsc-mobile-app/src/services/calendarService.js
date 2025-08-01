@@ -6,6 +6,9 @@ const endpoint = `${process.env.EXPO_PUBLIC_API_URL}calendar/events`;
 const addEvent = async (eventData) => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
+
+  console.log('[CalendarService] Adding event:', JSON.stringify(eventData, null, 2));
+  
   const config = {
     method: 'POST',
     url: endpoint,
