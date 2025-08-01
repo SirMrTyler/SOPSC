@@ -143,6 +143,7 @@ const Schedule: React.FC = () => {
     }
   };
 
+  // I will eventually alter this so that it does an API call to fetch events for the selected date
   const renderItem = ({ item }: { item: DayCell }) => {
     const dayNumber = item.date.getDate();
     const isToday = new Date().toDateString() === item.date.toDateString();

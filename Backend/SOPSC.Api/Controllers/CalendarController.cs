@@ -4,6 +4,7 @@ using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Models.Requests.Calendar;
 using SOPSC.Api.Models.Domains.Calendar;
 using SOPSC.Api.Models.Responses;
+using System.Linq;
 using SOPSC.Api.Services.Auth.Interfaces;
 
 namespace SOPSC.Api.Controllers
@@ -30,6 +31,15 @@ namespace SOPSC.Api.Controllers
         {
             int code = 201;
             BaseResponse response = null;
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                base.Logger.LogWarning("Invalid Calendar event model: {Errors}", errors);
+                return BadRequest(ModelState);
+            }
 
             base.Logger.LogInformation("Creating calendar event: {@Model}", model);
             try
