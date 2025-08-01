@@ -16,9 +16,10 @@ namespace SOPSC.Api.Controllers
         private readonly ICalendarService _calendarService;
         private readonly IAuthenticationService<int> _authService;
 
-        public CalendarController(ICalendarService calendarService,
-            IAuthenticationService<int> authService,
-            ILogger<CalendarController> logger) : base(logger)
+        public CalendarController(
+            ICalendarService calendarService,
+            ILogger<CalendarController> logger,
+            IAuthenticationService<int> authService) : base(logger)
         {
             _calendarService = calendarService;
             _authService = authService;
@@ -29,6 +30,8 @@ namespace SOPSC.Api.Controllers
         {
             int code = 201;
             BaseResponse response = null;
+
+            base.Logger.LogInformation("Creating calendar event: {@Model}", model);
             try
             {
                 var evt = await _calendarService.AddEventAsync(model);
