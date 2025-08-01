@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Switch } from 'react-native';
+import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Switch, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 
 interface Props {
   visible: boolean;
@@ -23,27 +25,33 @@ export interface EventData {
 const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState('');
   const [category, setCategory] = useState('');
   const [meetLink, setMeetLink] = useState('');
   const [includeMeetLink, setIncludeMeetLink] = useState(false);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
   
   const handleAdd = () => {
+    if (!startTime || !date) return;
+    
     const event: EventData = {
       id: Math.random().toString(36).slice(2),
-      date: date ? date.toISOString().split('T')[0] : '',
-      startTime,
+      date: date.toISOString().split('T')[0],
+      startTime: format(startTime, 'HH:mm'),
       duration,
       title,
       description,
       category,
-      meetLink,
+      meetLink: includeMeetLink ? meetLink : undefined,
     };
+
     onAdd(event);
+
     setTitle('');
     setDescription('');
-    setStartTime('');
+    setStartTime(null);
     setDuration('');
     setCategory('');
     setMeetLink('');
@@ -51,7 +59,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
 
   const isFormComplete =
     title.trim().length > 0 &&
-    startTime.trim().length > 0 &&
+    startTime !== null &&
     duration.trim().length > 0;
 
   return (
@@ -59,6 +67,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
       <View style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.header}>Create Event</Text>
+          
           <TextInput
             style={styles.input}
             placeholder="Title"
@@ -66,6 +75,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
             value={title}
             onChangeText={setTitle}
           />
+
           <TextInput
             style={styles.input}
             placeholder="Description"
@@ -73,31 +83,50 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
             value={description}
             onChangeText={setDescription}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Start Time (HH:MM)"
-            placeholderTextColor="#777"
-            value={startTime}
-            onChangeText={setStartTime}
-          />
+
+          <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
+            <Text style={{ color: startTime ? '#000' : '#777' }}>
+              {startTime ? format(startTime, 'hh:mm a') : 'Select Start Time'}
+            </Text>
+          </TouchableOpacity>
+
+          {showTimePicker && (
+            <DateTimePicker
+              mode="time"
+              value={startTime || new Date()}
+              is24Hour={false}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(event, selectedTime) => {
+                setShowTimePicker(false);
+                if (selectedTime) {
+                  setStartTime(selectedTime);
+                }
+              }}
+            />
+          )}
+
           <TextInput
             style={styles.input}
             placeholder="Duration (mins)"
             placeholderTextColor="#777"
             value={duration}
             onChangeText={setDuration}
+            keyboardType="numeric"
           />
+
           <TextInput
             style={styles.input}
             placeholder="Category"
             placeholderTextColor="#777"
             value={category}
             onChangeText={setCategory}
-        />
+          />
+
         <View style={styles.switchRow}>
           <Text>Add Google Meet Link?</Text>
           <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
         </View>
+        
         {includeMeetLink && (
           <TextInput
             style={styles.input}
@@ -107,10 +136,12 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
             onChangeText={setMeetLink}
           />
           )}
+
           <View style={styles.buttonRow}>
             <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
+            
             {isAdmin && (
               <TouchableOpacity
                 onPress={handleAdd}
