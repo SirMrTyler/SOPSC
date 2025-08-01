@@ -31,9 +31,18 @@ const GOOGLE_API_KEY = runtime.EXPO_PUBLIC_GOOGLE_API_KEY || '';
 
 const Schedule: React.FC = () => {
   const { user } = useAuth();
-  const canCreateEvents = user?.Roles?.some(
-    r => r.roleName === 'Admin' || r.roleName === 'Developer'
-  );
+  const canCreateEvents = useMemo(() => {
+    if (!user) return false;
+    const roles: any = (user as any).Roles;
+    if (Array.isArray(roles)) {
+      return roles.some((r: any) => {
+        const name = r.roleName || r.RoleName;
+        return name === 'Admin' || name === 'Developer';
+      });
+    }
+    const roleName = (user as any).roleName || (user as any).RoleName;
+    return roleName === 'Admin' || roleName === 'Developer';
+  }, [user]);
   const [month, setMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -215,7 +224,7 @@ const Schedule: React.FC = () => {
           date={selectedDate}
           onAdd={handleAddEvent}
           onClose={() => setModalVisible(false)}
-          isAdmin={!!canCreateEvents}
+          isAdmin={canCreateEvents}
         />
       </View>
     </ScreenContainer>

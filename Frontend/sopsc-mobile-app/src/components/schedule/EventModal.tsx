@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Switch } from 'react-native';
 
 interface Props {
   visible: boolean;
@@ -27,7 +27,8 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
   const [duration, setDuration] = useState('');
   const [category, setCategory] = useState('');
   const [meetLink, setMeetLink] = useState('');
-
+  const [includeMeetLink, setIncludeMeetLink] = useState(false);
+  
   const handleAdd = () => {
     const event: EventData = {
       id: Math.random().toString(36).slice(2),
@@ -47,6 +48,11 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
     setCategory('');
     setMeetLink('');
   };
+
+  const isFormComplete =
+    title.trim().length > 0 &&
+    startTime.trim().length > 0 &&
+    duration.trim().length > 0;
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -87,7 +93,12 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
             placeholderTextColor="#777"
             value={category}
             onChangeText={setCategory}
-          />
+        />
+        <View style={styles.switchRow}>
+          <Text>Add Google Meet Link?</Text>
+          <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
+        </View>
+        {includeMeetLink && (
           <TextInput
             style={styles.input}
             placeholder="Google Meet link"
@@ -95,13 +106,18 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
             value={meetLink}
             onChangeText={setMeetLink}
           />
+          )}
           <View style={styles.buttonRow}>
             <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
             {isAdmin && (
-              <TouchableOpacity onPress={handleAdd} style={styles.addBtn}>
-                <Text style={styles.addText}>Add</Text>
+              <TouchableOpacity
+                onPress={handleAdd}
+                style={[styles.addBtn, !isFormComplete && styles.disabledBtn]}
+                disabled={!isFormComplete}
+              >
+                <Text style={styles.addText}>Submit</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -136,6 +152,12 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 4,
   },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -151,6 +173,9 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: '#2477ff',
     borderRadius: 4,
+  },
+  disabledBtn: {
+    opacity: 0.5,
   },
   addText: {
     color: 'white',
