@@ -258,13 +258,30 @@ namespace SOPSC.Api.Services
                         paramCollection.AddWithValue("@IsGoogleUser", true);
                     });
                 }
-                // Generate a JWT token for the user
-                IUserAuthData userAuth = new UserBase
+                // Determine the user's role from the database to ensure the
+                // JWT reflects the current permissions. Default to "Guest" if
+                // no role is found or an error occurs.
+                string roleName = "Guest";
+                try
+                {
+                    UserWithRole roleInfo = GetUserWithRoleById(userId);
+                    if (!string.IsNullOrWhiteSpace(roleInfo?.RoleName))
                     {
-                        UserId = userId,
-                        Name = email,
-                        Roles = new List<string> { "Guest" }
-                    };
+                        roleName = roleInfo.RoleName;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error retrieving role during Google sign in.");
+                }
+
+                // Generate a JWT token for the user with the resolved role
+                IUserAuthData userAuth = new UserBase
+                {
+                    UserId = userId,
+                    Name = email,
+                    Roles = new List<string> { roleName }
+                };
 
                 token = _authenticationService.GenerateJwtToken(userAuth, deviceId).GetAwaiter().GetResult();
 
