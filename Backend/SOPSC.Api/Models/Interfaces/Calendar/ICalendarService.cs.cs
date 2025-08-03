@@ -6,6 +6,6 @@ namespace SOPSC.Api.Models.Interfaces.Calendar
 {
     public interface ICalendarService
     {
-        Task<CalendarEvent> AddEventAsync(CalendarEventAddRequest model);
+        Task<int> AddEventAsync(CalendarEventAddRequest model, int createdById);
     }
 }

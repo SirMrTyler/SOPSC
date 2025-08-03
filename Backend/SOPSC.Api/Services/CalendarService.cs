@@ -8,6 +8,9 @@ using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Models.Requests.Calendar;
 using System.Threading.Tasks;
 using System.IO;
+using SOPSC.Api.Data.Interfaces;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 //
 // This service communicates with Google Calendar using OAuth2 service account
@@ -20,14 +23,16 @@ namespace SOPSC.Api.Services
     {
         private readonly IConfiguration _config;
         private readonly ILogger<CalendarService> _logger;
+        private readonly IDataProvider _dataProvider;
 
-        public CalendarService(IConfiguration config, ILogger<CalendarService> logger)
+        public CalendarService(IDataProvider dataProvider, IConfiguration config, ILogger<CalendarService> logger)
         {
+            _dataProvider = dataProvider;
             _config = config;
             _logger = logger;
         }
 
-        public async Task<CalendarEvent> AddEventAsync(CalendarEventAddRequest model)
+        public async Task<int> AddEventAsync(CalendarEventAddRequest model, int createdById)
         {
             var calendarId = _config["GoogleCalendar:CalendarId"];
             var credPath = _config["GoogleCalendar:ServiceAccountCredentialsPath"];
@@ -92,16 +97,33 @@ namespace SOPSC.Api.Services
             {
                 var created = await request.ExecuteAsync();
 
-                return new CalendarEvent
-                {
-                    Id = created.Id,
-                    Start = start,
-                    End = end,
-                    Title = model.Title,
-                    Description = model.Description,
-                    Category = model.Category,
-                    MeetLink = model.MeetLink
-                };
+                int eventId = 0;
+                string procName = "[dbo].[CalendarEvents_Insert]";
+                _dataProvider.ExecuteNonQuery(procName,
+                    delegate (SqlParameterCollection param)
+                    {
+                        param.AddWithValue("@GoogleEventId", created.Id);
+                        param.AddWithValue("@StartDateTime", start);
+                        param.AddWithValue("@EndDateTime", end);
+                        param.AddWithValue("@Title", model.Title);
+                        param.AddWithValue("@Description", model.Description ?? (object)DBNull.Value);
+                        param.AddWithValue("@Category", model.Category ?? (object)DBNull.Value);
+                        param.AddWithValue("@MeetLink", string.IsNullOrWhiteSpace(model.MeetLink) ? (object)DBNull.Value : model.MeetLink);
+                        param.AddWithValue("@CreatedBy", createdById);
+
+                        SqlParameter idOut = new SqlParameter("@EventId", SqlDbType.Int)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        param.Add(idOut);
+                    },
+                    delegate (SqlParameterCollection returnCollection)
+                    {
+                        object oId = returnCollection["@EventId"].Value;
+                        int.TryParse(oId.ToString(), out eventId);
+                    });
+
+                return eventId;
             }
             catch (Google.GoogleApiException ex)
             {

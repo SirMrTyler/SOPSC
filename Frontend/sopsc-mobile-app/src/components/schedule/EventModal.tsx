@@ -12,7 +12,7 @@ interface Props {
 }
 
 export interface EventData {
-  id: string;
+  id?: string;
   date: string; // ISO date
   startTime: string; // HH:MM
   duration: string; // in minutes
@@ -37,7 +37,6 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
     if (!startTime || !date) return;
     
     const event: EventData = {
-      id: Math.random().toString(36).slice(2),
       date: date.toISOString().split('T')[0],
       startTime: format(startTime, 'HH:mm'),
       duration,

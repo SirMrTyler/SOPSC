@@ -134,7 +134,8 @@ const Schedule: React.FC = () => {
   const handleAddEvent = async (event: EventData) => {
     try {
       const result = await calendarService.addEvent(event);
-      const saved = { ...event, id: result.id };
+      const newId = result.item || result.id;
+      const saved = { ...event, id: newId } as EventData;
       setEvents(prev => [...prev, saved]);
     } catch (err) {
       console.error('[Schedule] Failed to add event:', err);
