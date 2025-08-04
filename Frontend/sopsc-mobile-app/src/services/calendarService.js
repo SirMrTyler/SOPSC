@@ -7,12 +7,23 @@ const addEvent = async (eventData) => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
 
-  console.log('[CalendarService] Adding event:', JSON.stringify(eventData, null, 2));
+  const payload = {
+    Date: eventData.date,
+    StartTime: eventData.startTime,
+    Duration: eventData.duration,
+    Title: eventData.title,
+    Description: eventData.description,
+    Category: eventData.category,
+    MeetLink: eventData.meetLink,
+  };
+
+  console.log('[CalendarService] Adding event:', JSON.stringify(payload, null, 2));
+
   
   const config = {
     method: 'POST',
     url: endpoint,
-    data: eventData,
+    data: payload,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
