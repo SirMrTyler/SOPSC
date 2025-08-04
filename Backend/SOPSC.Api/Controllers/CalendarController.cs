@@ -33,7 +33,7 @@ namespace SOPSC.Api.Controllers
 
             if (!ModelState.IsValid)
             {
-                var error = ModelState.Values
+                var errors = ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage);
                 base.Logger.LogWarning("Invalid Calendar event model: {Errors}", errors);
