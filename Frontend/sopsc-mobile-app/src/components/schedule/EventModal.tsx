@@ -19,6 +19,7 @@ export interface EventData {
   title: string;
   description: string;
   category: string;
+  includeMeetLink: boolean;
   meetLink?: string;
 }
 
@@ -43,6 +44,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
       title,
       description,
       category,
+      includeMeetLink,
       meetLink: includeMeetLink ? meetLink : undefined,
     };
 

@@ -11,12 +11,8 @@ using System.IO;
 using SOPSC.Api.Data.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Linq;
 
-//
-// This service communicates with Google Calendar using OAuth2 service account
-// credentials. The previous implementation used an API key and direct HTTP
-// requests which resulted in 400 errors. We now load a service account key file
-// from configuration and use the Google.Apis client libraries to insert events.
 namespace SOPSC.Api.Services
 {
     public class CalendarService : ICalendarService
@@ -68,12 +64,12 @@ namespace SOPSC.Api.Services
                 throw new ArgumentException("EndDateTime must be after StartDateTime.");
             }
 
-            // Log what we're sending to google
             _logger.LogInformation("[CalendarService] Creating calendar event with:");
             _logger.LogInformation($"- Title: {model.Title}");
             _logger.LogInformation($"- Description: {model.Description}");
             _logger.LogInformation($"- Start: {start:o}");
             _logger.LogInformation($"- End: {end:o}");
+            _logger.LogInformation($"- IncludeMeetLink: {model.IncludeMeetLink}");
             _logger.LogInformation($"- MeetLink: {model.MeetLink}");
             _logger.LogInformation($"- Category: {model.Category}");
             _logger.LogInformation($"- Calendar ID: {calendarId}");
@@ -84,7 +80,7 @@ namespace SOPSC.Api.Services
                 Description = model.Description,
                 Start = new EventDateTime { DateTime = start },
                 End = new EventDateTime { DateTime = end },
-                Location = string.IsNullOrWhiteSpace(model.MeetLink) ? null : model.MeetLink
+                Location = model.IncludeMeetLink ? model.MeetLink : null
             };
 
             var request = service.Events.Insert(body, calendarId);
@@ -93,7 +89,9 @@ namespace SOPSC.Api.Services
                 var created = await request.ExecuteAsync();
 
                 int eventId = 0;
-                string procName = "[dbo].[CalendarEvents_Insert]";
+                string procName = model.IncludeMeetLink ? 
+                    "[dbo].[CalendarEvents_InsertWithLink]" :   // When MeetLink is true
+                    "[dbo].[CalendarEvents_InsertNoLink]";      // When MeetLink is false
                 _dataProvider.ExecuteNonQuery(procName,
                     delegate (SqlParameterCollection param)
                     {
@@ -103,9 +101,11 @@ namespace SOPSC.Api.Services
                         param.AddWithValue("@Title", model.Title);
                         param.AddWithValue("@Description", model.Description ?? (object)DBNull.Value);
                         param.AddWithValue("@Category", model.Category ?? (object)DBNull.Value);
-                        param.AddWithValue("@MeetLink", string.IsNullOrWhiteSpace(model.MeetLink) ? (object)DBNull.Value : model.MeetLink);
                         param.AddWithValue("@CreatedBy", createdById);
-
+                        if (model.IncludeMeetLink)
+                        {
+                            param.AddWithValue("@MeetLink", model.MeetLink);
+                        }
                         SqlParameter idOut = new SqlParameter("@EventId", SqlDbType.Int)
                         {
                             Direction = ParameterDirection.Output

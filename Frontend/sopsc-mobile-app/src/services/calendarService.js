@@ -16,12 +16,15 @@ const addEvent = async (eventData) => {
     title: eventData.title,
     description: eventData.description,
     category: eventData.category,
-    meetLink: eventData.meetLink,
+    includeMeetLink: eventData.includeMeetLink,
   };
+
+  if (eventData.includeMeetLink) {
+    payload.meetLink = eventData.meetLink;
+  }
 
   console.log('[CalendarService] Adding event:', JSON.stringify(payload, null, 2));
 
-  
   const config = {
     method: 'POST',
     url: endpoint,

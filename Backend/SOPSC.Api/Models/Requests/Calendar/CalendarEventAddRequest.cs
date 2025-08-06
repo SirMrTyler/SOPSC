@@ -1,30 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using SOPSC.Api.Models.Domains.Calendar;
 
 namespace SOPSC.Api.Models.Requests.Calendar
 {
-    public class CalendarEventAddRequest
+    public class CalendarEventAddRequest : CalendarEvent
     {
         /// <summary>
-        /// The starting date and time of the event in UTC.
+        /// Indicates whether the MeetLink should be included for this event.
         /// </summary>
-        [Required]
-        public DateTime StartDateTime { get; set; }
-
-        /// <summary>
-        /// The ending date and time of the event in UTC.
-        /// </summary>
-        [Required]
-        public DateTime EndDateTime { get; set; }
-
-        [Required]
-        [StringLength(255)]
-        public string Title { get; set; }
-        
-        public string Description { get; set; }
-
-        [StringLength(100)]
-        public string Category { get; set; }
-        public string MeetLink { get; set; }
+        public bool IncludeMeetLink { get; set; }
     }
 }

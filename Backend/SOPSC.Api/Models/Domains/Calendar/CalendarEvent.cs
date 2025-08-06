@@ -1,12 +1,30 @@
-﻿namespace SOPSC.Api.Models.Domains.Calendar;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace SOPSC.Api.Models.Domains.Calendar;
 
 public class CalendarEvent
 {
-    public string Id { get; set; }
-    public System.DateTime Start { get; set; }
-    public System.DateTime End { get; set; }
+    /// <summary>
+    /// The starting date and time of the event in UTC.
+    /// </summary>
+    [Required]
+    public DateTime StartDateTime { get; set; }
+
+    /// <summary>
+    /// The ending date and time of the event in UTC.
+    /// </summary>
+    [Required]
+    public DateTime EndDateTime { get; set; }
+
+    [Required]
+    [StringLength(255)]
     public string Title { get; set; }
+
     public string? Description { get; set; }
+
+    [StringLength(100)]
     public string? Category { get; set; }
+
     public string? MeetLink { get; set; }
 }

@@ -106,6 +106,7 @@ const Schedule: React.FC = () => {
             title: item.summary,
             description: item.description || '',
             category: item.eventType || '',
+            includeMeetLink: Boolean(item.hangoutLink),
             meetLink: item.hangoutLink,
           }));
           setEvents(parsed);
