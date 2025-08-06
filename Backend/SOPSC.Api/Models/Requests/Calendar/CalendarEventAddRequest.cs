@@ -25,8 +25,6 @@ namespace SOPSC.Api.Models.Requests.Calendar
 
         [StringLength(100)]
         public string Category { get; set; }
-
-        [StringLength(255)]
         public string MeetLink { get; set; }
     }
 }

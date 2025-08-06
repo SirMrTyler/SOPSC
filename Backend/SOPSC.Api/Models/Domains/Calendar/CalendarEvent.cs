@@ -6,7 +6,7 @@ public class CalendarEvent
     public System.DateTime Start { get; set; }
     public System.DateTime End { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
-    public string Category { get; set; }
-    public string MeetLink { get; set; }
+    public string? Description { get; set; }
+    public string? Category { get; set; }
+    public string? MeetLink { get; set; }
 }
