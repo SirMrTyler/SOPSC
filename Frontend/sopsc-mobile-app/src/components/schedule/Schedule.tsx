@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Alert,
 } from 'react-native';
 import {
   Bars3Icon,
@@ -18,6 +19,8 @@ import { BlurView } from 'expo-blur';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
 import EventModal, { EventData } from './EventModal';
+import DayViewModal from './DayViewModal';
+import EventDetailsModal from './EventDetailsModal';
 import FilterMenu from './FilterMenu';
 import * as calendarService from '../../services/calendarService';
 interface DayCell {
@@ -45,8 +48,13 @@ const Schedule: React.FC = () => {
   }, [user]);
   const [month, setMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [eventModalVisible, setEventModalVisible] = useState(false);
+  const [dayModalVisible, setDayModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
+  const [eventToEdit, setEventToEdit] = useState<EventData | null>(null);
+  const [initialStartTime, setInitialStartTime] = useState<string | undefined>(undefined);
   const [menuVisible, setMenuVisible] = useState(false);
   const [viewMode, setViewMode] = useState<'day' | '3day' | 'week' | 'month'>('month');
   const [activeTags, setActiveTags] = useState<string[]>(['Agencies', 'Events', 'Prayer Meetings']);
@@ -101,7 +109,7 @@ const Schedule: React.FC = () => {
           const parsed = data.items.map((item: any) => ({
             id: item.id,
             date: item.start.date || item.start.dateTime,
-            startTime: item.start.dateTime || item.start.date,
+            startTime: item.start.dateTime ? new Date(item.start.dateTime).toISOString().substring(11, 16) : '00:00',
             duration: 60,
             title: item.summary,
             description: item.description || '',
@@ -127,9 +135,44 @@ const Schedule: React.FC = () => {
     setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
   };
 
-  const openModal = (date: Date) => {
+  const openDayModal = (date: Date) => {
     setSelectedDate(date);
-    setModalVisible(true);
+    setDayModalVisible(true);
+  };
+
+  const handleSlotSelection = (time: string) => {
+    if (!canCreateEvents || !selectedDate) return;
+    Alert.alert(
+      'Create Event',
+      `Would you like to create event at ${time} on ${selectedDate.toDateString()}?`,
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes',
+          onPress: () => {
+            setInitialStartTime(time);
+            setEventToEdit(null);
+            setDayModalVisible(false);
+            setEventModalVisible(true);
+          },
+        },
+      ],
+    );
+  };
+
+  const handleEventPress = (event: EventData) => {
+    setSelectedEvent(event);
+    setDayModalVisible(false);
+    setDetailModalVisible(true);
+  };
+
+  const handleEditSelected = () => {
+    if (!selectedEvent) return;
+    setEventToEdit(selectedEvent);
+    setSelectedDate(new Date(selectedEvent.date));
+    setInitialStartTime(selectedEvent.startTime);
+    setDetailModalVisible(false);
+    setEventModalVisible(true);
   };
 
   const handleAddEvent = async (event: EventData) => {
@@ -141,7 +184,18 @@ const Schedule: React.FC = () => {
     } catch (err) {
       console.error('[Schedule] Failed to add event:', (err as any)?.response?.data || err);
     } finally {
-      setModalVisible(false);
+      setEventModalVisible(false);
+    }
+  };
+
+  const handleUpdateEvent = async (event: EventData) => {
+    try {
+      await calendarService.updateEvent(event);
+      setEvents(prev => prev.map(ev => (ev.id === event.id ? { ...ev, ...event } : ev)));
+    } catch (err) {
+      console.error('[Schedule] Failed to update event:', (err as any)?.response?.data || err);
+    } finally {
+      setEventModalVisible(false);
     }
   };
 
@@ -156,7 +210,7 @@ const Schedule: React.FC = () => {
           !item.inMonth && styles.outMonth,
           isToday && styles.today,
         ]}
-        onPress={() => openModal(item.date)}
+        onPress={() => openDayModal(item.date)}
       >
         <Text style={styles.dayNumber}>{dayNumber}</Text>
         {eventsForDate(item.date).map(ev => (
@@ -205,7 +259,12 @@ const Schedule: React.FC = () => {
         {canCreateEvents && (
           <TouchableOpacity
             style={styles.fab}
-            onPress={() => openModal(new Date())}
+            onPress={() => {
+              setSelectedDate(new Date());
+              setEventToEdit(null);
+              setInitialStartTime(undefined);
+              setEventModalVisible(true);
+            }}
           >
             <PlusIcon color="white" size={32} />
           </TouchableOpacity>
@@ -222,11 +281,30 @@ const Schedule: React.FC = () => {
           selectedTags={activeTags}
           onTagsChange={setActiveTags}
         />
-        <EventModal
-          visible={modalVisible}
+        <DayViewModal
+          visible={dayModalVisible}
           date={selectedDate}
+          events={selectedDate ? eventsForDate(selectedDate) : []}
+          onClose={() => setDayModalVisible(false)}
+          isAdmin={canCreateEvents}
+          onSelectEvent={handleEventPress}
+          onSelectSlot={handleSlotSelection}
+        />
+        <EventDetailsModal
+          visible={detailModalVisible}
+          event={selectedEvent}
+          onClose={() => setDetailModalVisible(false)}
+          isAdmin={canCreateEvents}
+          onEdit={handleEditSelected}
+        />
+        <EventModal
+          visible={eventModalVisible}
+          date={selectedDate}
+          event={eventToEdit || undefined}
+          initialStartTime={initialStartTime}
           onAdd={handleAddEvent}
-          onClose={() => setModalVisible(false)}
+          onUpdate={handleUpdateEvent}
+          onClose={() => setEventModalVisible(false)}
           isAdmin={canCreateEvents}
         />
       </View>
