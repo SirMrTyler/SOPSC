@@ -41,6 +41,7 @@ const Schedule: React.FC = () => {
     const roleName = (user as any).roleName || (user as any).RoleName;
     return roleName === 'Admin' || roleName === 'Developer';
   }, [user]);
+
   const [month, setMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
   const [eventModalVisible, setEventModalVisible] = useState(false);
@@ -207,7 +208,12 @@ const Schedule: React.FC = () => {
       >
         <Text style={styles.dayNumber}>{dayNumber}</Text>
         {eventsForDate(item.date).map(ev => (
-          <Text key={ev.id} style={styles.event}>{ev.title}</Text>
+          <Text
+            key={ev.id || `${ev.date}-${ev.startTime}`}
+            style={styles.event}
+          >
+            {ev.title}
+          </Text>
         ))}
       </TouchableOpacity>
     );
@@ -242,7 +248,7 @@ const Schedule: React.FC = () => {
           <FlatList
             data={days}
             key={viewMode}
-            keyExtractor={(_, i) => String(i)}
+            keyExtractor={(item) => item.date.toISOString()}
             numColumns={viewMode === 'day' ? 1 : viewMode === '3day' ? 3 : 7}
             renderItem={renderItem}
             scrollEnabled={false}

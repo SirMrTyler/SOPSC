@@ -132,6 +132,89 @@ namespace SOPSC.Api.Services
             }
         }
 
+        public async Task UpdateEventAsync(int id, CalendarEventAddRequest model)
+        {
+            var calendarId = _config["GoogleCalendar:CalendarId"];
+            var credPath = _config["GoogleCalendar:ServiceAccountCredentialsPath"];
+
+            if (string.IsNullOrWhiteSpace(calendarId))
+            {
+                throw new System.InvalidOperationException("Google Calendar ID is not configured.");
+            }
+
+            if (string.IsNullOrWhiteSpace(credPath) || !File.Exists(credPath))
+            {
+                throw new System.InvalidOperationException("Google service account credentials file not found.");
+            }
+
+            GoogleCredential credential;
+            using (var stream = new FileStream(credPath, FileMode.Open, FileAccess.Read))
+            {
+                credential = GoogleCredential.FromStream(stream)
+                    .CreateScoped(Google.Apis.Calendar.v3.CalendarService.Scope.CalendarEvents);
+            }
+
+            var service = new Google.Apis.Calendar.v3.CalendarService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "SOPSC.Api"
+            });
+
+            var start = model.StartDateTime;
+            var end = model.EndDateTime;
+
+            if (end <= start)
+            {
+                throw new ArgumentException("EndDateTime must be after StartDateTime.");
+            }
+
+            string googleEventId = null;
+            _dataProvider.ExecuteCmd("[dbo].[CalendarEvents_SelectById]",
+                param => param.AddWithValue("@EventId", id),
+                delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    reader.GetSafeInt32(startingIndex++); // EventId
+                    googleEventId = reader.GetSafeString(startingIndex++);
+                });
+
+            if (!string.IsNullOrWhiteSpace(googleEventId))
+            {
+                var body = new Event
+                {
+                    Summary = model.Title,
+                    Description = model.Description,
+                    Start = new EventDateTime { DateTime = start },
+                    End = new EventDateTime { DateTime = end },
+                    Location = model.IncludeMeetLink ? model.MeetLink : null
+                };
+
+                var request = service.Events.Update(body, calendarId, googleEventId);
+                await request.ExecuteAsync();
+            }
+
+            string procName = "[dbo].[CalendarEvents_Update]";
+            _dataProvider.ExecuteNonQuery(procName,
+                delegate (SqlParameterCollection param)
+                {
+                    param.AddWithValue("@EventId", id);
+                    param.AddWithValue("@GoogleEventId", googleEventId ?? (object)DBNull.Value);
+                    param.AddWithValue("@StartDateTime", start);
+                    param.AddWithValue("@EndDateTime", end);
+                    param.AddWithValue("@Title", model.Title);
+                    param.AddWithValue("@Description", model.Description ?? (object)DBNull.Value);
+                    param.AddWithValue("@Category", model.Category ?? (object)DBNull.Value);
+                    if (model.IncludeMeetLink && !string.IsNullOrEmpty(model.MeetLink))
+                    {
+                        param.AddWithValue("@MeetLink", model.MeetLink);
+                    }
+                    else
+                    {
+                        param.AddWithValue("@MeetLink", DBNull.Value);
+                    }
+                });
+        }
+
         public Task<List<CalendarEvent>> GetEventsAsync(DateTime start, DateTime end)
         {
             List<CalendarEvent> list = null;

@@ -83,5 +83,36 @@ namespace SOPSC.Api.Controllers
 
             return StatusCode(code, response);
         }
+
+
+        [HttpPut("events/{id:int}")]
+        public async Task<ActionResult<SuccessResponse>> Update(int id, [FromBody] CalendarEventAddRequest model)
+        {
+            int code = 200;
+            BaseResponse response = null;
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                base.Logger.LogWarning("Invalid Calendar event model: {Errors}", errors);
+                return BadRequest(errors);
+            }
+            try
+            {
+                await _calendarService.UpdateEventAsync(id, model);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                code = 500;
+                response = new ErrorResponse(ex.Message);
+                base.Logger.LogError(ex.ToString());
+            }
+
+            return StatusCode(code, response);
+        }
     }
 }
