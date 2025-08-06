@@ -14,7 +14,6 @@ import {
   CalendarIcon,
   PlusIcon,
 } from 'react-native-heroicons/outline';
-import Constants from 'expo-constants';
 import { BlurView } from 'expo-blur';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
@@ -27,10 +26,6 @@ interface DayCell {
   date: Date;
   inMonth: boolean;
 }
-
-const runtime = Constants.expoConfig?.extra || {};
-const GOOGLE_CALENDAR_ID = runtime.EXPO_PUBLIC_GOOGLE_CALENDAR_ID || '';
-const GOOGLE_API_KEY = runtime.EXPO_PUBLIC_GOOGLE_API_KEY || '';
 
 const Schedule: React.FC = () => {
   const { user } = useAuth();
@@ -98,29 +93,27 @@ const Schedule: React.FC = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      if (!GOOGLE_CALENDAR_ID || !GOOGLE_API_KEY) return;
       try {
-        const timeMin = new Date(month.getFullYear(), month.getMonth(), 1).toISOString();
-        const timeMax = new Date(month.getFullYear(), month.getMonth() + 1, 0).toISOString();
-        const url = `https://www.googleapis.com/calendar/v3/calendars/${GOOGLE_CALENDAR_ID}/events?singleEvents=true&timeMin=${timeMin}&timeMax=${timeMax}&orderBy=startTime&key=${GOOGLE_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (Array.isArray(data.items)) {
+        const start = new Date(month.getFullYear(), month.getMonth(), 1);
+        const end = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+        const data = await calendarService.getEvents(start, end);
+        if (Array.isArray(data?.items)) {
           const parsed = data.items.map((item: any) => ({
-            id: item.id,
-            date: item.start.date || item.start.dateTime,
-            startTime: item.start.dateTime ? new Date(item.start.dateTime).toISOString().substring(11, 16) : '00:00',
-            duration: 60,
-            title: item.summary,
+            date: item.startDateTime,
+            startTime: new Date(item.startDateTime).toISOString().substring(11, 16),
+            duration: (new Date(item.endDateTime).getTime() - new Date(item.startDateTime).getTime()) / 60000,
+            title: item.title,
             description: item.description || '',
-            category: item.eventType || '',
-            includeMeetLink: Boolean(item.hangoutLink),
-            meetLink: item.hangoutLink,
+            category: item.category || '',
+            includeMeetLink: Boolean(item.meetLink),
+            meetLink: item.meetLink,
           }));
           setEvents(parsed);
+        } else {
+          setEvents([]);
         }
       } catch (err) {
-        console.error('[Schedule] Failed to fetch events:', err);
+        console.error('[Schedule] Failed to fetch events:', (err as any)?.response?.data || err);
       }
     };
     fetchEvents();

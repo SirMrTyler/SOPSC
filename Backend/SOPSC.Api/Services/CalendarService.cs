@@ -5,7 +5,9 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Models.Requests.Calendar;
+using SOPSC.Api.Models.Domains.Calendar;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
 using SOPSC.Api.Data.Interfaces;
@@ -128,6 +130,40 @@ namespace SOPSC.Api.Services
                 _logger.LogError($"- Errors: {ex.Error?.Errors?.FirstOrDefault()?.Message}");
                 throw;
             }
+        }
+
+        public Task<List<CalendarEvent>> GetEventsAsync(DateTime start, DateTime end)
+        {
+            List<CalendarEvent> list = null;
+            string procName = "[dbo].[CalendarEvents_SelectByDateRange]";
+
+            _dataProvider.ExecuteCmd(procName,
+                delegate (SqlParameterCollection param)
+                {
+                    param.AddWithValue("@StartDateTime", start);
+                    param.AddWithValue("@EndDateTime", end);
+                },
+                delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    CalendarEvent evt = new CalendarEvent
+                    {
+                        StartDateTime = reader.GetSafeUtcDateTime(startingIndex++),
+                        EndDateTime = reader.GetSafeUtcDateTime(startingIndex++),
+                        Title = reader.GetSafeString(startingIndex++),
+                        Description = reader.GetSafeString(startingIndex++),
+                        Category = reader.GetSafeString(startingIndex++),
+                        MeetLink = reader.GetSafeString(startingIndex++)
+                    };
+
+                    if (list == null)
+                    {
+                        list = new List<CalendarEvent>();
+                    }
+                    list.Add(evt);
+                });
+
+            return Task.FromResult(list);
         }
     }
 }

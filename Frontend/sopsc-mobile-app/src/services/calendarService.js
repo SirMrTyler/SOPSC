@@ -3,6 +3,21 @@ import * as helper from './serviceHelpers';
 
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}calendar/events`;
 
+const getEvents = async (start, end) => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'GET',
+    url: `${endpoint}?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 const addEvent = async (eventData) => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
@@ -71,4 +86,4 @@ const updateEvent = async (eventData) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-export { addEvent, updateEvent };
+export { addEvent, updateEvent, getEvents };

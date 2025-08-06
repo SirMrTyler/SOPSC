@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SOPSC.Api.Models.Domains.Calendar;
 using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Models.Requests.Calendar;
 using SOPSC.Api.Models.Responses;
-using System.Linq;
 using SOPSC.Api.Services.Auth.Interfaces;
+using System.Linq;
 
 namespace SOPSC.Api.Controllers
 {
@@ -23,6 +24,35 @@ namespace SOPSC.Api.Controllers
         {
             _calendarService = calendarService;
             _authService = authService;
+        }
+
+        [HttpGet("events")]
+        public async Task<ActionResult<BaseResponse>> Get(DateTime start, DateTime end)
+        {
+            int code = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                var events = await _calendarService.GetEventsAsync(start, end);
+                if (events == null || !events.Any())
+                {
+                    code = 404;
+                    response = new ErrorResponse("Records not found.");
+                }
+                else
+                {
+                    response = new ItemsResponse<CalendarEvent> { Items = events };
+                }
+            }
+            catch (Exception ex)
+            {
+                code = 500;
+                response = new ErrorResponse(ex.Message);
+                base.Logger.LogError(ex.ToString());
+            }
+
+            return StatusCode(code, response);
         }
 
         [HttpPost("events")]

@@ -118,6 +118,24 @@ BEGIN
 END
 GO
 
+-- Returns calendar events within a date range
+ALTER PROC dbo.CalendarEvents_SelectByDateRange
+        @StartDateTime DATETIME2(7),
+        @EndDateTime DATETIME2(7)
+AS
+BEGIN
+        SELECT StartDateTime,
+               EndDateTime,
+               Title,
+               Description,
+               Category,
+               MeetLink
+        FROM dbo.CalendarEvents
+        WHERE StartDateTime >= @StartDateTime AND EndDateTime <= @EndDateTime
+        ORDER BY StartDateTime;
+END
+GO
+
 -- Updates a calendar event
 ALTER PROC dbo.CalendarEvents_Update
         @EventId INT,
