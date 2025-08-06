@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Switch, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
@@ -7,8 +7,11 @@ interface Props {
   visible: boolean;
   date: Date | null;
   onAdd: (event: EventData) => void;
+  onUpdate?: (event: EventData) => void;
   onClose: () => void;
   isAdmin: boolean;
+  event?: EventData | null;
+  initialStartTime?: string;
 }
 
 export interface EventData {
@@ -23,7 +26,7 @@ export interface EventData {
   meetLink?: string;
 }
 
-const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin }) => {
+const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, isAdmin, event, initialStartTime }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState('');
@@ -33,11 +36,43 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  // Prefill state when editing or when an initial start time is provided
+  useEffect(() => {
+    if (event) {
+      setTitle(event.title);
+      setDescription(event.description);
+      setDuration(String(event.duration));
+      setCategory(event.category);
+      setIncludeMeetLink(event.includeMeetLink);
+      setMeetLink(event.meetLink || '');
+      const [h, m] = event.startTime.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      setStartTime(d);
+    } else {
+      setTitle('');
+      setDescription('');
+      setDuration('');
+      setCategory('');
+      setIncludeMeetLink(false);
+      setMeetLink('');
+      if (initialStartTime) {
+        const [h, m] = initialStartTime.split(':').map(Number);
+        const d = new Date();
+        d.setHours(h, m, 0, 0);
+        setStartTime(d);
+      } else {
+        setStartTime(null);
+      }
+    }
+  }, [event, initialStartTime, visible]);
+
   
-  const handleAdd = () => {
+  const handleSubmit = () => {
     if (!startTime || !date) return;
-    
-    const event: EventData = {
+
+    const newEvent: EventData = {
+      id: event?.id,
       date: date.toISOString().split('T')[0],
       startTime: format(startTime, 'HH:mm'),
       duration: parseInt(duration, 10),
@@ -48,7 +83,11 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
       meetLink: includeMeetLink ? meetLink : undefined,
     };
 
-    onAdd(event);
+    if (event && onUpdate) {
+      onUpdate(newEvent);
+    } else {
+      onAdd(newEvent);
+    }
 
     setTitle('');
     setDescription('');
@@ -67,7 +106,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <Text style={styles.header}>Create Event</Text>
+          <Text style={styles.header}>{event ? 'Edit Event' : 'Create Event'}</Text>
           
           <TextInput
             style={styles.input}
@@ -145,11 +184,11 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
             
             {isAdmin && (
               <TouchableOpacity
-                onPress={handleAdd}
+                onPress={handleSubmit}
                 style={[styles.addBtn, !isFormComplete && styles.disabledBtn]}
                 disabled={!isFormComplete}
               >
-                <Text style={styles.addText}>Submit</Text>
+                <Text style={styles.addText}>{event ? 'Save' : 'Submit'}</Text>
               </TouchableOpacity>
             )}
           </View>
