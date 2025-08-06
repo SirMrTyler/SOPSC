@@ -5,6 +5,7 @@ const onGlobalSuccess = response => {
 }
 
 const onGlobalError = err => {
+    console.error('[Service Error]', err?.response?.data || err);
     return Promise.reject(err);
 };
 

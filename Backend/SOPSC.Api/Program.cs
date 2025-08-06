@@ -64,12 +64,18 @@ try
     });
 
     // Add services to the container.
-    builder.Services.AddControllers(config =>
+    builder.Services
+    .AddControllers(config =>
     {
         var policy = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build();
         config.Filters.Add(new AuthorizeFilter(policy));
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Allow controllers to handle model validation errors manually
+        options.SuppressModelStateInvalidFilter = true;
     });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();

@@ -3,9 +3,9 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
-using SOPSC.Api.Models.Domains.Calendar;
 using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Models.Requests.Calendar;
+using System;
 using System.Threading.Tasks;
 using System.IO;
 using SOPSC.Api.Data.Interfaces;
@@ -60,18 +60,13 @@ namespace SOPSC.Api.Services
                 ApplicationName = "SOPSC.Api"
             });
 
-            // Validate and parse date + time
-            if (!DateTime.TryParse($"{model.Date}T{model.StartTime}", out var start))
-            {
-                throw new FormatException($"Invalid data/time format: '{model.Date}T{model.StartTime}'");
-            }
+            var start = model.StartDateTime;
+            var end = model.EndDateTime;
 
-            if (!int.TryParse(model.Duration, out var mins) || mins <= 0)
+            if (end <= start)
             {
-                mins = 60; // Default to 1 hour
+                throw new ArgumentException("EndDateTime must be after StartDateTime.");
             }
-
-            var end = start.AddMinutes(mins);
 
             // Log what we're sending to google
             _logger.LogInformation("[CalendarService] Creating calendar event with:");

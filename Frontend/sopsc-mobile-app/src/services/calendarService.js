@@ -7,14 +7,16 @@ const addEvent = async (eventData) => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
 
+  const start = new Date(`${eventData.date}T${eventData.startTime}`);
+  const end = new Date(start.getTime() + eventData.duration * 60000);
+
   const payload = {
-    Date: eventData.date,
-    StartTime: eventData.startTime,
-    Duration: eventData.duration,
-    Title: eventData.title,
-    Description: eventData.description,
-    Category: eventData.category,
-    MeetLink: eventData.meetLink,
+    startDateTime: start.toISOString(),
+    endDateTime: end.toISOString(),
+    title: eventData.title,
+    description: eventData.description,
+    category: eventData.category,
+    meetLink: eventData.meetLink,
   };
 
   console.log('[CalendarService] Adding event:', JSON.stringify(payload, null, 2));

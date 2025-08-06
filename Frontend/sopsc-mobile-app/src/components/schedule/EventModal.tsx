@@ -15,7 +15,7 @@ export interface EventData {
   id?: string;
   date: string; // ISO date
   startTime: string; // HH:MM
-  duration: string; // in minutes
+  duration: number; // in minutes
   title: string;
   description: string;
   category: string;
@@ -39,7 +39,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onClose, isAdmin })
     const event: EventData = {
       date: date.toISOString().split('T')[0],
       startTime: format(startTime, 'HH:mm'),
-      duration,
+      duration: parseInt(duration, 10),
       title,
       description,
       category,

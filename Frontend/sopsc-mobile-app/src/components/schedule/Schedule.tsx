@@ -102,7 +102,7 @@ const Schedule: React.FC = () => {
             id: item.id,
             date: item.start.date || item.start.dateTime,
             startTime: item.start.dateTime || item.start.date,
-            duration: '60',
+            duration: 60,
             title: item.summary,
             description: item.description || '',
             category: item.eventType || '',
@@ -138,7 +138,7 @@ const Schedule: React.FC = () => {
       const saved = { ...event, id: newId } as EventData;
       setEvents(prev => [...prev, saved]);
     } catch (err) {
-      console.error('[Schedule] Failed to add event:', err);
+      console.error('[Schedule] Failed to add event:', (err as any)?.response?.data || err);
     } finally {
       setModalVisible(false);
     }
