@@ -15,10 +15,12 @@ interface Props {
 
 const DayViewModal: React.FC<Props> = ({ visible, date, events, onClose, isAdmin, onSelectEvent, onSelectSlot }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const eventsByTime = events.reduce((acc: Record<string, EventData>, ev) => {
-    acc[ev.startTime] = ev;
+  const eventsByHour = events.reduce((acc: Record<string, EventData[]>, ev) => {
+    const hour = ev.startTime.split(':')[0];
+    if (!acc[hour]) acc[hour] = [];
+    acc[hour].push(ev);
     return acc;
-  }, {} as Record<string, EventData>);
+  }, {} as Record<string, EventData[]>);
 
   const formatLabel = (h: number) => {
     const d = new Date();
@@ -33,25 +35,30 @@ const DayViewModal: React.FC<Props> = ({ visible, date, events, onClose, isAdmin
           <Text style={styles.header}>{date ? format(date, 'MMMM d, yyyy') : ''}</Text>
           <ScrollView>
             {hours.map(h => {
-              const time = `${String(h).padStart(2, '0')}:00`;
-              const event = eventsByTime[time];
+              const hourKey = String(h).padStart(2, '0');
+              const eventsAtHour = eventsByHour[hourKey] || [];
               return (
-                <TouchableOpacity
-                  key={time}
-                  style={styles.row}
-                  onPress={() => {
-                    if (event) {
-                      onSelectEvent(event);
-                    } else if (isAdmin) {
-                      onSelectSlot(time);
-                    }
-                  }}
-                >
+                <View key={hourKey} style={styles.row}>
                   <Text style={styles.time}>{formatLabel(h)}</Text>
                   <View style={styles.eventCell}>
-                    {event && <Text style={styles.eventTitle}>{event.title}</Text>}
+                    {eventsAtHour.length > 0 ? (
+                      eventsAtHour.map(ev => (
+                        <TouchableOpacity
+                          key={ev.id || `${ev.date}-${ev.startTime}`}
+                          onPress={() => onSelectEvent(ev)}
+                        >
+                          <Text style={styles.eventTitle}>{`${ev.startTime} ${ev.title}`}</Text>
+                        </TouchableOpacity>
+                      ))
+                    ) : (
+                      isAdmin && (
+                        <TouchableOpacity onPress={() => onSelectSlot(`${hourKey}:00`)}>
+                          <Text style={styles.emptySlot}>+</Text>
+                        </TouchableOpacity>
+                      )
+                    )}
                   </View>
-                </TouchableOpacity>
+                </View>
               );
             })}
           </ScrollView>
@@ -101,6 +108,9 @@ const styles = StyleSheet.create({
   },
   eventTitle: {
     color: '#000',
+  },
+  emptySlot: {
+    color: '#999',
   },
   closeBtn: {
     marginTop: 12,
