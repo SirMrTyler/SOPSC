@@ -100,6 +100,7 @@ const Schedule: React.FC = () => {
         const data = await calendarService.getEvents(start, end);
         if (Array.isArray(data?.items)) {
           const parsed = data.items.map((item: any) => ({
+            id: item.id,
             date: item.startDateTime,
             startTime: new Date(item.startDateTime).toISOString().substring(11, 16),
             duration: (new Date(item.endDateTime).getTime() - new Date(item.startDateTime).getTime()) / 60000,

@@ -124,7 +124,8 @@ ALTER PROC dbo.CalendarEvents_SelectByDateRange
         @EndDateTime DATETIME2(7)
 AS
 BEGIN
-        SELECT StartDateTime,
+        SELECT EventId,
+	       StartDateTime,
                EndDateTime,
                Title,
                Description,

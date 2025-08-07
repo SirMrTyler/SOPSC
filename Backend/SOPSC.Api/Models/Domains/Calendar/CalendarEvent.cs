@@ -5,6 +5,7 @@ namespace SOPSC.Api.Models.Domains.Calendar;
 
 public class CalendarEvent
 {
+    public int Id { get; set; }
     /// <summary>
     /// The starting date and time of the event in UTC.
     /// </summary>

@@ -15,7 +15,7 @@ interface Props {
 }
 
 export interface EventData {
-  id?: string;
+  id?: number;
   date: string; // ISO date
   startTime: string; // HH:MM
   duration: number; // in minutes

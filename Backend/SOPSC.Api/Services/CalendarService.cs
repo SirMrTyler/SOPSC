@@ -231,6 +231,7 @@ namespace SOPSC.Api.Services
                     int startingIndex = 0;
                     CalendarEvent evt = new CalendarEvent
                     {
+                        Id = reader.GetSafeInt32(startingIndex++),
                         StartDateTime = reader.GetSafeUtcDateTime(startingIndex++),
                         EndDateTime = reader.GetSafeUtcDateTime(startingIndex++),
                         Title = reader.GetSafeString(startingIndex++),
