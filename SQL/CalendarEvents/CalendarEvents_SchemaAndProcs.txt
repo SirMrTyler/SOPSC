@@ -30,7 +30,7 @@ ALTER PROC dbo.CalendarEvents_InsertWithLink
         @Title NVARCHAR(255),
         @Description NVARCHAR(MAX) = NULL,
         @Category NVARCHAR(100) = NULL,
-        @MeetLink NVARCHAR(255),
+        @MeetLink NVARCHAR(255) = NULL,
         @CreatedBy INT
 AS
 BEGIN
@@ -70,6 +70,7 @@ ALTER PROC dbo.CalendarEvents_InsertNoLink
         @Title NVARCHAR(255),
         @Description NVARCHAR(MAX) = NULL,
         @Category NVARCHAR(100) = NULL,
+	@MeetLink NVARCHAR(255) = NULL,
         @CreatedBy INT
 AS
 BEGIN
@@ -80,6 +81,7 @@ BEGIN
                 Title,
                 Description,
                 Category,
+		MeetLink,
                 CreatedBy,
                 CreatedTimestamp)
         VALUES (
@@ -89,6 +91,7 @@ BEGIN
                 @Title,
                 @Description,
                 @Category,
+		@MeetLink,
                 @CreatedBy,
                 SYSDATETIME());
         SET @EventId = SCOPE_IDENTITY();

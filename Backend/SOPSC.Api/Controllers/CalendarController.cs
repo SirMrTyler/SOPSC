@@ -56,7 +56,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost("events")]
-        public async Task<ActionResult<ItemResponse<int>>> Create([FromBody] CalendarEventAddRequest model)
+        public async Task<ActionResult<ItemResponse<CalendarEventCreated>>> Create([FromBody] CalendarEventAddRequest model)
         {
             int code = 201;
             BaseResponse response = null;
@@ -73,8 +73,8 @@ namespace SOPSC.Api.Controllers
             try
             {
                 int createdById = _authService.GetCurrentUserId();
-                int eventId = await _calendarService.AddEventAsync(model, createdById);
-                response = new ItemResponse<int> { Item = eventId };
+                CalendarEventCreated created = await _calendarService.AddEventAsync(model, createdById);
+                response = new ItemResponse<CalendarEventCreated> { Item = created };
             }
             catch (Exception ex)
             {

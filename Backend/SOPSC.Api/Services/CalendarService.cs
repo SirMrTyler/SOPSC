@@ -30,7 +30,7 @@ namespace SOPSC.Api.Services
             _logger = logger;
         }
 
-        public async Task<int> AddEventAsync(CalendarEventAddRequest model, int createdById)
+        public async Task<CalendarEventCreated> AddEventAsync(CalendarEventAddRequest model, int createdById)
         {
             var calendarId = _config["GoogleCalendar:CalendarId"];
             var credPath = _config["GoogleCalendar:ServiceAccountCredentialsPath"];
@@ -72,7 +72,6 @@ namespace SOPSC.Api.Services
             _logger.LogInformation($"- Start: {start:o}");
             _logger.LogInformation($"- End: {end:o}");
             _logger.LogInformation($"- IncludeMeetLink: {model.IncludeMeetLink}");
-            _logger.LogInformation($"- MeetLink: {model.MeetLink}");
             _logger.LogInformation($"- Category: {model.Category}");
             _logger.LogInformation($"- Calendar ID: {calendarId}");
 
@@ -81,19 +80,35 @@ namespace SOPSC.Api.Services
                 Summary = model.Title,
                 Description = model.Description,
                 Start = new EventDateTime { DateTime = start },
-                End = new EventDateTime { DateTime = end },
-                Location = model.IncludeMeetLink ? model.MeetLink : null
+                End = new EventDateTime { DateTime = end }
             };
+            if (model.IncludeMeetLink)
+            {
+                body.ConferenceData = new ConferenceData
+                {
+                    CreateRequest = new CreateConferenceRequest
+                    {
+                        ConferenceSolutionKey = new ConferenceSolutionKey { Type = "hangoutsMeet" },
+                        RequestId = Guid.NewGuid().ToString()
+                    }
+                };
+            }
 
             var request = service.Events.Insert(body, calendarId);
+            if (model.IncludeMeetLink)
+            {
+                request.ConferenceDataVersion = 1;
+            }
             try
             {
                 var created = await request.ExecuteAsync();
+                string meetLink = created.HangoutLink ??
+                    created.ConferenceData?.EntryPoints?.FirstOrDefault(ep => ep.EntryPointType == "video")?.Uri;
 
                 int eventId = 0;
-                string procName = model.IncludeMeetLink ? 
-                    "[dbo].[CalendarEvents_InsertWithLink]" :   // When MeetLink is true
-                    "[dbo].[CalendarEvents_InsertNoLink]";      // When MeetLink is false
+                string procName = model.IncludeMeetLink ?
+                    "[dbo].[CalendarEvents_InsertWithLink]" :
+                    "[dbo].[CalendarEvents_InsertNoLink]";
                 _dataProvider.ExecuteNonQuery(procName,
                     delegate (SqlParameterCollection param)
                     {
@@ -106,7 +121,7 @@ namespace SOPSC.Api.Services
                         param.AddWithValue("@CreatedBy", createdById);
                         if (model.IncludeMeetLink)
                         {
-                            param.AddWithValue("@MeetLink", model.MeetLink);
+                            param.AddWithValue("@MeetLink", meetLink);
                         }
                         SqlParameter idOut = new SqlParameter("@EventId", SqlDbType.Int)
                         {
@@ -120,7 +135,11 @@ namespace SOPSC.Api.Services
                         int.TryParse(oId.ToString(), out eventId);
                     });
 
-                return eventId;
+                return new CalendarEventCreated
+                {
+                    Id = eventId,
+                    MeetLink = meetLink
+                };
             }
             catch (Google.GoogleApiException ex)
             {
@@ -185,8 +204,7 @@ namespace SOPSC.Api.Services
                     Summary = model.Title,
                     Description = model.Description,
                     Start = new EventDateTime { DateTime = start },
-                    End = new EventDateTime { DateTime = end },
-                    Location = model.IncludeMeetLink ? model.MeetLink : null
+                    End = new EventDateTime { DateTime = end }
                 };
 
                 var request = service.Events.Update(body, calendarId, googleEventId);
