@@ -31,7 +31,6 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState('');
   const [category, setCategory] = useState('');
-  const [meetLink, setMeetLink] = useState('');
   const [includeMeetLink, setIncludeMeetLink] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -44,7 +43,6 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
       setDuration(String(event.duration));
       setCategory(event.category);
       setIncludeMeetLink(event.includeMeetLink);
-      setMeetLink(event.meetLink || '');
       const [h, m] = event.startTime.split(':').map(Number);
       const d = new Date();
       d.setHours(h, m, 0, 0);
@@ -55,7 +53,6 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
       setDuration('');
       setCategory('');
       setIncludeMeetLink(false);
-      setMeetLink('');
       if (initialStartTime) {
         const [h, m] = initialStartTime.split(':').map(Number);
         const d = new Date();
@@ -80,7 +77,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
       description,
       category,
       includeMeetLink,
-      meetLink: includeMeetLink ? meetLink : undefined,
+      meetLink: includeMeetLink ? event?.meetLink : undefined,
     };
 
     if (event && onUpdate) {
@@ -94,7 +91,6 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
     setStartTime(null);
     setDuration('');
     setCategory('');
-    setMeetLink('');
   };
 
   const isFormComplete =
@@ -162,21 +158,11 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
             onChangeText={setCategory}
           />
 
-        <View style={styles.switchRow}>
-          <Text>Add Google Meet Link?</Text>
-          <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
-        </View>
+          <View style={styles.switchRow}>
+            <Text>Add Google Meet Link?</Text>
+            <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
+          </View>
         
-        {includeMeetLink && (
-          <TextInput
-            style={styles.input}
-            placeholder="Google Meet link"
-            placeholderTextColor="#777"
-            value={meetLink}
-            onChangeText={setMeetLink}
-          />
-          )}
-
           <View style={styles.buttonRow}>
             <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
               <Text style={styles.cancelText}>Cancel</Text>

@@ -34,10 +34,6 @@ const addEvent = async (eventData) => {
     includeMeetLink: eventData.includeMeetLink,
   };
 
-  if (eventData.includeMeetLink) {
-    payload.meetLink = eventData.meetLink;
-  }
-
   console.log('[CalendarService] Adding event:', JSON.stringify(payload, null, 2));
 
   const config = {

@@ -24,7 +24,7 @@ const EventDetailsModal: React.FC<Props> = ({ visible, event, onClose, isAdmin, 
             <Text style={styles.label}>Duration: {event.duration} mins</Text>
             <Text style={styles.label}>Category: {event.category}</Text>
             {event.description ? <Text style={styles.label}>Description: {event.description}</Text> : null}
-            {event.includeMeetLink && event.meetLink ? (
+            {event.meetLink ? (
               <Text style={styles.label}>Meet Link: {event.meetLink}</Text>
             ) : null}
           </ScrollView>

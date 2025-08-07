@@ -174,8 +174,16 @@ const Schedule: React.FC = () => {
     try {
       const result = await calendarService.addEvent(event);
       const newId = result.item || result.id;
-      const saved = { ...event, id: newId } as EventData;
+      const saved = {
+        ...event,
+        id: newId,
+        meetLink: result.meetLink,
+        includeMeetLink: Boolean(result.meetLink)
+      } as EventData;
       setEvents(prev => [...prev, saved]);
+      if (result.meetLink) {
+        Alert.alert('Google Meet Link', result.meetLink);
+      }
     } catch (err) {
       console.error('[Schedule] Failed to add event:', (err as any)?.response?.data || err);
     } finally {
