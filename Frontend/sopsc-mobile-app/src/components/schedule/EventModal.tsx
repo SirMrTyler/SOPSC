@@ -70,7 +70,9 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
 
     const newEvent: EventData = {
       id: event?.id,
-      date: date.toISOString().split('T')[0],
+      // Use the local date rather than UTC to avoid off-by-one issues
+      // when the device is behind UTC (e.g. PST).
+      date: format(date, 'yyyy-MM-dd'),
       startTime: format(startTime, 'HH:mm'),
       duration: parseInt(duration, 10),
       title,
