@@ -49,12 +49,15 @@ namespace SOPSC.Api.Services
             GoogleCredential credential;
             using (var stream = new FileStream(credPath, FileMode.Open, FileAccess.Read))
             {
+                var scopes = new[]
+               {
+                    Google.Apis.Calendar.v3.CalendarService.Scope.CalendarEvents,
+                    Google.Apis.Calendar.v3.CalendarService.Scope.Calendar
+                };
+
                 credential = GoogleCredential.FromStream(stream)
-                    .CreateScoped(new[]
-                    {
-                        Google.Apis.Calendar.v3.CalendarService.Scope.CalendarEvents,
-                        Google.Apis.Calendar.v3.CalendarService.Scope.Calendar
-                    });
+                    .CreateScoped(scopes)
+                    .CreateWithUser(_config["GoogleCalendar:ImpersonatedUser"]);
             }
 
             var service = new Google.Apis.Calendar.v3.CalendarService(new BaseClientService.Initializer
