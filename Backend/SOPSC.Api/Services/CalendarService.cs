@@ -34,6 +34,7 @@ namespace SOPSC.Api.Services
         {
             var calendarId = _config["GoogleCalendar:CalendarId"];
             var credPath = _config["GoogleCalendar:ServiceAccountCredentialsPath"];
+            var conferenceType = _config["GoogleCalendar:ConferenceType"] ?? "hangoutsMeet";
 
             if (string.IsNullOrWhiteSpace(calendarId))
             {
@@ -49,7 +50,11 @@ namespace SOPSC.Api.Services
             using (var stream = new FileStream(credPath, FileMode.Open, FileAccess.Read))
             {
                 credential = GoogleCredential.FromStream(stream)
-                    .CreateScoped(Google.Apis.Calendar.v3.CalendarService.Scope.CalendarEvents);
+                    .CreateScoped(new[]
+                    {
+                        Google.Apis.Calendar.v3.CalendarService.Scope.CalendarEvents,
+                        Google.Apis.Calendar.v3.CalendarService.Scope.Calendar
+                    });
             }
 
             var service = new Google.Apis.Calendar.v3.CalendarService(new BaseClientService.Initializer
@@ -75,6 +80,15 @@ namespace SOPSC.Api.Services
             _logger.LogInformation($"- Category: {model.Category}");
             _logger.LogInformation($"- Calendar ID: {calendarId}");
 
+            var calendar = await service.Calendars.Get(calendarId).ExecuteAsync();
+            var allowedTypes = calendar.ConferenceProperties?.AllowedConferenceSolutionTypes;
+            var includeMeetLink = model.IncludeMeetLink;
+            if (includeMeetLink && (allowedTypes == null || !allowedTypes.Contains(conferenceType)))
+            {
+                _logger.LogWarning("[CalendarService] Calendar does not allow conference type '{ConferenceType}'. Skipping Meet link.", conferenceType);
+                includeMeetLink = false;
+            }
+
             var body = new Event
             {
                 Summary = model.Title,
@@ -82,20 +96,20 @@ namespace SOPSC.Api.Services
                 Start = new EventDateTime { DateTime = start },
                 End = new EventDateTime { DateTime = end }
             };
-            if (model.IncludeMeetLink)
+            if (includeMeetLink)
             {
                 body.ConferenceData = new ConferenceData
                 {
                     CreateRequest = new CreateConferenceRequest
                     {
-                        ConferenceSolutionKey = new ConferenceSolutionKey { Type = "hangoutsMeet" },
+                        ConferenceSolutionKey = new ConferenceSolutionKey { Type = conferenceType },
                         RequestId = Guid.NewGuid().ToString()
                     }
                 };
             }
 
             var request = service.Events.Insert(body, calendarId);
-            if (model.IncludeMeetLink)
+            if (includeMeetLink)
             {
                 request.ConferenceDataVersion = 1;
             }
@@ -108,7 +122,7 @@ namespace SOPSC.Api.Services
                 // and the Calendar UI will display "New Link". Poll the event
                 // until the conference data is populated so we can persist the real
                 // link in our database.
-                if (model.IncludeMeetLink)
+                if (includeMeetLink)
                 {
                     int retries = 5;
                     while (retries-- > 0 &&
@@ -124,8 +138,8 @@ namespace SOPSC.Api.Services
                     created.ConferenceData?.EntryPoints?.FirstOrDefault(ep => ep.EntryPointType == "video")?.Uri;
 
                 int eventId = 0;
-                _logger.LogInformation("[CalendarService] IncludeMeetLink flag is {IncludeMeetLink}", model.IncludeMeetLink);
-                string procName = model.IncludeMeetLink
+                _logger.LogInformation("[CalendarService] IncludeMeetLink flag is {IncludeMeetLink}", includeMeetLink);
+                string procName = includeMeetLink
                     ? "[dbo].[CalendarEvents_InsertWithLink]"
                     : "[dbo].[CalendarEvents_InsertNoLink]";
                 _dataProvider.ExecuteNonQuery(procName,
@@ -138,7 +152,7 @@ namespace SOPSC.Api.Services
                         param.AddWithValue("@Description", model.Description ?? (object)DBNull.Value);
                         param.AddWithValue("@Category", model.Category ?? (object)DBNull.Value);
                         param.AddWithValue("@CreatedBy", createdById);
-                        if (model.IncludeMeetLink)
+                        if (includeMeetLink)
                         {
                             param.AddWithValue("@MeetLink", meetLink);
                         }
