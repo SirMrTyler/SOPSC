@@ -102,6 +102,24 @@ namespace SOPSC.Api.Services
             try
             {
                 var created = await request.ExecuteAsync();
+                // When creating a Meet link the Google API may return a "pending"
+                // conference without an actual URL on the initial insert. In this
+                // case `HangoutLink` and `ConferenceData.EntryPoints` will be null
+                // and the Calendar UI will display "New Link". Poll the event
+                // until the conference data is populated so we can persist the real
+                // link in our database.
+                if (model.IncludeMeetLink)
+                {
+                    int retries = 5;
+                    while (retries-- > 0 &&
+                        string.IsNullOrEmpty(created.HangoutLink) &&
+                        created.ConferenceData?.EntryPoints == null)
+                    {
+                        await Task.Delay(500);
+                        var getRequest = service.Events.Get(calendarId, created.Id);
+                        created = await getRequest.ExecuteAsync();
+                    }
+                }
                 string meetLink = created.HangoutLink ??
                     created.ConferenceData?.EntryPoints?.FirstOrDefault(ep => ep.EntryPointType == "video")?.Uri;
 
