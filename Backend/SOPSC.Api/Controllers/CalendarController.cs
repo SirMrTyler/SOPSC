@@ -78,6 +78,8 @@ namespace SOPSC.Api.Controllers
             }
             catch (Exception ex)
             {
+                code = 500;
+                response = new ErrorResponse(ex.Message);
                 base.Logger.LogError(ex.ToString());
             }
 

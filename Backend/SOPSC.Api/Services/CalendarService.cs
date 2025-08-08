@@ -124,9 +124,10 @@ namespace SOPSC.Api.Services
                     created.ConferenceData?.EntryPoints?.FirstOrDefault(ep => ep.EntryPointType == "video")?.Uri;
 
                 int eventId = 0;
-                string procName = model.IncludeMeetLink ?
-                    "[dbo].[CalendarEvents_InsertWithLink]" :
-                    "[dbo].[CalendarEvents_InsertNoLink]";
+                _logger.LogInformation("[CalendarService] IncludeMeetLink flag is {IncludeMeetLink}", model.IncludeMeetLink);
+                string procName = model.IncludeMeetLink
+                    ? "[dbo].[CalendarEvents_InsertWithLink]"
+                    : "[dbo].[CalendarEvents_InsertNoLink]";
                 _dataProvider.ExecuteNonQuery(procName,
                     delegate (SqlParameterCollection param)
                     {
