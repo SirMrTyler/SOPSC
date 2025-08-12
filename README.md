@@ -6,41 +6,41 @@ Welcome to the SOPSC App, a full-stack public safety platform for chaplains and 
 
 ## 📌 Project Purpose
 
-The SOPSC app is designed to support spiritual first responders by enabling:
+    The SOPSC app is designed to support spiritual first responders by enabling:
 
-- Secure authentication (OAuth 2.0, JWT)
-- Structured role-based user interaction (Guest → Admin)
-- Cross-platform communication (messages, calls, video)
-- Real-time emergency logging, prayer requests, and reporting
-- Event coordination across divisions and agencies
+    - Secure authentication (OAuth 2.0, JWT)
+    - Structured role-based user interaction (Guest → Admin)
+    - Cross-platform communication (messages, calls, video)
+    - Real-time emergency logging, prayer requests, and reporting
+    - Event coordination across divisions and agencies
 
 ---
 
 ## 🧑‍🤝‍🧑 Role-Based Access Control (RBAC)
 
-Each user is assigned a role (integer-based) with escalating privileges:
+    Each user is assigned a role (integer-based) with escalating privileges:
 
-| Role      | Value | Description                        |
-| --------- | ----- | ---------------------------------- |
-| Developer | 1     | Full CRUD access to all endpoints  |
-| Admin     | 2     | Full system control                |
-| Member    | 3     | Can log in, message, attend events |
-| Guest     | 4     | Can register, limited read access  |
+    | Role      | Value | Description                        |
+    | --------- | ----- | ---------------------------------- |
+    | Developer | 1     | Full CRUD access to all endpoints  |
+    | Admin     | 2     | Full system control                |
+    | Member    | 3     | Can log in, message, attend events |
+    | Guest     | 4     | Can register, limited read access  |
 
-Endpoints and permissions are strictly enforced per [`UserAccessRules.md`](./UserAccessRules.md). Chaplains serve as intermediaries—approving requests for contact with Admins, verifying reports, and managing events.
+    Endpoints and permissions are strictly enforced per [`UserAccessRules.md`](./UserAccessRules.md). Chaplains serve as intermediaries—approving requests for contact with Admins, verifying reports, and managing events.
 
 ---
 
 ## 🔐 Authentication & Security
 
-- **Primary Authentication:** Google & Apple Sign-In using OAuth 2.0
-- **Secondary/Fallback:** Email & password login with secure password storage
-- **Token Management:** JWT + SecureStore (mobile), expiring sessions
-- **User Verification:** Email confirmation + approval pipeline
-- **Sensitive Flow:** Admin communication and video calls require Chaplain approval first
-- **Transport:** SSL/TLS enforced
-- **API Access:** Role-based middleware on all routes
-- **Secrets:** GitHub secret scanning and push protection enabled
+    - **Primary Authentication:** Google & Apple Sign-In using OAuth 2.0
+    - **Secondary/Fallback:** Email & password login with secure password storage
+    - **Token Management:** JWT + SecureStore (mobile), expiring sessions
+    - **User Verification:** Email confirmation + approval pipeline
+    - **Sensitive Flow:** Admin communication and video calls require Chaplain approval first
+    - **Transport:** SSL/TLS enforced
+    - **API Access:** Role-based middleware on all routes
+    - **Secrets:** GitHub secret scanning and push protection enabled
 
 ---
 
@@ -48,49 +48,49 @@ Endpoints and permissions are strictly enforced per [`UserAccessRules.md`](./Use
 
 **Core Tables:**
 
-- `Users`, `Reports`, `Messages`, `Notifications`, `Roles`, `PrayerRequests`, `Agencies`, `Media`, `Divisions`, `Calendar` (planned), `AdminTools` (planned)
+    - `Users`, `Reports`, `Messages`, `Notifications`, `Roles`, `PrayerRequests`, `Agencies`, `Media`, `Divisions`, `Calendar` (planned), `AdminTools` (planned)
 
-Each table is documented in [`UserAccessRules.md`](./UserAccessRules.md) with relationships and constraints.
+    Each table is documented in [`UserAccessRules.md`](./UserAccessRules.md) with relationships and constraints.
 
 ---
 
 ## 📅 Feature Roadmap Summary
 
-| Phase | Feature                           | Status         | Priority  |
-| ----- | --------------------------------- | -------------- | --------- |
-| 1     | Google & Apple Sign-In            | ✅ Complete    | 🔥 High   |
-| 2     | Email Auth + Role Enforcement     | ✅ Complete    | 🔥 High   |
-| 3     | Messaging, Calls, Group Chats     | ⚒️ In Progress | ⚡ Medium |
-| 4     | Event Calendar                    | ⚒️ In Progress | ⚡ Medium |
-| 5     | Reports & Metrics                 | ⚒️ In Progress | ⚡ Medium |
-| 6     | Admin Dashboard + Agency Tracking | ⏳ Finalizing  | ✅ Final  |
+    | Phase | Feature                           | Status         | Priority  |
+    | ----- | --------------------------------- | -------------- | --------- |
+    | 1     | Google & Apple Sign-In            | ✅ Complete    | 🔥 High   |
+    | 2     | Email Auth + Role Enforcement     | ✅ Complete    | 🔥 High   |
+    | 3     | Messaging, Calls, Group Chats     | ⚒️ In Progress | ⚡ Medium |
+    | 4     | Event Calendar                    | ⚒️ In Progress | ⚡ Medium |
+    | 5     | Reports & Metrics                 | ⚒️ In Progress | ⚡ Medium |
+    | 6     | Admin Dashboard + Agency Tracking | ⏳ Finalizing  | ✅ Final  |
 
-Detailed steps and dependencies per phase are available in [`ROADMAP.md`](./ROADMAP.md).
+    Detailed steps and dependencies per phase are available in [`ROADMAP.md`](./ROADMAP.md).
 
 ---
 
 ## 🧩 Tech Stack
 
-| Layer     | Stack/Tool                         |
-| --------- | ---------------------------------- |
-| Frontend  | Expo (React Native)                |
-| Backend   | ASP.NET Core Web API (C#)          |
-| Database  | Microsoft SQL Server 2022          |
-| Auth      | OAuth 2.0 (Google, Apple, Email)   |
-| Messaging | Socket.IO+Node.js (Realtime comms) |
-| Storage   | Expo SecureStore (JWT tokens)      |
-| Email     | SendGrid / SMTP (for verification) |
+    | Layer     | Stack/Tool                         |
+    | --------- | ---------------------------------- |
+    | Frontend  | Expo (React Native)                |
+    | Backend   | ASP.NET Core Web API (C#)          |
+    | Database  | Microsoft SQL Server 2022          |
+    | Auth      | OAuth 2.0 (Google, Apple, Email)   |
+    | Messaging | Socket.IO+Node.js (Realtime comms) |
+    | Storage   | Expo SecureStore (JWT tokens)      |
+    | Email     | SendGrid / SMTP (for verification) |
 
 ---
 
 ## 🚦 Key Implementation Rules
 
-- 🧱 Use `.NET` API to manage roles and token-based login.
-- 🔐 Secure all routes by role using middleware or endpoint checks.
-- 📩 All communication must follow chain-of-command:
-  - Members ↔ Chaplains ↔ Admins
-- 📝 Reports must include: narrative, call time, mileage, agencies.
-- 📅 Event visibility is filtered by user role.
+    - 🧱 Use `.NET` API to manage roles and token-based login.
+    - 🔐 Secure all routes by role using middleware or endpoint checks.
+    - 📩 All communication must follow chain-of-command:
+      - Members ↔ Chaplains ↔ Admins
+    - 📝 Reports must include: narrative, call time, mileage, agencies.
+    - 📅 Event visibility is filtered by user role.
 
 ---
 
@@ -98,49 +98,62 @@ Detailed steps and dependencies per phase are available in [`ROADMAP.md`](./ROAD
 
 ### Frontend Setup
 
-```bash
-cd Frontend/sopsc-mobile-app
-yarn install
-yarn dev     # Start Expo Dev Client with development env
-```
+    ```bash
+    cd Frontend/sopsc-mobile-app
+    yarn install
+    yarn dev     # Start Expo Dev Client with development env
+    ```
 
-Create environment files in `Frontend/sopsc-mobile-app` for each build variant.
-For development, create `.env.development`:
+    Create environment files in `Frontend/sopsc-mobile-app` for each build variant.
+    For development, create `.env.development`:
 
-```bash
-EXPO_PUBLIC_API_URL=https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net/api/
-EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<your-google-web-client-id>
-EXPO_PUBLIC_SOCKET_URL=http://192.168.1.175:3001
-```
+    ```bash
+    EXPO_PUBLIC_API_URL=https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net/api/
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<your-google-web-client-id>
+    EXPO_PUBLIC_SOCKET_URL=http://192.168.1.175:3001
+    ```
 
-For preview and production builds, create `.env.preview` and `.env.production` with the appropriate values. These files are loaded automatically based on the `APP_VARIANT` set in your npm scripts or EAS profiles.
+    For preview and production builds, create `.env.preview` and `.env.production` with the appropriate values. These files are loaded automatically based on the `APP_VARIANT` set in your npm scripts or EAS profiles.
 
 ### Backend Setup
 
-```bash
-cd Backend/SOPSC.Api
-dotnet build
-dotnet run
-```
+    ```bash
+    cd Backend/SOPSC.Api
+    dotnet build
+    dotnet run
+    ```
 
-Requires: .NET 8 SDK
+    Requires: .NET 8 SDK
+
+### Google Calendar Setup
+
+    The API can create events on a Google Workspace calendar using a service account. Configure the service account and Workspace permissions:
+
+    1. In the Google Cloud Console, open the service account referenced by `GoogleCalendar:ServiceAccountCredentialsPath` and enable **Domain-wide delegation**.
+    2. Copy the service account's client ID and authorize it in the Google Workspace Admin Console under **Security → API Controls → Domain-wide delegation** with the scopes:
+      - `https://www.googleapis.com/auth/calendar`
+      - `https://www.googleapis.com/auth/calendar.events`
+    3. Ensure `GoogleCalendar:ImpersonatedUser` is a Workspace user with access to the target calendar.
+    4. Redeploy or restart the backend after updating permissions.
+
+    See [Backend/SOPSC.Api/GoogleCalendarSetup.md](Backend/SOPSC.Api/GoogleCalendarSetup.md) for details.
 
 ### Realtime Socket Server Setup
 
-```bash
-cd RealtimeServer
-yarn install
-yarn start
-```
+    ```bash
+    cd RealtimeServer
+    yarn install
+    yarn start
+    ```
 
-This starts a lightweight Node.js server using Socket.IO on port `3001`. Set `EXPO_PUBLIC_WS_URL` in your `.env.*` files if running on a different host.
+    This starts a lightweight Node.js server using Socket.IO on port `3001`. Set `EXPO_PUBLIC_WS_URL` in your `.env.*` files if running on a different host.
 
 ### Database Setup
 
-- Run scripts in `/SQL` to generate database schema
-- Run stored procedures for core CRUD
-- Copy `Backend/SOPSC.Api/.env.example` to `.env` and set `ConnectionStrings__DefaultConnection` and `JWT_KEY`
-- The API loads variables from this `.env` file at startup. **Do not commit it.**
+    - Run scripts in `/SQL` to generate database schema
+    - Run stored procedures for core CRUD
+    - Copy `Backend/SOPSC.Api/.env.example` to `.env` and set `ConnectionStrings__DefaultConnection` and `JWT_KEY`
+    - The API loads variables from this `.env` file at startup. **Do not commit it.**
 
 ---
 
@@ -148,88 +161,90 @@ This starts a lightweight Node.js server using Socket.IO on port `3001`. Set `EX
 
 ### How to Add a Table
 
-1. Define table schema → add to `/SQL`
-2. Create matching stored procedures:
-   - `[TableName]_Insert`
-   - `[TableName]_SelectAll`
-   - `[TableName]_SelectById`
-   - `[TableName]_Update`
-   - `[TableName]_Delete`
-3. Add Controller in `Backend/SOPSC.Api/Controllers/`
-4. Register endpoints in API
+    1. Define table schema → add to `/SQL`
+    2. Create matching stored procedures:
+
+      - `[TableName]_Insert`
+      - `[TableName]_SelectAll`
+      - `[TableName]_SelectById`
+      - `[TableName]_Update`
+      - `[TableName]_Delete`
+
+    3. Add Controller in `Backend/SOPSC.Api/Controllers/`
+    4. Register endpoints in API
 
 ---
 
 ## Deploy Updates:
 
-Navigate to your [GitHub Actions tab](https://github.com/SirMrTyler/SOPSC/actions) after pushing to `main`.
+    Navigate to your [GitHub Actions tab](https://github.com/SirMrTyler/SOPSC/actions) after pushing to `main`.
 
 ### ✅ To deploy updates:
 
-1. Make your code changes in the `main` branch (or merge PRs into it).
-2. Push to GitHub.
-3. GitHub Actions will automatically trigger:
-   - `build` → compiles the .NET backend
-   - `deploy` → publishes the API to Azure Web App
+    1. Make your code changes in the `main` branch (or merge PRs into it).
+    2. Push to GitHub.
+    3. GitHub Actions will automatically trigger:
+      - `build` → compiles the .NET backend
+      - `deploy` → publishes the API to Azure Web App
 
 ### 🔍 To verify:
 
-- Go to **GitHub → Actions → Latest Workflow**
-- Ensure both `build` and `deploy` jobs succeed
-- If successful, your API is now live at:
-  https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net
+    - Go to **GitHub → Actions → Latest Workflow**
+    - Ensure both `build` and `deploy` jobs succeed
+    - If successful, your API is now live at:
+      https://sopsc-api-a3c7fmfvcaqyh0d0.westus-01.azurewebsites.net
 
 ### ⚙️ Troubleshooting:
 
-- Failed deploy? Check that:
-  - `.env` values are valid
-  - Your GitHub secrets (`client-id`, `tenant-id`, `subscription-id`) are correct
-  - No syntax errors exist in the `.yml` workflow
-- If needed, re-run the workflow manually from GitHub using **"Run workflow"**
+    - Failed deploy? Check that:
+      - `.env` values are valid
+      - Your GitHub secrets (`client-id`, `tenant-id`, `subscription-id`) are correct
+      - No syntax errors exist in the `.yml` workflow
+    - If needed, re-run the workflow manually from GitHub using **"Run workflow"**
 
-> NOTE: Only the backend is deployed via this flow. The frontend must be built and deployed separately using Expo EAS.
+    > NOTE: Only the backend is deployed via this flow. The frontend must be built and deployed separately using Expo EAS.
 
 ---
 
 ## ⚠️ Dev Warnings
 
-- **Do not expose JWTs or sensitive keys.**
-- **Admin routes must NOT be accessible to users below RoleId = 4.**
-- **Chaplains act as filters between Member requests and Admin interaction.**
-- **Reports and media should link back via FK to their origin users.**
-- **Group chat, video, and calendar features are under staged rollout.**
-- **GitHub secret scanning is active — do not commit `.env` files, API keys, or tokens.**
+    - **Do not expose JWTs or sensitive keys.**
+    - **Admin routes must NOT be accessible to users below RoleId = 4.**
+    - **Chaplains act as filters between Member requests and Admin interaction.**
+    - **Reports and media should link back via FK to their origin users.**
+    - **Group chat, video, and calendar features are under staged rollout.**
+    - **GitHub secret scanning is active — do not commit `.env` files, API keys, or tokens.**
 
 ---
 
 ## 📎 Related Files
 
-- [`ROADMAP.md`](./Planning/ROADMAP.md)
-- [`UserAccessRules.md`](./Planning/UserAccessRules.md)
+    - [`ROADMAP.md`](./Planning/ROADMAP.md)
+    - [`UserAccessRules.md`](./Planning/UserAccessRules.md)
 
 ---
 
 ## 🧠 Contribution Notes
 
-Codex and developers should **always validate user permissions** before proceeding with:
+    Codex and developers should **always validate user permissions** before proceeding with:
 
-- Messaging
-- Call requests
-- Report creation
-- Prayer request actions
-- Calendar edits
-- Admin-level tools
+    - Messaging
+    - Call requests
+    - Report creation
+    - Prayer request actions
+    - Calendar edits
+    - Admin-level tools
 
-Use the `RoleId` and corresponding access table as your source of truth.
+    Use the `RoleId` and corresponding access table as your source of truth.
 
 ---
 
 ## 🧭 Final Notes
 
-This project is active and used in a live capacity by public safety teams. Maintain **data integrity, user trust, and operational stability** at all times.
+    This project is active and used in a live capacity by public safety teams. Maintain **data integrity, user trust, and operational stability** at all times.
 
-For questions, contact the lead developer: Tyler Klein  
-GitHub: [github.com/SirMrTyler](https://github.com/SirMrTyler)  
-License: Proprietary
+    For questions, contact the lead developer: Tyler Klein
+    GitHub: [github.com/SirMrTyler](https://github.com/SirMrTyler)
+    License: Proprietary
 
 ---
