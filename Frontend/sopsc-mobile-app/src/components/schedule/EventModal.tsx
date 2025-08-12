@@ -1,5 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Switch, Platform } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { 
+  Modal, 
+  View, 
+  Text, 
+  StyleSheet, 
+  TextInput, 
+  TouchableOpacity, 
+  Switch,
+  ScrollView,
+  Platform 
+} from 'react-native';
+import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 
@@ -34,6 +45,16 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
   const [includeMeetLink, setIncludeMeetLink] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const displayDate = useMemo(() => {
+    if (!date) return '';
+    return date.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }, [date]);
 
   // Prefill state when editing or when an initial start time is provided
   useEffect(() => {
@@ -104,141 +125,196 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <Text style={styles.header}>{event ? 'Edit Event' : 'Create Event'}</Text>
-          
-          <TextInput
-            style={styles.input}
-            placeholder="Title"
-            placeholderTextColor="#777"
-            value={title}
-            onChangeText={setTitle}
-          />
+          <ScrollView contentContainerStyle={styles.scroll}>
+            <View style={styles.topRow}>
+              <View style={styles.titleWrapper}>
+                <TouchableOpacity
+                  onPress={onClose}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <ChevronLeftIcon size={24} color="#1b1b1b" />
+                </TouchableOpacity>
+                <Text style={styles.title} numberOfLines={2}>
+                  {event ? 'Edit Event' : 'Create Event'}
+                </Text>
+              </View>
+              {!!displayDate && <Text style={styles.date}>{displayDate}</Text>}
+            </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Description"
-            placeholderTextColor="#777"
-            value={description}
-            onChangeText={setDescription}
-          />
+            {/* WHEN CARD */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>When</Text>
+              <View style={styles.rowBetween}>
+                <TouchableOpacity
+                  onPress={() => setShowTimePicker(true)}
+                  style={[styles.textInput, styles.timeInput]}
+                >
+                  <Text style={{ color: startTime ? '#1f2937' : '#6b7280' }}>
+                    {startTime ? format(startTime, 'hh:mm a') : 'Start Time'}
+                  </Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={[styles.textInput, styles.durationInput]}
+                  placeholder="Duration (mins)"
+                  placeholderTextColor="#6b7280"
+                  value={duration}
+                  onChangeText={setDuration}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
 
-          <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
-            <Text style={{ color: startTime ? '#000' : '#777' }}>
-              {startTime ? format(startTime, 'hh:mm a') : 'Select Start Time'}
-            </Text>
-          </TouchableOpacity>
+            {/* DETAILS CARD */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Details</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Title"
+                placeholderTextColor="#6b7280"
+                value={title}
+                onChangeText={setTitle}
+              />
+              <TextInput
+                style={[styles.textInput, { height: 80 }]}
+                placeholder="Description"
+                placeholderTextColor="#6b7280"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+              />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Category"
+                placeholderTextColor="#6b7280"
+                value={category}
+                onChangeText={setCategory}
+              />
+              <View style={[styles.rowBetween, { marginTop: 4 }]}>
+                <Text style={styles.inlineLabel}>Add Google Meet Link?</Text>
+                <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
+              </View>
+            </View>
 
-          {showTimePicker && (
-            <DateTimePicker
-              mode="time"
-              value={startTime || new Date()}
-              is24Hour={false}
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, selectedTime) => {
-                setShowTimePicker(false);
-                if (selectedTime) {
-                  setStartTime(selectedTime);
-                }
-              }}
-            />
-          )}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Duration (mins)"
-            placeholderTextColor="#777"
-            value={duration}
-            onChangeText={setDuration}
-            keyboardType="numeric"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Category"
-            placeholderTextColor="#777"
-            value={category}
-            onChangeText={setCategory}
-          />
-
-          <View style={styles.switchRow}>
-            <Text>Add Google Meet Link?</Text>
-            <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
-          </View>
-        
-          <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            
-            {isAdmin && (
-              <TouchableOpacity
-                onPress={handleSubmit}
-                style={[styles.addBtn, !isFormComplete && styles.disabledBtn]}
-                disabled={!isFormComplete}
-              >
-                <Text style={styles.addText}>{event ? 'Save' : 'Submit'}</Text>
-              </TouchableOpacity>
+            {showTimePicker && (
+              <DateTimePicker
+                mode="time"
+                value={startTime || new Date()}
+                is24Hour={false}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedTime) => {
+                  setShowTimePicker(false);
+                  if (selectedTime) {
+                    setStartTime(selectedTime);
+                  }
+                }}
+              />
             )}
-          </View>
+
+        {/* SUBMIT CARD */}
+            <View style={styles.card}>
+              {isAdmin && (
+                <TouchableOpacity
+                  style={[styles.submitButton, !isFormComplete && styles.submitButtonDisabled]}
+                  onPress={handleSubmit}
+                  disabled={!isFormComplete}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.submitButtonText}>
+                    {event ? 'Save Event' : 'Create Event'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={onClose} style={styles.cancelBtn} activeOpacity={0.8}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
   );
 };
 
+const cardBg = '#fff';
+const surface = '#f6f7fb';
+
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,.45)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   container: {
-    width: '90%',
-    backgroundColor: '#f5f5f5',
+    width: '92%',
+    maxHeight: '85%',
+    backgroundColor: surface,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+      },
+      android: { elevation: 8 },
+    }),
   },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  input: {
-    backgroundColor: 'white',
-    marginBottom: 8,
-    padding: 8,
-    borderRadius: 4,
-  },
-  switchRow: {
+  scroll: { paddingBottom: 16 },
+  topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  buttonRow: {
-    flexDirection: 'row',
+    gap:12,
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginBottom: 10,
   },
-  cancelBtn: {
+  titleWrapper: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 8,
+    color: '#1b1b1b',
+    flexShrink: 1,
+  },
+  date: { fontStyle: 'italic', color: '#4b5563' },
+
+  card: {
+    backgroundColor: cardBg,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  cardTitle: { fontSize: 16, fontWeight: '700', marginBottom: 6, color: '#111827' },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  inlineLabel: { color: '#1f2937' },
+
+  textInput: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
     padding: 8,
+    marginBottom: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.06)',
+    flex: 1,
+    color: '#111827',
   },
-  cancelText: {
-    color: 'gray',
+  timeInput: { marginRight: 8, justifyContent: 'center' },
+  durationInput: { flex: 1 },
+
+  submitButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 999,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  addBtn: {
-    padding: 8,
-    backgroundColor: '#2477ff',
-    borderRadius: 4,
-  },
-  disabledBtn: {
-    opacity: 0.5,
-  },
-  addText: {
-    color: 'white',
-  },
+  submitButtonDisabled: { backgroundColor: '#c7cbd3' },
+  submitButtonText: { color: 'white', fontWeight: '700' },
+
+  cancelBtn: { marginTop: 8, alignItems: 'center' },
+  cancelText: { color: '#2563eb', fontWeight: '700' },
 });
 
 export default EventModal;
