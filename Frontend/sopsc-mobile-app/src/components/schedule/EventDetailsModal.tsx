@@ -1,5 +1,14 @@
 import React from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { 
+  Modal, 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  Linking 
+} from 'react-native';
+import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { EventData } from './EventModal';
 
 interface Props {
@@ -10,39 +19,78 @@ interface Props {
   onEdit: () => void;
 }
 
-const EventDetailsModal: React.FC<Props> = ({ visible, event, onClose, isAdmin, onEdit }) => {
+const EventDetailsModal: React.FC<Props> = ({
+  visible,
+  event,
+  onClose,
+  isAdmin,
+  onEdit,
+}) => {
   if (!event) return null;
+
+  const handleJoin = () => {
+    if (event.meetLink) {
+      Linking.openURL(event.meetLink);
+    }
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <ScrollView>
-            <Text style={styles.header}>{event.title}</Text>
-            <Text style={styles.label}>Date: {event.date}</Text>
-            <Text style={styles.label}>Start: {event.startTime}</Text>
-            <Text style={styles.label}>Duration: {event.duration} mins</Text>
-            <Text style={styles.label}>Category: {event.category}</Text>
-            {event.description ? <Text style={styles.label}>Description: {event.description}</Text> : null}
-            {event.meetLink ? (
-              <View style={styles.meetLinkContainer}>
-                <Text style={styles.label}>Meet Link: {event.meetLink}</Text>
-                <TouchableOpacity onPress={() => Linking.openURL(event.meetLink!)}>
-                  <Text style={styles.link}>Join Meeting</Text>
+          <ScrollView contentContainerStyle={styles.scroll}>
+            <View style={styles.topRow}>
+              <View style={styles.titleWrapper}>
+                <TouchableOpacity onPress={onClose}>
+                  <ChevronLeftIcon size={24} color="#333" />
                 </TouchableOpacity>
+                <Text style={styles.title}>{event.title}</Text>
               </View>
-            ) : null}
-          </ScrollView>
-          <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
+            <Text style={styles.date}>{event.date}</Text>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>When</Text>
+              <View style={styles.whenRow}>
+                <Text style={styles.sectionText}>
+                  <Text style={styles.bold}>Start Time:</Text> {event.startTime}
+                </Text>
+                <Text style={styles.sectionText}>
+                  <Text style={styles.bold}>Duration:</Text> {event.duration} mins
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.card}>
+              <View style={styles.detailsHeader}>
+                <Text style={styles.sectionTitle}>Details</Text>
+                <Text style={styles.sectionText}>
+                  <Text style={styles.bold}>Category:</Text> {event.category}
+                </Text>
+              </View>
+              {event.description ? (
+                <View style={styles.descriptionBox}>
+                  <Text style={styles.descriptionText}>{event.description}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            <View style={styles.card}>
+              <TouchableOpacity
+                style={[styles.joinButton, !event.meetLink && styles.joinButtonDisabled]}
+                onPress={handleJoin}
+                disabled={!event.meetLink}
+              >
+                <Text style={styles.joinButtonText}>Join Meeting</Text>
+              </TouchableOpacity>
+            </View>
+
             {isAdmin && (
               <TouchableOpacity onPress={onEdit} style={styles.editBtn}>
-                <Text style={styles.editText}>Edit</Text>
+                <Text style={styles.editText}>Edit Event</Text>
               </TouchableOpacity>
             )}
-          </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -63,38 +111,78 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
   },
-  header: {
+  scroll: {
+    paddingBottom: 16,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  titleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
+    marginLeft: 8,
   },
-  label: {
-    marginBottom: 4,
+  date: {
+    fontStyle: 'italic',
     color: '#333',
   },
-  meetLinkContainer: {
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 4,
   },
-  link: {
-    color: '#2477ff',
-    textDecorationLine: 'underline',
-    marginTop: 4,
-  },
-  buttonRow: {
+  whenRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
   },
-  closeBtn: {
+  sectionText: {
+    color: '#333',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  detailsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  descriptionBox: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 8,
     padding: 8,
   },
-  closeText: {
-    color: '#2477ff',
+  descriptionText: {
+    color: '#333',
+  },
+  joinButton: {
+    backgroundColor: '#2477ff',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  joinButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  joinButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
   editBtn: {
-    padding: 8,
+    marginTop: 4,
+    alignItems: 'center',
   },
   editText: {
     color: '#2477ff',
