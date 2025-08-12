@@ -80,7 +80,7 @@ namespace SOPSC.Api.Services
             _logger.LogInformation($"- Start: {start:o}");
             _logger.LogInformation($"- End: {end:o}");
             _logger.LogInformation($"- IncludeMeetLink: {model.IncludeMeetLink}");
-            _logger.LogInformation($"- Category: {model.Category}");
+            _logger.LogInformation($"- CategoryId: {model.CategoryId}");
             _logger.LogInformation($"- Calendar ID: {calendarId}");
 
             var calendar = await service.Calendars.Get(calendarId).ExecuteAsync();
@@ -153,7 +153,7 @@ namespace SOPSC.Api.Services
                         param.AddWithValue("@EndDateTime", end);
                         param.AddWithValue("@Title", model.Title);
                         param.AddWithValue("@Description", model.Description ?? (object)DBNull.Value);
-                        param.AddWithValue("@Category", model.Category ?? (object)DBNull.Value);
+                        param.AddWithValue("@CategoryId", model.CategoryId ?? (object)DBNull.Value);
                         param.AddWithValue("@CreatedBy", createdById);
                         if (includeMeetLink)
                         {
@@ -257,7 +257,7 @@ namespace SOPSC.Api.Services
                     param.AddWithValue("@EndDateTime", end);
                     param.AddWithValue("@Title", model.Title);
                     param.AddWithValue("@Description", model.Description ?? (object)DBNull.Value);
-                    param.AddWithValue("@Category", model.Category ?? (object)DBNull.Value);
+                    param.AddWithValue("@CategoryId", model.CategoryId ?? (object)DBNull.Value);
                     if (model.IncludeMeetLink && !string.IsNullOrEmpty(model.MeetLink))
                     {
                         param.AddWithValue("@MeetLink", model.MeetLink);
@@ -290,7 +290,9 @@ namespace SOPSC.Api.Services
                         EndDateTime = reader.GetSafeUtcDateTime(startingIndex++),
                         Title = reader.GetSafeString(startingIndex++),
                         Description = reader.GetSafeString(startingIndex++),
-                        Category = reader.GetSafeString(startingIndex++),
+                        CategoryId = reader.GetSafeInt32Nullable(startingIndex++),
+                        CategoryName = reader.GetSafeString(startingIndex++),
+                        CategoryColor = reader.GetSafeString(startingIndex++),
                         MeetLink = reader.GetSafeString(startingIndex++)
                     };
 

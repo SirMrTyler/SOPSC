@@ -86,10 +86,10 @@ const EventDetailsModal: React.FC<Props> = ({
             <View style={styles.card}>
               <View style={styles.rowBetween}>
                 <Text style={styles.cardTitle}>Details</Text>
-                {!!event.category && (
+                {!!event.categoryName && (
                   <Text style={styles.inlineLabel}>
-                    <Text style={styles.bold}>Category: </Text>
-                    {event.category}
+                    <Text style={{ color: event.categoryColor || '#000' }}>⬤ </Text>
+                    {event.categoryName}
                   </Text>
                 )}
               </View>

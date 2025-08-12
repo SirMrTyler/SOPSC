@@ -106,7 +106,9 @@ const Schedule: React.FC = () => {
             duration: (new Date(item.endDateTime).getTime() - new Date(item.startDateTime).getTime()) / 60000,
             title: item.title,
             description: item.description || '',
-            category: item.category || '',
+            categoryId: item.categoryId,
+            categoryName: item.categoryName,
+            categoryColor: item.categoryColor,
             includeMeetLink: Boolean(item.meetLink),
             meetLink: item.meetLink,
           }));
@@ -219,9 +221,9 @@ const Schedule: React.FC = () => {
         {eventsForDate(item.date).map(ev => (
           <Text
             key={ev.id || `${ev.date}-${ev.startTime}`}
-            style={styles.event}
+            style={[styles.event, { color: ev.categoryColor || '#DED3C4' }]}
           >
-            {ev.title}
+            {'⬤ '}{ev.title}
           </Text>
         ))}
       </TouchableOpacity>

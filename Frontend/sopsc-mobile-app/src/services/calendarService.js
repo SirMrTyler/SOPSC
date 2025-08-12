@@ -30,7 +30,7 @@ const addEvent = async (eventData) => {
     endDateTime: end.toISOString(),
     title: eventData.title,
     description: eventData.description,
-    category: eventData.category,
+    categoryId: eventData.categoryId,
     includeMeetLink: eventData.includeMeetLink,
   };
 
@@ -61,7 +61,7 @@ const updateEvent = async (eventData) => {
     endDateTime: end.toISOString(),
     title: eventData.title,
     description: eventData.description,
-    category: eventData.category,
+    categoryId: eventData.categoryId,
     includeMeetLink: eventData.includeMeetLink,
   };
 

@@ -9,7 +9,7 @@ BEGIN
         EndDateTime DATETIME2(7) NOT NULL,
         Title NVARCHAR(255) NOT NULL,
         Description NVARCHAR(MAX) NULL,
-        Category NVARCHAR(100) NULL,
+        CategoryId INT NULL,
         MeetLink NVARCHAR(255) NULL,
         CreatedBy INT NOT NULL,
         CreatedTimestamp DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
@@ -29,7 +29,7 @@ ALTER PROC dbo.CalendarEvents_InsertWithLink
         @EndDateTime DATETIME2(7),
         @Title NVARCHAR(255),
         @Description NVARCHAR(MAX) = NULL,
-        @Category NVARCHAR(100) = NULL,
+        @CategoryId INT = NULL,
         @MeetLink NVARCHAR(255) = NULL,
         @CreatedBy INT
 AS
@@ -40,7 +40,7 @@ BEGIN
                 EndDateTime,
                 Title,
                 Description,
-                Category,
+                CategoryId,
                 MeetLink,
                 CreatedBy,
                 CreatedTimestamp)
@@ -50,14 +50,23 @@ BEGIN
                 @EndDateTime,
                 @Title,
                 @Description,
-                @Category,
+                @CategoryId,
                 @MeetLink,
                 @CreatedBy,
                 SYSDATETIME());
         SET @EventId = SCOPE_IDENTITY();
-        SELECT *
-        FROM dbo.CalendarEvents
-        WHERE EventId = @EventId;
+        SELECT ce.EventId,
+               ce.StartDateTime,
+               ce.EndDateTime,
+               ce.Title,
+               ce.Description,
+               ce.CategoryId,
+               sc.Name AS CategoryName,
+               sc.ColorValue AS CategoryColor,
+               ce.MeetLink
+        FROM dbo.CalendarEvents ce
+        LEFT JOIN dbo.Schedule_Categories sc ON ce.CategoryId = sc.CategoryId
+        WHERE ce.EventId = @EventId;
 END
 GO
 
@@ -69,8 +78,8 @@ ALTER PROC dbo.CalendarEvents_InsertNoLink
         @EndDateTime DATETIME2(7),
         @Title NVARCHAR(255),
         @Description NVARCHAR(MAX) = NULL,
-        @Category NVARCHAR(100) = NULL,
-	@MeetLink NVARCHAR(255) = NULL,
+        @CategoryId INT = NULL,
+        @MeetLink NVARCHAR(255) = NULL,
         @CreatedBy INT
 AS
 BEGIN
@@ -80,8 +89,8 @@ BEGIN
                 EndDateTime,
                 Title,
                 Description,
-                Category,
-		MeetLink,
+                CategoryId,
+                MeetLink,
                 CreatedBy,
                 CreatedTimestamp)
         VALUES (
@@ -90,14 +99,23 @@ BEGIN
                 @EndDateTime,
                 @Title,
                 @Description,
-                @Category,
-		@MeetLink,
+                @CategoryId,
+                @MeetLink,
                 @CreatedBy,
                 SYSDATETIME());
         SET @EventId = SCOPE_IDENTITY();
-        SELECT *
-        FROM dbo.CalendarEvents
-        WHERE EventId = @EventId;
+         SELECT ce.EventId,
+               ce.StartDateTime,
+               ce.EndDateTime,
+               ce.Title,
+               ce.Description,
+               ce.CategoryId,
+               sc.Name AS CategoryName,
+               sc.ColorValue AS CategoryColor,
+               ce.MeetLink
+        FROM dbo.CalendarEvents ce
+        LEFT JOIN dbo.Schedule_Categories sc ON ce.CategoryId = sc.CategoryId
+        WHERE ce.EventId = @EventId;
 END
 GO
 
@@ -105,8 +123,17 @@ GO
 ALTER PROC dbo.CalendarEvents_SelectAll
 AS
 BEGIN
-        SELECT *
-        FROM dbo.CalendarEvents;
+        SELECT ce.EventId,
+               ce.StartDateTime,
+               ce.EndDateTime,
+               ce.Title,
+               ce.Description,
+               ce.CategoryId,
+               sc.Name AS CategoryName,
+               sc.ColorValue AS CategoryColor,
+               ce.MeetLink
+        FROM dbo.CalendarEvents ce
+        LEFT JOIN dbo.Schedule_Categories sc ON ce.CategoryId = sc.CategoryId;
 END
 GO
 
@@ -115,9 +142,18 @@ ALTER PROC dbo.CalendarEvents_SelectById
         @EventId INT
 AS
 BEGIN
-        SELECT *
-        FROM dbo.CalendarEvents
-        WHERE EventId = @EventId;
+        SELECT ce.EventId,
+               ce.StartDateTime,
+               ce.EndDateTime,
+               ce.Title,
+               ce.Description,
+               ce.CategoryId,
+               sc.Name AS CategoryName,
+               sc.ColorValue AS CategoryColor,
+               ce.MeetLink
+        FROM dbo.CalendarEvents ce
+        LEFT JOIN dbo.Schedule_Categories sc ON ce.CategoryId = sc.CategoryId
+        WHERE ce.EventId = @EventId;
 END
 GO
 
@@ -127,16 +163,19 @@ ALTER PROC dbo.CalendarEvents_SelectByDateRange
         @EndDateTime DATETIME2(7)
 AS
 BEGIN
-        SELECT EventId,
-	       StartDateTime,
-               EndDateTime,
-               Title,
-               Description,
-               Category,
-               MeetLink
-        FROM dbo.CalendarEvents
-        WHERE StartDateTime >= @StartDateTime AND EndDateTime <= @EndDateTime
-        ORDER BY StartDateTime;
+        SELECT ce.EventId,
+               ce.StartDateTime,
+               ce.EndDateTime,
+               ce.Title,
+               ce.Description,
+               ce.CategoryId,
+               sc.Name AS CategoryName,
+               sc.ColorValue AS CategoryColor,
+               ce.MeetLink
+        FROM dbo.CalendarEvents ce
+        LEFT JOIN dbo.Schedule_Categories sc ON ce.CategoryId = sc.CategoryId
+        WHERE ce.StartDateTime >= @StartDateTime AND ce.EndDateTime <= @EndDateTime
+        ORDER BY ce.StartDateTime;
 END
 GO
 
@@ -148,7 +187,7 @@ ALTER PROC dbo.CalendarEvents_Update
         @EndDateTime DATETIME2(7),
         @Title NVARCHAR(255),
         @Description NVARCHAR(MAX) = NULL,
-        @Category NVARCHAR(100) = NULL,
+        @CategoryId INT = NULL,
         @MeetLink NVARCHAR(255) = NULL
 AS
 BEGIN
@@ -158,12 +197,21 @@ BEGIN
             EndDateTime = @EndDateTime,
             Title = @Title,
             Description = @Description,
-            Category = @Category,
+            CategoryId = @CategoryId,
             MeetLink = @MeetLink
         WHERE EventId = @EventId;
-        SELECT *
-        FROM dbo.CalendarEvents
-        WHERE EventId = @EventId;
+         SELECT ce.EventId,
+               ce.StartDateTime,
+               ce.EndDateTime,
+               ce.Title,
+               ce.Description,
+               ce.CategoryId,
+               sc.Name AS CategoryName,
+               sc.ColorValue AS CategoryColor,
+               ce.MeetLink
+        FROM dbo.CalendarEvents ce
+        LEFT JOIN dbo.Schedule_Categories sc ON ce.CategoryId = sc.CategoryId
+        WHERE ce.EventId = @EventId;
 END
 GO
 

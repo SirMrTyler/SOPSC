@@ -24,8 +24,13 @@ public class CalendarEvent
 
     public string? Description { get; set; }
 
-    [StringLength(100)]
-    public string? Category { get; set; }
+    public int? CategoryId { get; set; }
+
+    [StringLength(50)]
+    public string? CategoryName { get; set; }
+
+    [StringLength(50)]
+    public string? CategoryColor { get; set; }
 
     public string? MeetLink { get; set; }
 }

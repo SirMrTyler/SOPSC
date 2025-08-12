@@ -58,6 +58,7 @@ namespace SOPSC.Api.Services.Extensions
             services.AddScoped<IMessagesService, MessagesService>();
             services.AddScoped<IGroupChatsService, GroupChatsService>();
             services.AddScoped<ICalendarService, CalendarService>();
+            services.AddScoped<IScheduleCategoriesService, ScheduleCategoriesService>();
             /// <summary>
             /// Adds HTTP context accessor for accessing the current HTTP context.
             /// </summary>

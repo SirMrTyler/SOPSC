@@ -1,18 +1,20 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { 
-  Modal, 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
   Switch,
   ScrollView,
-  Platform 
+  Platform
 } from 'react-native';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
+import { Picker } from '@react-native-picker/picker';
+import * as categoryService from '../../services/scheduleCategoriesService';
 
 interface Props {
   visible: boolean;
@@ -32,7 +34,9 @@ export interface EventData {
   duration: number; // in minutes
   title: string;
   description: string;
-  category: string;
+  categoryId: number | null;
+  categoryName?: string;
+  categoryColor?: string;
   includeMeetLink: boolean;
   meetLink?: string;
 }
@@ -41,10 +45,27 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState('');
-  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [addingCustom, setAddingCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customColor, setCustomColor] = useState('#000000');
   const [includeMeetLink, setIncludeMeetLink] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await categoryService.getAll();
+        const list = Array.isArray(data) ? data : data.items;
+        setCategories(list || []);
+      } catch (err) {
+        console.error('[EventModal] Failed to load categories', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const displayDate = useMemo(() => {
     if (!date) return '';
@@ -62,7 +83,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
       setTitle(event.title);
       setDescription(event.description);
       setDuration(String(event.duration));
-      setCategory(event.category);
+      setCategoryId(event.categoryId ?? null);
       setIncludeMeetLink(event.includeMeetLink);
       const [h, m] = event.startTime.split(':').map(Number);
       const d = new Date();
@@ -72,7 +93,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
       setTitle('');
       setDescription('');
       setDuration('');
-      setCategory('');
+      setCategoryId(null);
       setIncludeMeetLink(false);
       if (initialStartTime) {
         const [h, m] = initialStartTime.split(':').map(Number);
@@ -88,7 +109,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
   
   const handleSubmit = () => {
     if (!startTime || !date) return;
-
+    const selectedCat = categories.find((c: any) => c.categoryId === categoryId);
     const newEvent: EventData = {
       id: event?.id,
       // Use the local date rather than UTC to avoid off-by-one issues
@@ -98,7 +119,9 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
       duration: parseInt(duration, 10),
       title,
       description,
-      category,
+      categoryId,
+      categoryName: selectedCat?.name,
+      categoryColor: selectedCat?.colorValue,
       includeMeetLink,
       meetLink: includeMeetLink ? event?.meetLink : undefined,
     };
@@ -113,7 +136,7 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
     setDescription('');
     setStartTime(null);
     setDuration('');
-    setCategory('');
+    setCategoryId(null);
   };
 
   const isFormComplete =
@@ -182,13 +205,63 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
                 onChangeText={setDescription}
                 multiline
               />
-              <TextInput
-                style={styles.textInput}
-                placeholder="Category"
-                placeholderTextColor="#6b7280"
-                value={category}
-                onChangeText={setCategory}
-              />
+              {addingCustom ? (
+                <>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Category Name"
+                    placeholderTextColor="#6b7280"
+                    value={customName}
+                    onChangeText={setCustomName}
+                  />
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Color (#RRGGBB)"
+                    placeholderTextColor="#6b7280"
+                    value={customColor}
+                    onChangeText={setCustomColor}
+                  />
+                  <TouchableOpacity style={styles.addCategoryBtn} onPress={async () => {
+                    try {
+                      const newId = await categoryService.add({ name: customName, colorValue: customColor });
+                      const newCat = { categoryId: newId, name: customName, colorValue: customColor };
+                      setCategories(prev => [...prev, newCat]);
+                      setCategoryId(newId);
+                    } catch (err) {
+                      console.error('[EventModal] Failed to add category', err);
+                    } finally {
+                      setAddingCustom(false);
+                      setCustomName('');
+                      setCustomColor('#000000');
+                    }
+                  }}>
+                    <Text style={styles.addCategoryBtnText}>Add Category</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <Picker
+                  selectedValue={categoryId}
+                  style={styles.picker}
+                  onValueChange={(val) => {
+                    if (typeof val === 'string' && val === 'custom') {
+                      setAddingCustom(true);
+                    } else {
+                      setCategoryId(val);
+                    }
+                  }}
+                >
+                  <Picker.Item label="Select Category" value={null} />
+                    {categories.map((cat: any) => (
+                      <Picker.Item
+                        key={cat.categoryId}
+                        label={`⬤ ${cat.name}`}
+                        value={cat.categoryId}
+                        color={cat.colorValue}
+                      />
+                    ))}
+                  <Picker.Item label="Custom +" value="custom" />
+                </Picker>
+              )}
               <View style={[styles.rowBetween, { marginTop: 4 }]}>
                 <Text style={styles.inlineLabel}>Add Google Meet Link?</Text>
                 <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
@@ -301,6 +374,19 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#111827',
   },
+  picker: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  addCategoryBtn: {
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    padding: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  addCategoryBtnText: { color: 'white', fontWeight: '700' },
   timeInput: { marginRight: 8, justifyContent: 'center' },
   durationInput: { flex: 1 },
 

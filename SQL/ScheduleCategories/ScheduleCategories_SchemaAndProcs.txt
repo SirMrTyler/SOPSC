@@ -1,0 +1,68 @@
+IF OBJECT_ID('dbo.Schedule_Categories') IS NULL
+BEGIN
+    CREATE TABLE dbo.Schedule_Categories(
+        CategoryId INT IDENTITY(1,1) PRIMARY KEY,
+        Name NVARCHAR(50) NOT NULL,
+        ColorValue NVARCHAR(50) NOT NULL,
+        UserIds NVARCHAR(MAX) NULL
+    );
+END
+GO
+
+-- Inserts a new schedule category
+ALTER PROC dbo.ScheduleCategories_Insert
+    @CategoryId INT OUTPUT,
+    @Name NVARCHAR(50),
+    @ColorValue NVARCHAR(50),
+    @UserIds NVARCHAR(MAX) = NULL
+AS
+BEGIN
+    INSERT INTO dbo.Schedule_Categories(Name, ColorValue, UserIds)
+    VALUES(@Name, @ColorValue, @UserIds);
+    SET @CategoryId = SCOPE_IDENTITY();
+    SELECT * FROM dbo.Schedule_Categories WHERE CategoryId = @CategoryId;
+END
+GO
+
+-- Selects a schedule category by Id
+ALTER PROC dbo.ScheduleCategories_SelectById
+    @CategoryId INT
+AS
+BEGIN
+    SELECT * FROM dbo.Schedule_Categories WHERE CategoryId = @CategoryId;
+END
+GO
+
+-- Selects all schedule categories
+ALTER PROC dbo.ScheduleCategories_SelectAll
+AS
+BEGIN
+    SELECT * FROM dbo.Schedule_Categories;
+END
+GO
+
+-- Updates a schedule category
+ALTER PROC dbo.ScheduleCategories_Update
+    @CategoryId INT,
+    @Name NVARCHAR(50),
+    @ColorValue NVARCHAR(50),
+    @UserIds NVARCHAR(MAX) = NULL
+AS
+BEGIN
+    UPDATE dbo.Schedule_Categories
+    SET Name = @Name,
+        ColorValue = @ColorValue,
+        UserIds = @UserIds
+    WHERE CategoryId = @CategoryId;
+    SELECT * FROM dbo.Schedule_Categories WHERE CategoryId = @CategoryId;
+END
+GO
+
+-- Deletes a schedule category
+ALTER PROC dbo.ScheduleCategories_Delete
+    @CategoryId INT
+AS
+BEGIN
+    DELETE FROM dbo.Schedule_Categories WHERE CategoryId = @CategoryId;
+END
+GO
