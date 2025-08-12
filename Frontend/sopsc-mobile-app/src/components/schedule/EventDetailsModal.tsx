@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { EventData } from './EventModal';
 
 interface Props {
@@ -25,7 +25,12 @@ const EventDetailsModal: React.FC<Props> = ({ visible, event, onClose, isAdmin, 
             <Text style={styles.label}>Category: {event.category}</Text>
             {event.description ? <Text style={styles.label}>Description: {event.description}</Text> : null}
             {event.meetLink ? (
-              <Text style={styles.label}>Meet Link: {event.meetLink}</Text>
+              <View style={styles.meetLinkContainer}>
+                <Text style={styles.label}>Meet Link: {event.meetLink}</Text>
+                <TouchableOpacity onPress={() => Linking.openURL(event.meetLink!)}>
+                  <Text style={styles.link}>Join Meeting</Text>
+                </TouchableOpacity>
+              </View>
             ) : null}
           </ScrollView>
           <View style={styles.buttonRow}>
@@ -67,6 +72,14 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 4,
     color: '#333',
+  },
+  meetLinkContainer: {
+    marginBottom: 4,
+  },
+  link: {
+    color: '#2477ff',
+    textDecorationLine: 'underline',
+    marginTop: 4,
   },
   buttonRow: {
     flexDirection: 'row',
