@@ -15,7 +15,18 @@ const getEvents = async (start, end) => {
       DeviceId: deviceId,
     },
   };
-  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+  try {
+    const data = await axios(config).then(helper.onGlobalSuccess);
+    if (!Array.isArray(data?.items)) {
+      data.items = [];
+    }
+    return data;
+  } catch (err) {
+    if (err.response?.status === 404) {
+      return { items: [] };
+    }
+    return helper.onGlobalError(err);
+  }
 };
 
 const addEvent = async (eventData) => {

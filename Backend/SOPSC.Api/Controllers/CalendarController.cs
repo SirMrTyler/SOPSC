@@ -5,6 +5,7 @@ using SOPSC.Api.Models.Interfaces.Calendar;
 using SOPSC.Api.Models.Requests.Calendar;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SOPSC.Api.Controllers
@@ -34,16 +35,8 @@ namespace SOPSC.Api.Controllers
 
             try
             {
-                var events = await _calendarService.GetEventsAsync(start, end);
-                if (events == null || !events.Any())
-                {
-                    code = 404;
-                    response = new ErrorResponse("Records not found.");
-                }
-                else
-                {
-                    response = new ItemsResponse<CalendarEvent> { Items = events };
-                }
+                var events = await _calendarService.GetEventsAsync(start, end) ?? new List<CalendarEvent>();
+                response = new ItemsResponse<CalendarEvent> { Items = events };
             }
             catch (Exception ex)
             {
