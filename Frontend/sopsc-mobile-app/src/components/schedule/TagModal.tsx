@@ -97,7 +97,14 @@ const TagModal: React.FC<Props> = ({ visible, onClose, onSave, tag }) => {
               ]}
               onPress={() => setIsCustom(true)}
             >
-              <Text style={styles.customText}>Custom…</Text>
+              <Text
+                style={styles.customText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+              >
+                Custom+
+              </Text>
             </TouchableOpacity>
           </View>
           {isCustom && (
@@ -169,6 +176,7 @@ const styles = StyleSheet.create({
   customText: {
     fontSize: 10,
     color: '#111827',
+    textAlign: 'center',
   },
   saveBtn: {
     backgroundColor: '#2477ff',
