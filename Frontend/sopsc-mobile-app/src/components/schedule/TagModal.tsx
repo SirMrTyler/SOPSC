@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 import * as categoryService from '../../services/scheduleCategoriesService';
 
 interface Props {
@@ -9,17 +16,32 @@ interface Props {
   tag?: any | null;
 }
 
+const presetColors = [
+  '#FF6B6B',
+  '#6BCB77',
+  '#4D96FF',
+  '#FFC75F',
+  '#D65DB1',
+  '#845EC2',
+  '#00C9A7',
+  '#FFA351',
+];
+
 const TagModal: React.FC<Props> = ({ visible, onClose, onSave, tag }) => {
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#000000');
+  const [color, setColor] = useState(presetColors[0]);
+  const [isCustom, setIsCustom] = useState(false);
 
   useEffect(() => {
     if (tag) {
       setName(tag.name);
-      setColor(tag.colorValue || '#000000');
+      const tagColor = tag.colorValue || presetColors[0];
+      setColor(tagColor);
+      setIsCustom(!presetColors.includes(tagColor));
     } else {
       setName('');
-      setColor('#000000');
+      setColor(presetColors[0]);
+      setIsCustom(false);
     }
   }, [tag, visible]);
 
@@ -52,13 +74,41 @@ const TagModal: React.FC<Props> = ({ visible, onClose, onSave, tag }) => {
             value={name}
             onChangeText={setName}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Color (#RRGGBB)"
-            placeholderTextColor="#6b7280"
-            value={color}
-            onChangeText={setColor}
-          />
+          <View style={styles.swatchContainer}>
+            {presetColors.map((c) => (
+              <TouchableOpacity
+                key={c}
+                style={[
+                  styles.swatch,
+                  { backgroundColor: c },
+                  !isCustom && color === c && styles.activeSwatch,
+                ]}
+                onPress={() => {
+                  setColor(c);
+                  setIsCustom(false);
+                }}
+              />
+            ))}
+            <TouchableOpacity
+              style={[
+                styles.swatch,
+                styles.customSwatch,
+                isCustom && styles.activeSwatch,
+              ]}
+              onPress={() => setIsCustom(true)}
+            >
+              <Text style={styles.customText}>Custom…</Text>
+            </TouchableOpacity>
+          </View>
+          {isCustom && (
+            <TextInput
+              style={styles.input}
+              placeholder="Color (#RRGGBB)"
+              placeholderTextColor="#6b7280"
+              value={color}
+              onChangeText={setColor}
+            />
+          )}
           <TouchableOpacity style={styles.saveBtn} onPress={handleSubmit}>
             <Text style={styles.saveText}>Save</Text>
           </TouchableOpacity>
@@ -92,6 +142,33 @@ const styles = StyleSheet.create({
     padding: 8,
     marginBottom: 8,
     color: '#111827'
+  },
+  swatchContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  swatch: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#ccc',
+  },
+  activeSwatch: {
+    borderColor: '#000',
+    borderWidth: 2,
+  },
+  customSwatch: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  customText: {
+    fontSize: 10,
+    color: '#111827',
   },
   saveBtn: {
     backgroundColor: '#2477ff',
