@@ -65,8 +65,10 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
   };
 
   useEffect(() => {
-    loadCategories();
-  }, []);
+    if (visible) {
+      loadCategories();
+    }
+  }, [visible]);
 
   const displayDate = useMemo(() => {
     if (!date) return '';
@@ -207,29 +209,32 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
                 onChangeText={setDescription}
                 multiline
               />
-              <Picker
-                selectedValue={categoryId}
-                style={styles.picker}
-                onValueChange={(val: any) => {
-                  if (val === 'custom') {
-                    setEditingTag(null);
-                    setTagModalVisible(true);
-                  } else {
-                    setCategoryId(val);
-                  }
-                }}
-              >
-                <Picker.Item label="Select Category" value={null} />
-                {categories.map((cat: any) => (
-                  <Picker.Item
-                    key={cat.categoryId}
-                    label={`⬤ ${cat.name}`}
-                    value={cat.categoryId}
-                    color={cat.colorValue}
-                  />
+              <View style={styles.textInput}>
+                <Picker
+                  selectedValue={categoryId}
+                  onValueChange={(val: any) => {
+                    if (val === 'custom') {
+                      setEditingTag(null);
+                      setTagModalVisible(true);
+                    } else {
+                      setCategoryId(val);
+                    }
+                  }}
+                  style={{ color: '#111827' }}
+                  dropdownIconColor="#111827"
+                >
+                  <Picker.Item label="Select Category" value={null} color="#111827" />
+                  {categories.map((cat: any) => (
+                    <Picker.Item
+                      key={cat.categoryId}
+                      label={`⬤ ${cat.name}`}
+                      value={cat.categoryId}
+                      color={cat.colorValue}
+                    />
                   ))}
-                <Picker.Item label="Add Custom Tag..." value="custom" />
-              </Picker>
+                <Picker.Item label="Add Custom Tag..." value="custom" color="#111827" />
+                </Picker>
+              </View>
               <View style={[styles.rowBetween, { marginTop: 4 }]}>
                 <Text style={styles.inlineLabel}>Add Google Meet Link?</Text>
                 <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
@@ -351,11 +356,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.06)',
     flex: 1,
     color: '#111827',
-  },
-  picker: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 8,
   },
   timeInput: { marginRight: 8, justifyContent: 'center' },
   durationInput: { flex: 1 },
