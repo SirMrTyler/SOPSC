@@ -44,7 +44,7 @@ const Schedule: React.FC = () => {
     const roleName = (user as any).roleName || (user as any).RoleName;
     return roleName === 'Admin' || roleName === 'Developer';
   }, [user]);
-
+  // States
   const [month, setMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
   const [eventModalVisible, setEventModalVisible] = useState(false);
@@ -60,6 +60,8 @@ const Schedule: React.FC = () => {
   const [monthPickerVisible, setMonthPickerVisible] = useState(false);
   const [tempMonth, setTempMonth] = useState(month.getMonth());
   const [tempYear, setTempYear] = useState(month.getFullYear());
+  // Refs
+  const lastChangeRef = useRef<number>(0);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -145,7 +147,17 @@ const Schedule: React.FC = () => {
   };
 
   const changeMonth = (delta: number) => {
-    setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
+    const now = Date.now();
+    let actual = delta;
+    if (now - lastChangeRef.current < 350) {
+      actual *= 6;
+    } else if (now - lastChangeRef.current < 500) {
+      actual *= 3;
+    } else if (now - lastChangeRef.current < 1000) {
+      actual *= 2;
+    }
+    lastChangeRef.current = now;
+    setMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + actual, 1));
   };
 
   const openDayModal = (date: Date) => {
@@ -410,8 +422,8 @@ const styles = StyleSheet.create({
   },
   monthName: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   todayIconWrapper: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -420,6 +432,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 10,
     fontWeight: 'bold',
+    bottom: 4,
   },
   pickerOverlay: {
     flex: 1,
