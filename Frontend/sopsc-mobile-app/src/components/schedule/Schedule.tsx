@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  Modal,
+  PanResponder,
 } from 'react-native';
 import {
   Bars3Icon,
@@ -22,6 +24,7 @@ import DayViewModal from './DayViewModal';
 import EventDetailsModal from './EventDetailsModal';
 import FilterMenu from './FilterMenu';
 import * as calendarService from '../../services/calendarService';
+import { Picker } from '@react-native-picker/picker';
 interface DayCell {
   date: Date;
   inMonth: boolean;
@@ -53,7 +56,20 @@ const Schedule: React.FC = () => {
   const [initialStartTime, setInitialStartTime] = useState<string | undefined>(undefined);
   const [menuVisible, setMenuVisible] = useState(false);
   const [viewMode, setViewMode] = useState<'day' | '3day' | 'week' | 'month'>('month');
-  const [activeTags, setActiveTags] = useState<string[]>(['Agencies', 'Events', 'Prayer Meetings']);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [monthPickerVisible, setMonthPickerVisible] = useState(false);
+  const [tempMonth, setTempMonth] = useState(month.getMonth());
+  const [tempYear, setTempYear] = useState(month.getFullYear());
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 20,
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dx > 50) changeMonth(-1);
+        else if (gesture.dx < -50) changeMonth(1);
+      },
+    })
+  ).current;
 
   const days = useMemo(() => {
     const base = selectedDate || new Date();
@@ -234,7 +250,7 @@ const Schedule: React.FC = () => {
 
   return (
     <ScreenContainer showBottomBar={true}>
-      <View style={styles.container}>
+      <View style={styles.container} {...panResponder.panHandlers}>
         <View style={styles.navRow}>
           <TouchableOpacity onPress={() => setMenuVisible(true)}>
             <Bars3Icon color="white" size={24} />
@@ -243,16 +259,22 @@ const Schedule: React.FC = () => {
             <TouchableOpacity onPress={() => changeMonth(-1)}>
               <ChevronLeftIcon color="white" size={20} />
             </TouchableOpacity>
-            <Text style={styles.monthText}>Month</Text>
+            <TouchableOpacity onPress={() => {
+              setTempMonth(month.getMonth());
+              setTempYear(month.getFullYear());
+              setMonthPickerVisible(true);
+            }}>
+              <Text style={styles.monthName}>{monthName}</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => changeMonth(1)}>
               <ChevronRightIcon color="white" size={20} />
             </TouchableOpacity>
           </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.monthName}>{monthName}</Text>
-          </View>
           {month.getMonth() === new Date().getMonth() && (
-            <CalendarIcon color="white" size={24} />
+            <View style={styles.todayIconWrapper}>
+              <CalendarIcon color="white" size={24} />
+              <Text style={styles.todayIconText}>{new Date().getDate()}</Text>
+            </View>
           )}
         </View>
         <BlurView intensity={40} tint='dark' style={styles.calendarWrapper}>
@@ -287,7 +309,6 @@ const Schedule: React.FC = () => {
             setViewMode(v as any);
             setMenuVisible(false);
           }}
-          tags={['Agencies', 'Events', 'Prayer Meetings']}
           selectedTags={activeTags}
           onTagsChange={setActiveTags}
         />
@@ -317,6 +338,44 @@ const Schedule: React.FC = () => {
           onClose={() => setEventModalVisible(false)}
           isAdmin={canCreateEvents}
         />
+        
+        <Modal transparent visible={monthPickerVisible} animationType="fade">
+          <View style={styles.pickerOverlay}>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={tempMonth}
+                onValueChange={(val) => setTempMonth(val)}
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <Picker.Item key={i} label={new Date(0, i).toLocaleString('default', { month: 'short' })} value={i} />
+                ))}
+              </Picker>
+              <Picker
+                selectedValue={tempYear}
+                onValueChange={(val) => setTempYear(val)}
+              >
+                {Array.from({ length: 11 }, (_, i) => {
+                  const y = new Date().getFullYear() - 5 + i;
+                  return <Picker.Item key={y} label={String(y)} value={y} />;
+                })}
+              </Picker>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                <TouchableOpacity onPress={() => setMonthPickerVisible(false)} style={styles.pickerBtn}>
+                  <Text style={styles.pickerBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setMonth(new Date(tempYear, tempMonth, 1));
+                    setMonthPickerVisible(false);
+                  }}
+                  style={styles.pickerBtn}
+                >
+                  <Text style={styles.pickerBtnText}>Set</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </ScreenContainer>
   );
@@ -331,7 +390,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   calendarWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', // semi-transparent white
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderRadius: 24,
     overflow: 'hidden',
     padding: 8,
@@ -345,10 +404,41 @@ const styles = StyleSheet.create({
   monthSwitch: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
     gap: 4,
   },
-  monthText: { color: 'white', marginHorizontal: 4 },
   monthName: { color: 'white', fontSize: 24, fontWeight: 'bold' },
+  todayIconWrapper: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todayIconText: {
+    position: 'absolute',
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    width: '80%',
+  },
+  pickerBtn: {
+    flex: 1,
+    padding: 8,
+    alignItems: 'center',
+  },
+  pickerBtnText: { color: '#2477ff', fontWeight: 'bold' },
   weekRow: { justifyContent: 'space-between' },
   day: {
     flex: 1,

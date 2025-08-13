@@ -15,6 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { Picker } from '@react-native-picker/picker';
 import * as categoryService from '../../services/scheduleCategoriesService';
+import TagModal from './TagModal';
 
 interface Props {
   visible: boolean;
@@ -47,24 +48,24 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
   const [duration, setDuration] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [addingCustom, setAddingCustom] = useState(false);
-  const [customName, setCustomName] = useState('');
-  const [customColor, setCustomColor] = useState('#000000');
+  const [tagModalVisible, setTagModalVisible] = useState(false);
+  const [editingTag, setEditingTag] = useState<any | null>(null);
   const [includeMeetLink, setIncludeMeetLink] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  const loadCategories = async () => {
+    try {
+      const data = await categoryService.getAll();
+      const list = Array.isArray(data) ? data : data.items;
+      setCategories(list || []);
+    } catch (err) {
+      console.error('[EventModal] Failed to load categories', err);
+    }
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await categoryService.getAll();
-        const list = Array.isArray(data) ? data : data.items;
-        setCategories(list || []);
-      } catch (err) {
-        console.error('[EventModal] Failed to load categories', err);
-      }
-    };
-    fetchCategories();
+    loadCategories();
   }, []);
 
   const displayDate = useMemo(() => {
@@ -145,10 +146,11 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
     duration.trim().length > 0;
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.container}>
-          <ScrollView contentContainerStyle={styles.scroll}>
+    <>
+      <Modal visible={visible} transparent animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scroll}>
             <View style={styles.topRow}>
               <View style={styles.titleWrapper}>
                 <TouchableOpacity
@@ -205,63 +207,29 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
                 onChangeText={setDescription}
                 multiline
               />
-              {addingCustom ? (
-                <>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Category Name"
-                    placeholderTextColor="#6b7280"
-                    value={customName}
-                    onChangeText={setCustomName}
+              <Picker
+                selectedValue={categoryId}
+                style={styles.picker}
+                onValueChange={(val: any) => {
+                  if (val === 'custom') {
+                    setEditingTag(null);
+                    setTagModalVisible(true);
+                  } else {
+                    setCategoryId(val);
+                  }
+                }}
+              >
+                <Picker.Item label="Select Category" value={null} />
+                {categories.map((cat: any) => (
+                  <Picker.Item
+                    key={cat.categoryId}
+                    label={`⬤ ${cat.name}`}
+                    value={cat.categoryId}
+                    color={cat.colorValue}
                   />
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Color (#RRGGBB)"
-                    placeholderTextColor="#6b7280"
-                    value={customColor}
-                    onChangeText={setCustomColor}
-                  />
-                  <TouchableOpacity style={styles.addCategoryBtn} onPress={async () => {
-                    try {
-                      const newId = await categoryService.add({ name: customName, colorValue: customColor });
-                      const newCat = { categoryId: newId, name: customName, colorValue: customColor };
-                      setCategories(prev => [...prev, newCat]);
-                      setCategoryId(newId);
-                    } catch (err) {
-                      console.error('[EventModal] Failed to add category', err);
-                    } finally {
-                      setAddingCustom(false);
-                      setCustomName('');
-                      setCustomColor('#000000');
-                    }
-                  }}>
-                    <Text style={styles.addCategoryBtnText}>Add Category</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <Picker
-                  selectedValue={categoryId}
-                  style={styles.picker}
-                  onValueChange={(val) => {
-                    if (typeof val === 'string' && val === 'custom') {
-                      setAddingCustom(true);
-                    } else {
-                      setCategoryId(val);
-                    }
-                  }}
-                >
-                  <Picker.Item label="Select Category" value={null} />
-                    {categories.map((cat: any) => (
-                      <Picker.Item
-                        key={cat.categoryId}
-                        label={`⬤ ${cat.name}`}
-                        value={cat.categoryId}
-                        color={cat.colorValue}
-                      />
-                    ))}
-                  <Picker.Item label="Custom +" value="custom" />
-                </Picker>
-              )}
+                  ))}
+                <Picker.Item label="Add Custom Tag..." value="custom" />
+              </Picker>
               <View style={[styles.rowBetween, { marginTop: 4 }]}>
                 <Text style={styles.inlineLabel}>Add Google Meet Link?</Text>
                 <Switch value={includeMeetLink} onValueChange={setIncludeMeetLink} />
@@ -302,9 +270,19 @@ const EventModal: React.FC<Props> = ({ visible, date, onAdd, onUpdate, onClose, 
               </TouchableOpacity>
             </View>
           </ScrollView>
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+      <TagModal
+      visible={tagModalVisible}
+      onClose={() => setTagModalVisible(false)}
+      tag={editingTag}
+      onSave={async (tag: any) => {
+        await loadCategories();
+        setCategoryId(tag.categoryId);
+      }}
+      />
+    </>
   );
 };
 
@@ -379,14 +357,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
   },
-  addCategoryBtn: {
-    backgroundColor: '#2563eb',
-    borderRadius: 8,
-    padding: 8,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  addCategoryBtnText: { color: 'white', fontWeight: '700' },
   timeInput: { marginRight: 8, justifyContent: 'center' },
   durationInput: { flex: 1 },
 
