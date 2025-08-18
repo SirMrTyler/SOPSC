@@ -200,6 +200,27 @@ const Schedule: React.FC = () => {
     setEventModalVisible(true);
   };
 
+  const handleDeleteSelected = () => {
+    if (!selectedEvent) return;
+    Alert.alert('Delete Event', 'Are you sure you want to delete this event?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await calendarService.deleteEvent(selectedEvent.id);
+            setEvents(prev => prev.filter(ev => ev.id !== selectedEvent.id));
+          } catch (err) {
+            console.error('[Schedule] Failed to delete event:', (err as any)?.response?.data || err);
+          } finally {
+            setDetailModalVisible(false);
+          }
+        },
+      },
+    ]);
+  };
+  
   const handleAddEvent = async (event: EventData) => {
     try {
       const result = await calendarService.addEvent(event);
@@ -339,6 +360,7 @@ const Schedule: React.FC = () => {
           onClose={() => setDetailModalVisible(false)}
           isAdmin={canCreateEvents}
           onEdit={handleEditSelected}
+          onDelete={handleDeleteSelected}
         />
         <EventModal
           visible={eventModalVisible}

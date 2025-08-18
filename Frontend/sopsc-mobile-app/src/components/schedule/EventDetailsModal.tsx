@@ -18,6 +18,7 @@ interface Props {
   onClose: () => void;
   isAdmin: boolean;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
 const EventDetailsModal: React.FC<Props> = ({
@@ -26,6 +27,7 @@ const EventDetailsModal: React.FC<Props> = ({
   onClose,
   isAdmin,
   onEdit,
+  onDelete,
 }) => {
   if (!event) return null;
 
@@ -118,11 +120,16 @@ const EventDetailsModal: React.FC<Props> = ({
               </TouchableOpacity>
             </View>
 
-            {/* Admin edit shortcut */}
+            {/* Admin actions */}
             {isAdmin && (
-              <TouchableOpacity onPress={onEdit} style={styles.editBtn} activeOpacity={0.8}>
-                <Text style={styles.editText}>Edit Event</Text>
-              </TouchableOpacity>
+              <View style={styles.adminActions}>
+                <TouchableOpacity onPress={onEdit} style={styles.adminBtn} activeOpacity={0.8}>
+                  <Text style={styles.editText}>Edit Event</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onDelete} style={styles.adminBtn} activeOpacity={0.8}>
+                  <Text style={styles.deleteText}>Delete Event</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </ScrollView>
         </View>
@@ -198,9 +205,15 @@ const styles = StyleSheet.create({
   joinButtonDisabled: { backgroundColor: '#c7cbd3' },
   joinButtonText: { color: 'white', fontWeight: '700' },
 
-  // Admin edit
-  editBtn: { marginTop: 2, alignItems: 'center' },
+  // Admin actions
+  adminActions: {
+    marginTop: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  adminBtn: { flex: 1, alignItems: 'center' },
   editText: { color: '#2563eb', fontWeight: '700' },
+  deleteText: { color: '#dc2626', fontWeight: '700' },
 });
 
 export default EventDetailsModal;

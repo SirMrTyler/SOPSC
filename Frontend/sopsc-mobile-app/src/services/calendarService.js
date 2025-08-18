@@ -93,4 +93,19 @@ const updateEvent = async (eventData) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-export { addEvent, updateEvent, getEvents };
+const deleteEvent = async (id) => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'DELETE',
+    url: `${endpoint}/${id}`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
+export { addEvent, updateEvent, deleteEvent, getEvents };
