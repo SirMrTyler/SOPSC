@@ -354,23 +354,38 @@ const Schedule: React.FC = () => {
         <Modal transparent visible={monthPickerVisible} animationType="fade">
           <View style={styles.pickerOverlay}>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={tempMonth}
-                onValueChange={(val) => setTempMonth(val)}
-              >
-                {Array.from({ length: 12 }, (_, i) => (
-                  <Picker.Item key={i} label={new Date(0, i).toLocaleString('default', { month: 'short' })} value={i} />
-                ))}
-              </Picker>
-              <Picker
-                selectedValue={tempYear}
-                onValueChange={(val) => setTempYear(val)}
-              >
-                {Array.from({ length: 11 }, (_, i) => {
-                  const y = new Date().getFullYear() - 5 + i;
-                  return <Picker.Item key={y} label={String(y)} value={y} />;
-                })}
-              </Picker>
+              <View style={styles.textInput}>
+                <Picker
+                  selectedValue={tempMonth}
+                  onValueChange={(val) => setTempMonth(val)}
+                  style={{ color: '#111827' }}
+                  dropdownIconColor="#111827"
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <Picker.Item
+                      key={i}
+                      label={new Date(0, i).toLocaleString('default', { month: 'short' })}
+                      value={i}
+                      color="#111827"
+                    />
+                  ))}
+                </Picker>
+              </View>
+              <View style={styles.textInput}>
+                <Picker
+                  selectedValue={tempYear}
+                  onValueChange={(val) => setTempYear(val)}
+                  style={{ color: '#111827' }}
+                  dropdownIconColor="#111827"
+                >
+                  {Array.from({ length: 11 }, (_, i) => {
+                    const y = new Date().getFullYear() - 5 + i;
+                    return (
+                      <Picker.Item key={y} label={String(y)} value={y} color="#111827" />
+                    );
+                  })}
+                </Picker>
+              </View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
                 <TouchableOpacity onPress={() => setMonthPickerVisible(false)} style={styles.pickerBtn}>
                   <Text style={styles.pickerBtnText}>Cancel</Text>
@@ -452,6 +467,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickerBtnText: { color: '#2477ff', fontWeight: 'bold' },
+  textInput: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.06)',
+    flex: 1,
+  },
   weekRow: { justifyContent: 'space-between' },
   day: {
     flex: 1,
