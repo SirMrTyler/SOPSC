@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
@@ -7,12 +7,19 @@ import { update as updateUser } from '../../services/userService.js';
 const Profile: React.FC = () => {
   const { user, refresh } = useAuth();
 
-  const [firstName, setFirstName] = useState(user?.name.firstName || '');
-  const [lastName, setLastName] = useState(user?.name.lastName || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [agencyId, setAgencyId] = useState(
-    user?.agencyId ? String(user.agencyId) : ''
-  );
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [agencyId, setAgencyId] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || '');
+      setLastName(user.lastName || '');
+      setEmail(user.email || '');
+      setAgencyId(user.agencyId ? String(user.agencyId) : '');
+    }
+  }, [user]);
 
   const onSave = async () => {
     if (!user) return;
@@ -27,6 +34,8 @@ const Profile: React.FC = () => {
     });
     await refresh();
   };
+
+  if (!user) return null;
 
   return (
     <ScreenContainer>

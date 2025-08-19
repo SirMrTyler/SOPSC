@@ -117,7 +117,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
         messageId: result?.item || Date.now(),
         groupChatId: chatId,
         senderId: user?.userId || 0,
-        senderName: user ? `${user.name.firstName} ${user.name.lastName}` : '',
+        senderName: user ? `${user.firstName} ${user.lastName}` : '',
         messageContent: newMessage.trim(),
         sentTimestamp: new Date().toISOString(),
         readTimestamp: null,

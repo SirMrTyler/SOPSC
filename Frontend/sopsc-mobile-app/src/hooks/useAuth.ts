@@ -6,10 +6,8 @@ import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from 
 
 export interface AuthUser {
   userId: number;
-  name: {
-    firstName: string;
-    lastName: string;
-  }
+  firstName: string;
+  lastName: string;
   email: string;
   Roles: [{ roleId: number; roleName: string }, ...any[]]; // Adjusted to allow for multiple roles
   profilePicturePath?: string;
@@ -17,6 +15,18 @@ export interface AuthUser {
   isActive: boolean;
   agencyId?: number;
 }
+
+const mapUser = (u: any): AuthUser => ({
+  userId: u.userId,
+  firstName: u.firstName ?? u.name?.firstName ?? '',
+  lastName: u.lastName ?? u.name?.lastName ?? '',
+  email: u.email,
+  Roles: u.Roles,
+  profilePicturePath: u.profilePicturePath,
+  isConfirmed: u.isConfirmed,
+  isActive: u.isActive,
+  agencyId: u.agencyId,
+});
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -29,7 +39,7 @@ export const useAuth = () => {
         try {
           const data = await autoLogin(deviceId);
           await SecureStore.setItemAsync('token', String(data.item.token));
-          setUser(data.item.user);
+          setUser(mapUser(data.item.user));
         } catch {
           await SecureStore.deleteItemAsync('token');
         }
@@ -53,7 +63,7 @@ export const useAuth = () => {
       await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
 
       const currentUser = await getCurrent(token, String(data.item.deviceId));
-      setUser(currentUser.item);
+      setUser(mapUser(currentUser.item));
     } catch (error: any) {
       console.error('Email login error:', error);
       const message =
@@ -73,7 +83,7 @@ export const useAuth = () => {
     await SecureStore.setItemAsync('deviceId', deviceId);
 
     const currentUser = await getCurrent(token, deviceId);
-    setUser(currentUser.item);
+    setUser(mapUser(currentUser.item));
     // setUser({
     //   userId: 0,
     //   name: name,
@@ -108,7 +118,7 @@ export const useAuth = () => {
     const deviceId = await SecureStore.getItemAsync('deviceId');
     if (token && deviceId) {
       const currentUser = await getCurrent(token, deviceId);
-      setUser(currentUser.item);
+      setUser(mapUser(currentUser.item));
     }
   };
 

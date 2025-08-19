@@ -223,8 +223,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
             const result = await send(conversation.otherUserId, newMessage.trim());
             
             const senderName =
-              'firstName' in user && 'lastName' in user
-                ? `${(user as any).firstName} ${(user as any).lastName}`
+              user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
                 : user?.email || '';
             console.log('[Conversation] Sender Name:', senderName);
             

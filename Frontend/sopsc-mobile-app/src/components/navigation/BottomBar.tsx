@@ -16,7 +16,7 @@ const BottomBar: React.FC = () => {
   const { user } = useAuth();
 
   const displayLetter =
-    user?.name?.[0] ||
+    user?.firstName?.[0] ||
     user?.email?.[0] ||
     'U';
   const homeScreenString = 'Home';
