@@ -9,7 +9,9 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   email: string;
-  Roles: [{ roleId: number; roleName: string }, ...any[]]; // Adjusted to allow for multiple roles
+  roleId?: number;
+  roleName?: string;
+  Roles: Array<{ roleId: number; roleName: string }>; // Allow for multiple roles
   profilePicturePath?: string;
   isConfirmed: boolean;
   isActive: boolean;
@@ -21,7 +23,16 @@ const mapUser = (u: any): AuthUser => ({
   firstName: u.firstName ?? u.name?.firstName ?? '',
   lastName: u.lastName ?? u.name?.lastName ?? '',
   email: u.email,
-  Roles: u.Roles,
+  roleId:
+    u.roleId ?? u.RoleId ?? u.Roles?.[0]?.roleId ?? u.roles?.[0]?.roleId,
+  roleName:
+    u.roleName ?? u.RoleName ?? u.Roles?.[0]?.roleName ?? u.roles?.[0]?.roleName,
+  Roles:
+    u.Roles ??
+    u.roles ??
+    (u.roleId || u.RoleId
+      ? [{ roleId: u.roleId ?? u.RoleId, roleName: u.roleName ?? u.RoleName }]
+      : []),
   profilePicturePath: u.profilePicturePath,
   isConfirmed: u.isConfirmed,
   isActive: u.isActive,
