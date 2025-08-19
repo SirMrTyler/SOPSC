@@ -1,0 +1,18 @@
+CREATE TABLE [dbo].[GroupChatMessages](
+	[MessageId] [int] IDENTITY(1,1) NOT NULL,
+	[GroupChatId] [int] NOT NULL,
+	[SenderId] [int] NOT NULL,
+	[MessageContent] [nvarchar](max) NOT NULL,
+	[SentTimestamp] [datetime2](7) NOT NULL,
+	[ReadTimestamp] [datetime2](7) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[MessageId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[GroupChatMessages] ADD  DEFAULT (sysdatetime()) FOR [SentTimestamp]
+GO
+
+

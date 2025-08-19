@@ -1,0 +1,53 @@
+CREATE TABLE [dbo].[Reports](
+	[ReportId] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[MainAgency] [nvarchar](100) NOT NULL,
+	[SecondAgency] [nvarchar](100) NULL,
+	[OtherAgency] [nvarchar](100) NULL,
+	[TypeOfService] [nvarchar](255) NOT NULL,
+	[BeginDispatchDate] [date] NOT NULL,
+	[EndDispatchDate] [date] NOT NULL,
+	[BeginDispatchTime] [time](0) NOT NULL,
+	[EndDispatchTime] [time](0) NOT NULL,
+	[ContactName] [nvarchar](100) NOT NULL,
+	[ContactPhone] [nvarchar](20) NULL,
+	[DispatchAddress] [nvarchar](255) NOT NULL,
+	[DispatchAddressLine2] [nvarchar](255) NULL,
+	[City] [nvarchar](100) NOT NULL,
+	[State] [nvarchar](50) NOT NULL,
+	[PostalCode] [nvarchar](20) NOT NULL,
+	[Narrative] [nvarchar](max) NULL,
+	[HoursOfService] [decimal](5, 2) NULL,
+	[MilesDriven] [decimal](8, 2) NOT NULL,
+	[DateCreated] [datetime2](7) NOT NULL,
+	[DateModified] [datetime2](7) NOT NULL,
+	[ReportDate] [datetime2](7) NOT NULL,
+	[DivisionId] [int] NOT NULL,
+ CONSTRAINT [PK_Reports] PRIMARY KEY CLUSTERED 
+(
+	[ReportId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Reports] ADD  CONSTRAINT [DF_Reports_DateCreated]  DEFAULT (sysutcdatetime()) FOR [DateCreated]
+GO
+
+ALTER TABLE [dbo].[Reports] ADD  CONSTRAINT [DF_Reports_DateModified]  DEFAULT (getdate()) FOR [DateModified]
+GO
+
+ALTER TABLE [dbo].[Reports]  WITH CHECK ADD  CONSTRAINT [FK_Reports_Divisions] FOREIGN KEY([DivisionId])
+REFERENCES [dbo].[Divisions] ([DivisionId])
+GO
+
+ALTER TABLE [dbo].[Reports] CHECK CONSTRAINT [FK_Reports_Divisions]
+GO
+
+ALTER TABLE [dbo].[Reports]  WITH CHECK ADD  CONSTRAINT [FK_Reports_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+
+ALTER TABLE [dbo].[Reports] CHECK CONSTRAINT [FK_Reports_Users]
+GO
+
+

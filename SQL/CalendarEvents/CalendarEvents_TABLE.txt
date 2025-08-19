@@ -1,0 +1,27 @@
+CREATE TABLE [dbo].[CalendarEvents](
+	[EventId] [int] IDENTITY(1,1) NOT NULL,
+	[GoogleEventId] [nvarchar](255) NULL,
+	[StartDateTime] [datetime2](7) NOT NULL,
+	[EndDateTime] [datetime2](7) NOT NULL,
+	[Title] [nvarchar](255) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[Category] [nvarchar](100) NULL,
+	[MeetLink] [nvarchar](255) NULL,
+	[CreatedBy] [int] NOT NULL,
+	[CreatedTimestamp] [datetime2](7) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_CalendarEvents] PRIMARY KEY CLUSTERED 
+(
+	[EventId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[CalendarEvents]  WITH CHECK ADD  CONSTRAINT [FK_CalendarEvents_Users] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Schedule_Categories] ([CategoryId])
+GO
+
+ALTER TABLE [dbo].[CalendarEvents] CHECK CONSTRAINT [FK_CalendarEvents_Users]
+GO
+
+

@@ -1,0 +1,25 @@
+CREATE TABLE [dbo].[Agencies](
+	[AgencyId] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[Phone] [nvarchar](20) NOT NULL,
+	[Email] [nvarchar](50) NULL,
+	[TypeId] [int] NOT NULL,
+	[Address] [nvarchar](255) NULL,
+	[City] [nvarchar](100) NULL,
+	[State] [nvarchar](20) NULL,
+	[PostalCode] [nvarchar](20) NULL,
+ CONSTRAINT [PK_Agencies] PRIMARY KEY CLUSTERED 
+(
+	[AgencyId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Agencies]  WITH CHECK ADD  CONSTRAINT [FK_Agencies_AgencyTypes] FOREIGN KEY([TypeId])
+REFERENCES [dbo].[AgencyTypes] ([TypeId])
+GO
+
+ALTER TABLE [dbo].[Agencies] CHECK CONSTRAINT [FK_Agencies_AgencyTypes]
+GO
+
+

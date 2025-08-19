@@ -1,0 +1,17 @@
+CREATE TABLE [dbo].[GroupChatMembers](
+	[GroupChatId] [int] NOT NULL,
+	[UserId] [int] NOT NULL,
+	[JoinedTimestamp] [datetime2](7) NOT NULL,
+	[LastReadTimestamp] [datetime2](7) NULL,
+ CONSTRAINT [PK_GroupChatMembers] PRIMARY KEY CLUSTERED 
+(
+	[GroupChatId] ASC,
+	[UserId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[GroupChatMembers] ADD  DEFAULT (sysdatetime()) FOR [JoinedTimestamp]
+GO
+
+

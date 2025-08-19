@@ -1,0 +1,36 @@
+CREATE TABLE [dbo].[Posts](
+	[PrayerId] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[Subject] [nvarchar](50) NOT NULL,
+	[Body] [nvarchar](max) NOT NULL,
+	[DateCreated] [datetime2](7) NOT NULL,
+	[PrayerCount] [int] NULL,
+	[NotificationTypeId] [int] NOT NULL,
+ CONSTRAINT [PK_PrayerRequests] PRIMARY KEY CLUSTERED 
+(
+	[PrayerId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Posts] ADD  CONSTRAINT [DF_PrayerRequests_DateCreated]  DEFAULT (sysutcdatetime()) FOR [DateCreated]
+GO
+
+ALTER TABLE [dbo].[Posts] ADD  CONSTRAINT [DF_PrayerRequests_NotificationTypeId]  DEFAULT ((7)) FOR [NotificationTypeId]
+GO
+
+ALTER TABLE [dbo].[Posts]  WITH CHECK ADD  CONSTRAINT [FK_PrayerRequests_NotificationType] FOREIGN KEY([NotificationTypeId])
+REFERENCES [dbo].[NotificationType] ([NotificationTypeId])
+GO
+
+ALTER TABLE [dbo].[Posts] CHECK CONSTRAINT [FK_PrayerRequests_NotificationType]
+GO
+
+ALTER TABLE [dbo].[Posts]  WITH CHECK ADD  CONSTRAINT [FK_PrayerRequests_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+
+ALTER TABLE [dbo].[Posts] CHECK CONSTRAINT [FK_PrayerRequests_Users]
+GO
+
+
