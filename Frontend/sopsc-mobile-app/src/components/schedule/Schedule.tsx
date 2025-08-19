@@ -224,16 +224,17 @@ const Schedule: React.FC = () => {
   const handleAddEvent = async (event: EventData) => {
     try {
       const result = await calendarService.addEvent(event);
-      const newId = result.item || result.id;
+      const newId = result.item?.id || result.id;
+      const meetLink = result.item?.meetLink || result.meetLink;
       const saved = {
         ...event,
         id: newId,
-        meetLink: result.meetLink,
-        includeMeetLink: Boolean(result.meetLink)
+        meetLink,
+        includeMeetLink: Boolean(meetLink)
       } as EventData;
       setEvents(prev => [...prev, saved]);
-      if (result.meetLink) {
-        Alert.alert('Google Meet Link', result.meetLink);
+      if (meetLink) {
+        Alert.alert('Google Meet Link', meetLink);
       }
     } catch (err) {
       console.error('[Schedule] Failed to add event:', (err as any)?.response?.data || err);
