@@ -109,5 +109,26 @@ namespace SOPSC.Api.Controllers
 
             return StatusCode(code, response);
         }
+
+        [HttpDelete("events/{id:int}")]
+        public async Task<ActionResult<SuccessResponse>> Delete(int id)
+        {
+            int code = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                await _calendarService.DeleteEventAsync(id);
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                code = 500;
+                response = new ErrorResponse(ex.Message);
+                base.Logger.LogError(ex.ToString());
+            }
+
+            return StatusCode(code, response);
+        }
     }
 }

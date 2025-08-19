@@ -80,6 +80,22 @@ const logout = (token, deviceId) => {
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
+// Update user profile
+const update = async (payload) => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'PUT',
+    url: `${endpoint}`,
+    data: payload,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
 
 // Search users by name
 const search = async (query, pageIndex = 0, pageSize = 20) => {
@@ -120,6 +136,7 @@ export {
   autoLogin,
   logout,
   getCurrent,
+  update,
   getAll,
   search,
 };

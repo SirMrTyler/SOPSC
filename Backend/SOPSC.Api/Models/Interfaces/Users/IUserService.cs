@@ -12,7 +12,13 @@ namespace SOPSC.Api.Models.Interfaces.Users
     public interface IUserService
     {
         int Create(UserAddRequest userModel);
-        
+
+        /// <summary>
+        /// Updates an existing user's information.
+        /// </summary>
+        /// <param name="userModel">The user data to update.</param>
+        void Update(UserUpdateRequest userModel);
+
         /// <summary>
         /// Retrieves a user by their unique identifier.
         /// </summary>

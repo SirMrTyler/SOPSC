@@ -432,7 +432,29 @@ public class UsersController : BaseApiController
     #endregion
 
     #region UPDATE
-
+    /// <summary>
+    /// Updates a user's profile information.
+    /// </summary>
+    /// <param name="model">The user data to update.</param>
+    [Authorize]
+    [HttpPut]
+    public ActionResult<BaseResponse> Update(UserUpdateRequest model)
+    {
+        int code = 200;
+        BaseResponse response;
+        try
+        {
+            _userService.Update(model);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse(ex.Message);
+        }
+        return StatusCode(code, response);
+    }
     #endregion
 
     #region DELETE

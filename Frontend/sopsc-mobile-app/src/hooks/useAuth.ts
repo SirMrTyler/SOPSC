@@ -15,6 +15,7 @@ export interface AuthUser {
   profilePicturePath?: string;
   isConfirmed: boolean;
   isActive: boolean;
+  agencyId?: number;
 }
 
 export const useAuth = () => {
@@ -102,5 +103,14 @@ export const useAuth = () => {
     }
   };
 
-  return { user, loading, signInEmail, signInGoogle, signOut };
+  const refresh = async () => {
+    const token = await SecureStore.getItemAsync('token');
+    const deviceId = await SecureStore.getItemAsync('deviceId');
+    if (token && deviceId) {
+      const currentUser = await getCurrent(token, deviceId);
+      setUser(currentUser.item);
+    }
+  };
+
+  return { user, loading, signInEmail, signInGoogle, signOut, refresh };
 };

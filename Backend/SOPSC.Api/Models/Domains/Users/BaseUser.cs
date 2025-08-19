@@ -25,5 +25,8 @@
 
         // Gets or sets the role identifier associated with the user.
         public int RoleId { get; set; }
+
+        // Gets or sets the agency identifier associated with the user.
+        public int? AgencyId { get; set; }
     }
 }

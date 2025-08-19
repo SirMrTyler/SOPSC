@@ -268,6 +268,53 @@ namespace SOPSC.Api.Services
                     }
                 });
         }
+        public async Task DeleteEventAsync(int id)
+        {
+            var calendarId = _config["GoogleCalendar:CalendarId"];
+            var credPath = _config["GoogleCalendar:ServiceAccountCredentialsPath"];
+
+            if (string.IsNullOrWhiteSpace(calendarId))
+            {
+                throw new InvalidOperationException("Google Calendar ID is not configured.");
+            }
+
+            if (string.IsNullOrWhiteSpace(credPath) || !File.Exists(credPath))
+            {
+                throw new InvalidOperationException("Google service account credentials file not found.");
+            }
+
+            GoogleCredential credential;
+            using (var stream = new FileStream(credPath, FileMode.Open, FileAccess.Read))
+            {
+                credential = GoogleCredential.FromStream(stream)
+                    .CreateScoped(Google.Apis.Calendar.v3.CalendarService.Scope.CalendarEvents);
+            }
+
+            var service = new Google.Apis.Calendar.v3.CalendarService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "SOPSC.Api"
+            });
+
+            string googleEventId = null;
+            _dataProvider.ExecuteCmd("[dbo].[CalendarEvents_SelectById]",
+                param => param.AddWithValue("@EventId", id),
+                delegate (IDataReader reader, short set)
+                {
+                    int startingIndex = 0;
+                    reader.GetSafeInt32(startingIndex++); // EventId
+                    googleEventId = reader.GetSafeString(startingIndex++);
+                });
+
+            if (!string.IsNullOrWhiteSpace(googleEventId))
+            {
+                var request = service.Events.Delete(calendarId, googleEventId);
+                await request.ExecuteAsync();
+            }
+
+            _dataProvider.ExecuteNonQuery("[dbo].[CalendarEvents_Delete]",
+                param => param.AddWithValue("@EventId", id));
+        }
 
         public Task<List<CalendarEvent>> GetEventsAsync(DateTime start, DateTime end)
         {

@@ -11,5 +11,6 @@ namespace SOPSC.Api.Models.Interfaces.Calendar
         Task<CalendarEventCreated> AddEventAsync(CalendarEventAddRequest model, int createdById);
         Task<List<CalendarEvent>> GetEventsAsync(DateTime start, DateTime end);
         Task UpdateEventAsync(int id, CalendarEventAddRequest model);
+        Task DeleteEventAsync(int id);
     }
 }

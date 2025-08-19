@@ -39,6 +39,11 @@ namespace SOPSC.Api.Models.Requests.Users
         public string Email { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the agency the user belongs to.
+        /// </summary>
+        public int? AgencyId { get; set; }
+
+        /// <summary>
         /// The Password field for user registration.
         /// </summary>
         /// <remarks>
