@@ -10,6 +10,8 @@ using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Collections.Generic;
 
 /// <summary>
 /// Handles all user-related operations such as creating, retrieving, updating, and deleting users.
@@ -200,7 +202,7 @@ public class UsersController : BaseApiController
 
     [AllowAnonymous]
     [HttpGet("auto-login")]
-    public ActionResult<ItemResponse<object>> AutoLogin()
+    public async Task<ActionResult<ItemResponse<object>>> AutoLogin()
     {
         int statusCode = 200;
         BaseResponse response = null;
@@ -234,9 +236,27 @@ public class UsersController : BaseApiController
             }
 
             UserWithRole user = _userService.GetUserWithRoleById(userToken.UserId);
+
+            var existingRole = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            string tokenToReturn = userToken.Token;
+
+            if (existingRole != user.RoleName)
+            {
+                IUserAuthData authUser = new UserBase
+                {
+                    UserId = user.UserId,
+                    Name = user.Email,
+                    Roles = new List<string> { user.RoleName }
+                };
+                string newToken = await _authenticationService.GenerateJwtToken(authUser, deviceId);
+                _tokenService.DeleteTokenAndDeviceId(userToken.Token, deviceId);
+                _tokenService.CreateToken(newToken, user.UserId, deviceId);
+                tokenToReturn = newToken;
+            }
+
             response = new ItemResponse<object>
             {
-                Item = new { token = userToken.Token, user }
+                Item = new { token = tokenToReturn, user }
             };
         }
         catch (Exception ex)

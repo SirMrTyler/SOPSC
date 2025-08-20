@@ -12,7 +12,7 @@ namespace SOPSC.Api.Controllers
 {
     [ApiController]
     [Route("api/calendar")]
-    [Authorize(Roles = "Admin,Developer")]
+    [Authorize(Roles = "Admin,Developer,Member")]
     public class CalendarController : BaseApiController
     {
         private readonly ICalendarService _calendarService;
@@ -49,6 +49,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost("events")]
+        [Authorize(Roles = "Admin,Developer")]
         public async Task<ActionResult<ItemResponse<CalendarEventCreated>>> Create([FromBody] CalendarEventAddRequest model)
         {
             int code = 201;
@@ -81,6 +82,7 @@ namespace SOPSC.Api.Controllers
 
 
         [HttpPut("events/{id:int}")]
+        [Authorize(Roles = "Admin,Developer")]
         public async Task<ActionResult<SuccessResponse>> Update(int id, [FromBody] CalendarEventAddRequest model)
         {
             int code = 200;
@@ -111,6 +113,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpDelete("events/{id:int}")]
+        [Authorize(Roles = "Admin,Developer")]
         public async Task<ActionResult<SuccessResponse>> Delete(int id)
         {
             int code = 200;
