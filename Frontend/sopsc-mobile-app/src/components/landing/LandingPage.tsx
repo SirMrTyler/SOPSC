@@ -38,7 +38,6 @@ const LandingPage = ({ onLogout, user, navigation }: Props) => {
   const displayName =
     user?.firstName ||
     user?.FirstName ||
-    (typeof user?.name === 'object' ? user?.name?.firstName : user?.name) ||
     user?.Name ||
     user?.email ||
     user?.Email ||

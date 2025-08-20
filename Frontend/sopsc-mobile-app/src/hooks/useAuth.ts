@@ -8,6 +8,7 @@ export interface AuthUser {
   userId: number;
   firstName: string;
   lastName: string;
+  phone?: string;
   email: string;
   roleId?: number;
   roleName?: string;
@@ -16,13 +17,13 @@ export interface AuthUser {
   isConfirmed: boolean;
   isActive: boolean;
   agencyId?: number;
-  phone?: string;
 }
 
 const mapUser = (u: any): AuthUser => ({
   userId: u.userId,
-  firstName: u.firstName ?? u.name?.firstName ?? '',
-  lastName: u.lastName ?? u.name?.lastName ?? '',
+  firstName: u.firstName ?? '',
+  lastName: u.lastName ?? '',
+  phone: u.phone,
   email: u.email,
   roleId:
     u.roleId ?? u.RoleId ?? u.Roles?.[0]?.roleId ?? u.roles?.[0]?.roleId,
@@ -38,7 +39,6 @@ const mapUser = (u: any): AuthUser => ({
   isConfirmed: u.isConfirmed,
   isActive: u.isActive,
   agencyId: u.agencyId,
-  phone: u.phone,
 });
 
 export const useAuth = () => {
@@ -86,7 +86,7 @@ export const useAuth = () => {
     }
   };
 
-  const signInGoogle = async (idToken, name, email) => {
+  const signInGoogle = async (idToken: string) => {
     const data = await googleLogin(idToken);
     const token = String(data.item.token);
     const deviceId = String(data.item.deviceId);
@@ -97,15 +97,6 @@ export const useAuth = () => {
 
     const currentUser = await getCurrent(token, deviceId);
     setUser(mapUser(currentUser.item));
-    // setUser({
-    //   userId: 0,
-    //   name: name,
-    //   email: email,
-    //   Roles: [{ roleId: 0, roleName: 'User' }],
-    //   isConfirmed: false,
-    //   isActive: false,
-    // });
-    console.log("[useAuth] User:", { user });
   };
 
   const signOut = async () => {

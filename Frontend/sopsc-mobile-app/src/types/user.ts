@@ -2,6 +2,7 @@ export interface UserResult {
   userId: number;
   firstName: string;
   lastName: string;
+  phone?: string;
   email: string;
   profilePicturePath?: string;
   dateCreated: string;
@@ -9,5 +10,4 @@ export interface UserResult {
   isActive: boolean;
   roleId: number;
   agencyId?: number;
-  phone?: string;
 }

@@ -34,11 +34,11 @@ const googleLogin = (idToken) => {
 };
 
 // Register user with email/password
-const register = async ({firstName, lastName, email, password, passwordConfirm}) => {
+const register = async ({ firstName, lastName, phone, email, password, passwordConfirm }) => {
   const config = {
     method: 'POST',
     url: `${endpoint}/register`,
-    data: { firstName, lastName, email, password, passwordConfirm },
+    data: { firstName, lastName, phone, email, password, passwordConfirm },
     headers: { 'Content-Type': 'application/json' },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);

@@ -17,6 +17,7 @@ const Register: React.FC<RegisterProps> = ({ navigation, onRegisterSuccess }) =>
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [googleLoading, setGoogleLoading] = useState(false);
@@ -37,7 +38,7 @@ useEffect(() => {
 
   const handleRegister = async () => {
     try {
-      await registerUser({firstName, lastName, email, password, passwordConfirm});
+      await registerUser({firstName, lastName, phone, email, password, passwordConfirm});
       alert('Registration successful! Please check your email to confirm.');
       navigation.goBack();
     } catch (error) {
@@ -58,14 +59,13 @@ useEffect(() => {
       const tokens = await GoogleSignin.getTokens();
       const idToken = tokens.idToken;
 
-      const googleUser = 
+      const googleUser =
         userInfo.user || userInfo.data?.user || userInfo.data || {};
 
       const {
         givenName = '',
         familyName = '',
         email = '',
-        photo = '',
       } = googleUser;
 
       // Auto-fill the registration fields
@@ -73,11 +73,9 @@ useEffect(() => {
       setLastName(familyName);
       setEmail(email);
 
-      const name = { firstName: givenName, lastName: familyName };
-
       if (!idToken) throw new Error('No ID token returned from Google Sign Up');
 
-      await signInGoogle(idToken, name, email);
+      await signInGoogle(idToken);
 
     } catch (error: any) {
       if (error.code === statusCodes.IN_PROGRESS) {
@@ -107,6 +105,14 @@ useEffect(() => {
             placeholderTextColor={'#888'}
             value={lastName}
             onChangeText={setLastName}
+        />
+        <TextInput
+            style={styles.input}
+            placeholder="Phone"
+            placeholderTextColor={'#888'}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
         />
         <TextInput
             style={styles.input}
