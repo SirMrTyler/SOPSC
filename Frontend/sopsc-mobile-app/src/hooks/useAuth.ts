@@ -16,6 +16,7 @@ export interface AuthUser {
   isConfirmed: boolean;
   isActive: boolean;
   agencyId?: number;
+  phone?: string;
 }
 
 const mapUser = (u: any): AuthUser => ({
@@ -37,6 +38,7 @@ const mapUser = (u: any): AuthUser => ({
   isConfirmed: u.isConfirmed,
   isActive: u.isActive,
   agencyId: u.agencyId,
+  phone: u.phone,
 });
 
 export const useAuth = () => {

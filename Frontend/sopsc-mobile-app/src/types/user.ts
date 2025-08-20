@@ -9,4 +9,5 @@ export interface UserResult {
   isActive: boolean;
   roleId: number;
   agencyId?: number;
+  phone?: string;
 }
