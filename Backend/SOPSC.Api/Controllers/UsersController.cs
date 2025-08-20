@@ -9,6 +9,7 @@ using SOPSC.Api.Models.Requests.Users;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 /// <summary>
 /// Handles all user-related operations such as creating, retrieving, updating, and deleting users.
@@ -440,6 +441,12 @@ public class UsersController : BaseApiController
     [HttpPut]
     public ActionResult<BaseResponse> Update(UserUpdateRequest model)
     {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return BadRequest(new ErrorResponse(errors));
+        }
+
         int code = 200;
         BaseResponse response;
         try

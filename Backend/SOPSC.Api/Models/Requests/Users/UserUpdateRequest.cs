@@ -22,6 +22,10 @@ namespace SOPSC.Api.Models.Requests.Users
         [EmailAddress]
         [StringLength(255)]
         public string Email { get; set; }
+        
+        [Phone]
+        [StringLength(20)]
+        public string Phone { get; set; }
 
         public string ProfilePicturePath { get; set; }
 

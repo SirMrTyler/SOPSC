@@ -1468,42 +1468,43 @@ BEGIN
 		INNER JOIN	dbo.Users u ON r.RoleId = u.RoleId
 		WHERE		u.UserId = @UserId
 END
+
 ALTER PROC [dbo].[Users_SelectAll]
-	@PageIndex INT,
-	@PageSize INT
+        @PageIndex INT,
+        @PageSize INT
 AS
 
 /*
-	DECLARE 
-		@PageIndex INT = 0,
-		@PageSize INT = 5
+        DECLARE
+                @PageIndex INT = 0,
+                @PageSize INT = 5
 
-	EXECUTE dbo.Users_SelectAll
-		@PageIndex,
-		@PageSize
+        EXECUTE dbo.Users_SelectAll
+                @PageIndex,
+                @PageSize
 */
 
 BEGIN
-	DECLARE @Offset INT = @PageIndex * @PageSize
+        DECLARE @Offset INT = @PageIndex * @PageSize
 
-	SELECT 
-		[UserId],
-		[FirstName],
-		[LastName],
-		[Email],
-		[DateCreated],
-		[LastLoginDate],
-		[ProfilePicturePath],
-		[IsActive],
+        SELECT
+                [UserId],
+                [FirstName],
+                [LastName],
+                [Email],
+                [Phone],
+                [DateCreated],
+                [LastLoginDate],
+                [ProfilePicturePath],
+                [IsActive],
 		[HoursServed],
 		[RoleId],
-		COUNT(1) OVER() AS TotalCount
-	FROM [dbo].[Users]
-	ORDER BY UserId
-	OFFSET @Offset Rows
-	FETCH NEXT @PageSize Rows ONLY
-END;
-
+                COUNT(1) OVER() AS TotalCount
+        FROM [dbo].[Users]
+        ORDER BY UserId
+        OFFSET @Offset Rows
+        FETCH NEXT @PageSize Rows ONLY
+END
 
 ALTER PROC [dbo].[Users_SelectById]
 	@UserId int
@@ -1517,57 +1518,63 @@ AS
 */
 BEGIN
 	SELECT [UserId],
-		[FirstName],
-		[LastName],
-		[Email],
-		[DateCreated],
-		[LastLoginDate],
-		[IsActive],
-		[RoleId]
-	FROM [dbo].[Users]
+            [FirstName],
+            [LastName],
+            [Email],
+	    [Phone],
+            [DateCreated],
+            [LastLoginDate],
+            [ProfilePicturePath],
+            [IsActive],
+            [HoursServed],
+            [RoleId],
+            [AgencyId]
+    FROM [dbo].[Users]
 
 	WHERE UserId = @UserId
 
-END;
-
+END
 
 ALTER PROC [dbo].[Users_SelectBySearch]
-	@PageIndex int,
-	@PageSize int,
-	@Query nvarchar(100)
+        @PageIndex int,
+        @PageSize int,
+        @Query nvarchar(100)
 
 AS
 
 /*
-	DECLARE
-		@PageIndex int = 1,
-		@PageSize int = 3,
-		@Query nvarchar(100) = 'Tyler'
-	EXECUTE dbo.Users_SelectBySearch
-		@PageIndex,
-		@PageSize,
-		@Query
+        DECLARE
+                @PageIndex int = 1,
+                @PageSize int = 3,
+                @Query nvarchar(100) = 'Tyler'
+        EXECUTE dbo.Users_SelectBySearch
+                @PageIndex,
+                @PageSize,
+                @Query
 */
 
 BEGIN
-	DECLARE @StartingRow int = (@PageIndex-1) * @PageSize;
-	SELECT 
-		[UserId],
-		[FirstName],
-		[LastName],
-		[Email],
-		[DateCreated],
-		[LastLoginDate],
-		[IsActive],
-		[RoleId],
-		TotalCount = COUNT(1) OVER()		
-	FROM [dbo].[Users]
-	WHERE FirstName LIKE '%' + @Query + '%'
-		OR LastName LIKE '%' + @Query + '%'
-	ORDER BY UserId
+        DECLARE @StartingRow int = (@PageIndex) * @PageSize;
+        SELECT
+                [UserId],
+                [FirstName],
+                [LastName],
+                [Email],
+		[Phone],
+                [ProfilePicturePath],
+                [DateCreated],
+                [LastLoginDate],
+                [IsActive],
+                [RoleId],
+                [AgencyId],
+                TotalCount = COUNT(1) OVER()
+        FROM [dbo].[Users]
+        WHERE FirstName LIKE '%' + @Query + '%'
+                OR LastName LIKE '%' + @Query + '%'
+        ORDER BY UserId
 
-	OFFSET @StartingRow ROWS
-	FETCH NEXT @PageSize ROWS ONLY
+        OFFSET @StartingRow ROWS
+        FETCH NEXT @PageSize ROWS ONLY
 END;
 
 

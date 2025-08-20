@@ -4,6 +4,7 @@ CREATE TABLE [dbo].[Users](
 	[LastName] [nvarchar](50) NOT NULL,
 	[Email] [nvarchar](100) NOT NULL,
 	[Password] [nvarchar](255) NULL,
+	[Phone] [nvarchar](20) NULL,
 	[DateCreated] [datetime2](7) NOT NULL,
 	[LastLoginDate] [datetime2](7) NULL,
 	[ProfilePicturePath] [nvarchar](255) NULL,

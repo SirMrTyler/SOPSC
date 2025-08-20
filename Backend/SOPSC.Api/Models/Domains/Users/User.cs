@@ -13,6 +13,9 @@
 
         public bool IsActive { get; set; }
 
+        // Gets or sets the phone number of the user.
+        public new string Phone { get; set; }
+
         // Gets or sets the total hours served by the user.
         public decimal? HoursServed { get; set; }
 

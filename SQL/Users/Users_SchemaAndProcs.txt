@@ -183,23 +183,54 @@ BEGIN
 		@IsActive AS IsActive
 END;
 ---- Users_Login.sql ----
-ALTER PROC dbo.Users_Login
+﻿ALTER PROC [dbo].[Users_Login]
 	@Email NVARCHAR(100),
-	@Password NVARCHAR(255)
+	@Password NVARCHAR(255),
+	@DeviceId NVARCHAR(255),
+	@Token NVARCHAR(MAX) OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Check if user exists and verify password
+	DECLARE
+		@UserId INT,
+		@HashedPassword NVARCHAR(255),
+		@FirstName NVARCHAR(50),
+		@LastName NVARCHAR(50),
+		@RoleId INT,
+		@IsActive BIT;
+
+	-- Retrieve user credentials
 	SELECT
-		UserId,
-		FirstName,
-		LastName,
-		RoleId,
-		IsActive
+		@UserId = UserId,
+		@FirstName = FirstName,
+		@LastName = LastName,
+		@HashedPassword = Password,
+		@RoleId = RoleId,
+		@IsActive = IsActive
 	FROM dbo.Users
-	WHERE Email = @Email AND Password = @Password
-END;
+	WHERE Email = @Email
+
+	-- Check if user exists and password is valid
+	IF @UserId IS NULL
+	BEGIN
+		RAISERROR('Invalid email or password', 16, 1);
+		RETURN;
+	END
+
+	IF NOT @IsActive = 1
+	BEGIN
+		RAISERROR('Account is inactive.', 16, 1);
+		RETURN;
+	END
+
+	SELECT
+		@UserId AS UserId,
+		@FirstName AS FirstName,
+		@LastName AS LastName,
+		@HashedPassword AS HashedPassword,
+		@RoleId AS RoleId,
+		@IsActive AS IsActiveEND;
 ---- Users_SelectAll.sql ----
 USE [SOPSC]
 GO
@@ -231,6 +262,7 @@ BEGIN
                 [FirstName],
                 [LastName],
                 [Email],
+		[Phone],
                 [DateCreated],
                 [LastLoginDate],
                 [ProfilePicturePath],
@@ -275,6 +307,7 @@ BEGIN
                 [FirstName],
                 [LastName],
                 [Email],
+		[Phone],
                 [DateCreated],
                 [LastLoginDate],
                 [ProfilePicturePath],
@@ -313,6 +346,7 @@ BEGIN
                 [FirstName],
                 [LastName],
                 [Email],
+		[Phone],
                 [ProfilePicturePath],
                 [DateCreated],
                 [LastLoginDate],
@@ -346,6 +380,7 @@ BEGIN
                 u.FirstName,
                 u.LastName,
                 u.Email,
+		u.Phone,
                 u.ProfilePicturePath,
                 u.IsActive,
                 u.RoleId,
@@ -474,6 +509,7 @@ ALTER PROC [dbo].[Users_Update]
     @FirstName NVARCHAR(100),
     @LastName NVARCHAR(100),
     @Email NVARCHAR(255),
+    @Phone NVARCHAR(20) = NULL,
     @ProfilePicturePath NVARCHAR(255) = NULL,
     @RoleId INT,
     @AgencyId INT = NULL
@@ -484,6 +520,7 @@ BEGIN
         FirstName = @FirstName,
         LastName = @LastName,
         Email = @Email,
+	Phone = @Phone,
         ProfilePicturePath = @ProfilePicturePath,
         RoleId = @RoleId,
         AgencyId = @AgencyId

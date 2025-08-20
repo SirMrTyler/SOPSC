@@ -376,6 +376,7 @@ namespace SOPSC.Api.Services
                     FirstName = reader.GetSafeString(startingIndex++),
                     LastName = reader.GetSafeString(startingIndex++),
                     Email = reader.GetSafeString(startingIndex++),
+                    Phone = reader.GetSafeString(startingIndex++),
                     ProfilePicturePath = reader.GetSafeString(startingIndex++),
                     IsActive = reader.GetSafeBool(startingIndex++),
                     RoleId = reader.GetSafeInt32(startingIndex++),
@@ -451,6 +452,7 @@ namespace SOPSC.Api.Services
                         FirstName = reader.GetSafeString(startingIndex++),
                         LastName = reader.GetSafeString(startingIndex++),
                         Email = reader.GetSafeString(startingIndex++),
+                        Phone = reader.GetSafeString(startingIndex++),
                         ProfilePicturePath = reader.GetSafeString(startingIndex++),
                         DateCreated = reader.GetSafeDateTime(startingIndex++),
                         LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
@@ -518,6 +520,7 @@ namespace SOPSC.Api.Services
                 paramCollection.AddWithValue("@FirstName", model.FirstName);
                 paramCollection.AddWithValue("@LastName", model.LastName);
                 paramCollection.AddWithValue("@Email", model.Email);
+                paramCollection.AddWithValue("@Phone", (object?)model.Phone ?? DBNull.Value);
                 paramCollection.AddWithValue("@ProfilePicturePath", (object?)model.ProfilePicturePath ?? DBNull.Value);
                 paramCollection.AddWithValue("@RoleId", model.RoleId);
                 paramCollection.AddWithValue("@AgencyId", (object?)model.AgencyId ?? DBNull.Value);
@@ -585,6 +588,7 @@ namespace SOPSC.Api.Services
                 FirstName = reader.GetSafeString(startingIndex++),
                 LastName = reader.GetSafeString(startingIndex++),
                 Email = reader.GetSafeString(startingIndex++),
+                Phone = reader.GetSafeString(startingIndex++),
                 DateCreated = reader.GetSafeDateTime(startingIndex++),
                 LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
                 ProfilePicturePath = reader.GetSafeString(startingIndex++),

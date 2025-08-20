@@ -11,6 +11,9 @@
         // Gets or sets the email address of the user.
         public string Email { get; set; }
 
+        // Gets or sets the phone number of the user.
+        public string Phone { get; set; }
+
         // Gets or sets the password of the user.
         public string Password { get; set; }
 
