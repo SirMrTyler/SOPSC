@@ -1,0 +1,8 @@
+ALTER PROC [dbo].[UserDivisions_Insert]
+    @UserId INT,
+    @DivisionId INT
+AS
+BEGIN
+    INSERT INTO dbo.UserDivisions (UserId, DivisionId)
+    VALUES (@UserId, @DivisionId);
+END

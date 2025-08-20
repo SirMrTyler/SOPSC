@@ -1,0 +1,17 @@
+CREATE TABLE [dbo].[Divisions](
+	[DivisionId] [int] IDENTITY(1,1) NOT NULL,
+	[DivisionName] [nvarchar](100) NOT NULL,
+	[Phone] [nvarchar](20) NOT NULL,
+	[Email] [nvarchar](50) NOT NULL,
+	[Address] [nvarchar](255) NULL,
+	[City] [nvarchar](100) NULL,
+	[State] [nvarchar](20) NULL,
+	[PostalCode] [nvarchar](20) NULL,
+ CONSTRAINT [PK_Divisions] PRIMARY KEY CLUSTERED 
+(
+	[DivisionId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+

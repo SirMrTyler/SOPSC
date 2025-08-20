@@ -1,0 +1,26 @@
+CREATE TABLE [dbo].[UserDivisions](
+	[UserId] [int] NOT NULL,
+	[DivisionId] [int] NOT NULL,
+ CONSTRAINT [PK_UserDivisions] PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC,
+	[DivisionId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[UserDivisions]  WITH CHECK ADD  CONSTRAINT [FK_UserDivisions_Divisions] FOREIGN KEY([DivisionId])
+REFERENCES [dbo].[Divisions] ([DivisionId])
+GO
+
+ALTER TABLE [dbo].[UserDivisions] CHECK CONSTRAINT [FK_UserDivisions_Divisions]
+GO
+
+ALTER TABLE [dbo].[UserDivisions]  WITH CHECK ADD  CONSTRAINT [FK_UserDivisions_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+
+ALTER TABLE [dbo].[UserDivisions] CHECK CONSTRAINT [FK_UserDivisions_Users]
+GO
+
+

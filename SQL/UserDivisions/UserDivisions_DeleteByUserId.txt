@@ -1,0 +1,7 @@
+ALTER PROC [dbo].[UserDivisions_DeleteByUserId]
+    @UserId INT
+AS
+BEGIN
+    DELETE FROM dbo.UserDivisions
+    WHERE UserId = @UserId;
+END
