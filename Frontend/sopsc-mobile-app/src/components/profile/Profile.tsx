@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button, Image, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import ScreenContainer from '../navigation/ScreenContainer';
@@ -84,50 +85,52 @@ const Profile: React.FC = () => {
   return (
     <ScreenContainer>
       <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>User Profile</Text>
-          {!isEditing && <Button title="Edit" onPress={() => setIsEditing(true)} />}
-        </View>
+        <Text style={styles.title}>User Profile</Text>
         <TouchableOpacity onPress={isEditing ? pickImage : undefined} style={styles.imageWrapper}>
           {profilePicturePath ? (
             <Image source={{ uri: profilePicturePath }} style={styles.profileImage} />
           ) : (
             <View style={[styles.profileImage, styles.imagePlaceholder]} />
           )}
+          <View style={styles.pencilIcon}>
+            <Ionicons name="pencil" size={20} color="white" />
+          </View>
         </TouchableOpacity>
-        <View>
-          <Text style={styles.label}>First Name</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>First Name</Text>
           {isEditing ? (
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.sectionInput]}
               placeholder="First Name"
               placeholderTextColor="#888"
               value={firstName}
               onChangeText={setFirstName}
             />
           ) : (
-            <Text style={styles.value}>{firstName}</Text>
+            <Text style={styles.sectionValue}>{firstName}</Text>
           )}
         </View>
-        <View>
-          <Text style={styles.label}>Last Name</Text>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Last Name</Text>
           {isEditing ? (
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.sectionInput]}
               placeholder="Last Name"
               placeholderTextColor="#888"
               value={lastName}
               onChangeText={setLastName}
             />
           ) : (
-            <Text style={styles.value}>{lastName}</Text>
+            <Text style={styles.sectionValue}>{lastName}</Text>
           )}
         </View>
-        <View>
-          <Text style={styles.label}>Email</Text>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Email</Text>
           {isEditing ? (
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.sectionInput]}
               placeholder="Email"
               placeholderTextColor="#888"
               autoCapitalize="none"
@@ -135,14 +138,15 @@ const Profile: React.FC = () => {
               onChangeText={setEmail}
             />
           ) : (
-            <Text style={styles.value}>{email}</Text>
+            <Text style={styles.sectionValue}>{email}</Text>
           )}
         </View>
-        <View>
-          <Text style={styles.label}>Phone</Text>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Phone</Text>
           {isEditing ? (
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.sectionInput]}
               placeholder="Phone"
               placeholderTextColor="#888"
               keyboardType="phone-pad"
@@ -150,28 +154,34 @@ const Profile: React.FC = () => {
               onChangeText={setPhone}
             />
           ) : (
-            <Text style={styles.value}>{phone}</Text>
+            <Text style={styles.sectionValue}>{phone}</Text>
           )}
         </View>
-        <View>
-          <Text style={styles.label}>Agency</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Agency</Text>
           {isEditing ? (
             <Picker
               selectedValue={agencyId}
               onValueChange={(value) => setAgencyId(String(value))}
               enabled={canEditAgency}
-              style={styles.picker}
+              style={[styles.picker, styles.sectionInput]}
             >
               {agencies.map((a) => (
                 <Picker.Item key={a.id} label={a.name} value={String(a.id)} />
               ))}
             </Picker>
           ) : (
-            <Text style={styles.value}>
+            <Text style={styles.sectionValue}>
               {agencies.find((a) => String(a.id) === agencyId)?.name || agencyId || ''}
             </Text>
           )}
         </View>
+        
+        {!isEditing && (
+          <View style={styles.editButtonContainer}>
+            <Button title="Edit" onPress={() => setIsEditing(true)} />
+          </View>
+        )}
         {isEditing && (
           <View style={styles.buttonRow}>
             <Button title="Cancel" onPress={onCancel} />
@@ -189,20 +199,18 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 10,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
   title: {
     color: 'white',
     fontSize: 20,
+    marginBottom: 10,
+    fontWeight: 'bold',
+    alignSelf: 'center',
   },
   imageWrapper: {
     alignItems: 'center',
     marginBottom: 10,
-    },
+    position: 'relative',
+  },
   profileImage: {
     width: 100,
     height: 100,
@@ -213,13 +221,41 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  label: {
-    color: 'white',
-    marginBottom: 4,
+  pencilIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#2477ff',
+    borderRadius: 14,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
-  value: {
-    color: 'white',
-    paddingVertical: 8,
+  section: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sectionLabel: {
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowRadius: 2,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  sectionValue: {
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 1)',
+    textShadowRadius: 2,
+    marginLeft: 20,
+    marginTop: 1,
+  },
+  sectionInput: {
+    marginLeft: 20,
+    marginTop: 4,
   },
   input: {
     backgroundColor: '#fff',
@@ -229,6 +265,10 @@ const styles = StyleSheet.create({
   picker: {
     backgroundColor: '#fff',
     borderRadius: 4,
+  },
+  editButtonContainer: {
+    marginTop: 20,
+    alignSelf: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
