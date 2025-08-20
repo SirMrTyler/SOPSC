@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, Image, TouchableOpacity } from 'react-native';
+import { 
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Button,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -84,99 +93,110 @@ const Profile: React.FC = () => {
 
   return (
     <ScreenContainer>
-      <View style={styles.container}>
+      {/** Profile Header */}
+      <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>User Profile</Text>
+        
+        {/** Profile Picture Section */}
         <TouchableOpacity onPress={isEditing ? pickImage : undefined} style={styles.imageWrapper}>
           {profilePicturePath ? (
             <Image source={{ uri: profilePicturePath }} style={styles.profileImage} />
           ) : (
             <View style={[styles.profileImage, styles.imagePlaceholder]} />
           )}
+
+          {/** Profile Picture Edit Icon */}
           <View style={styles.pencilIcon}>
             <Ionicons name="pencil" size={20} color="white" />
           </View>
         </TouchableOpacity>
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>First Name</Text>
-          {isEditing ? (
-            <TextInput
-              style={[styles.input, styles.sectionInput]}
-              placeholder="First Name"
-              placeholderTextColor="#888"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
-          ) : (
-            <Text style={styles.sectionValue}>{firstName}</Text>
-          )}
+
+      {/** Profile Details Section*/}
+        {/** First Name */}
+        <View style={styles.infoBox}>
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>First Name</Text>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, styles.sectionInput]}
+                placeholder="First Name"
+                placeholderTextColor="#888"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            ) : (
+              <Text style={styles.sectionValue}>{firstName}</Text>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Last Name</Text>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, styles.sectionInput]}
+                placeholder="Last Name"
+                placeholderTextColor="#888"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            ) : (
+              <Text style={styles.sectionValue}>{lastName}</Text>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Email</Text>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, styles.sectionInput]}
+                placeholder="Email"
+                placeholderTextColor="#888"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+            ) : (
+              <Text style={styles.sectionValue}>{email}</Text>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Phone</Text>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, styles.sectionInput]}
+                placeholder="Phone"
+                placeholderTextColor="#888"
+                keyboardType="phone-pad"
+                value={phone}
+                onChangeText={setPhone}
+              />
+            ) : (
+              <Text style={styles.sectionValue}>{phone}</Text>
+            )}
+          </View>
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Agency</Text>
+            {isEditing ? (
+              <Picker
+                selectedValue={agencyId}
+                onValueChange={(value) => setAgencyId(String(value))}
+                enabled={canEditAgency}
+                style={[styles.picker, styles.sectionInput]}
+              >
+                {agencies.map((a) => (
+                  <Picker.Item key={a.id} label={a.name} value={String(a.id)} />
+                ))}
+              </Picker>
+            ) : (
+              <Text style={styles.sectionValue}>
+                {agencies.find((a) => String(a.id) === agencyId)?.name || agencyId || ''}
+              </Text>
+            )}
+          </View>
         </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Last Name</Text>
-          {isEditing ? (
-            <TextInput
-              style={[styles.input, styles.sectionInput]}
-              placeholder="Last Name"
-              placeholderTextColor="#888"
-              value={lastName}
-              onChangeText={setLastName}
-            />
-          ) : (
-            <Text style={styles.sectionValue}>{lastName}</Text>
-          )}
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Email</Text>
-          {isEditing ? (
-            <TextInput
-              style={[styles.input, styles.sectionInput]}
-              placeholder="Email"
-              placeholderTextColor="#888"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
-          ) : (
-            <Text style={styles.sectionValue}>{email}</Text>
-          )}
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Phone</Text>
-          {isEditing ? (
-            <TextInput
-              style={[styles.input, styles.sectionInput]}
-              placeholder="Phone"
-              placeholderTextColor="#888"
-              keyboardType="phone-pad"
-              value={phone}
-              onChangeText={setPhone}
-            />
-          ) : (
-            <Text style={styles.sectionValue}>{phone}</Text>
-          )}
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Agency</Text>
-          {isEditing ? (
-            <Picker
-              selectedValue={agencyId}
-              onValueChange={(value) => setAgencyId(String(value))}
-              enabled={canEditAgency}
-              style={[styles.picker, styles.sectionInput]}
-            >
-              {agencies.map((a) => (
-                <Picker.Item key={a.id} label={a.name} value={String(a.id)} />
-              ))}
-            </Picker>
-          ) : (
-            <Text style={styles.sectionValue}>
-              {agencies.find((a) => String(a.id) === agencyId)?.name || agencyId || ''}
-            </Text>
-          )}
-        </View>
-        
+
+        {/** Edit/Save/Cancel Button with logic */}
         {!isEditing && (
           <View style={styles.editButtonContainer}>
             <Button title="Edit" onPress={() => setIsEditing(true)} />
@@ -188,14 +208,14 @@ const Profile: React.FC = () => {
             <Button title="Save" onPress={onSave} />
           </View>
         )}
-      </View>
+        </ScrollView>
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
     gap: 10,
   },
@@ -231,13 +251,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
-  section: {
+  infoBox: {
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderRadius: 12,
     padding: 10,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  section: {
+    marginBottom: 10,
   },
   sectionLabel: {
     color: '#fff',
