@@ -10,7 +10,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
@@ -23,14 +22,8 @@ const Profile: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [agencyId, setAgencyId] = useState('');
   const [profilePicturePath, setProfilePicturePath] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  // There are agencies listed within SQL. Use those instead.
-  const [agencies] = useState([
-    { id: 1, name: 'Agency 1' },
-    { id: 2, name: 'Agency 2' },
-  ]);
 
   useEffect(() => {
     if (user) {
@@ -38,14 +31,9 @@ const Profile: React.FC = () => {
       setLastName(user.lastName || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
-      setAgencyId(user.agencyId ? String(user.agencyId) : '');
       setProfilePicturePath(user.profilePicturePath || '');
     }
   }, [user]);
-
-  const canEditAgency = user?.Roles?.some(
-    (r) => r.roleName === 'Admin' || r.roleName === 'Developer',
-  );
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -71,7 +59,6 @@ const Profile: React.FC = () => {
       phone,
       profilePicturePath,
       roleId: user.Roles[0]?.roleId || 4,
-      agencyId: agencyId ? Number(agencyId) : null,
     });
     await refresh();
     setIsEditing(false);
@@ -83,7 +70,6 @@ const Profile: React.FC = () => {
       setLastName(user.lastName || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
-      setAgencyId(user.agencyId ? String(user.agencyId) : '');
       setProfilePicturePath(user.profilePicturePath || '');
     }
     setIsEditing(false);
@@ -173,25 +159,6 @@ const Profile: React.FC = () => {
               />
             ) : (
               <Text style={styles.sectionValue}>{phone}</Text>
-            )}
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Agency</Text>
-            {isEditing ? (
-              <Picker
-                selectedValue={agencyId}
-                onValueChange={(value) => setAgencyId(String(value))}
-                enabled={canEditAgency}
-                style={[styles.picker, styles.sectionInput]}
-              >
-                {agencies.map((a) => (
-                  <Picker.Item key={a.id} label={a.name} value={String(a.id)} />
-                ))}
-              </Picker>
-            ) : (
-              <Text style={styles.sectionValue}>
-                {agencies.find((a) => String(a.id) === agencyId)?.name || agencyId || ''}
-              </Text>
             )}
           </View>
         </View>
@@ -284,10 +251,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 4,
     padding: 10,
-  },
-  picker: {
-    backgroundColor: '#fff',
-    borderRadius: 4,
   },
   editButtonContainer: {
     marginTop: 20,
