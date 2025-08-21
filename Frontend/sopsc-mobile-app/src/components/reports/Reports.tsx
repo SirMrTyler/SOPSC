@@ -102,6 +102,12 @@ const Reports: React.FC = () => {
         activeOpacity={0.8}
       >
         <View style={styles.card}>
+          <View style={styles.metaRow}>
+            <Text style={styles.metaDate}>{formattedDate}</Text>
+            <Text style={styles.metaHours}>
+              Hours: {item.hoursOfService ?? 'N/A'}
+            </Text>
+          </View>
           <View style={styles.row}>
             <Text style={styles.header}>Chaplain:</Text>
             <Text style={styles.body}>{item.chaplain}</Text>
@@ -115,12 +121,6 @@ const Reports: React.FC = () => {
             <Text style={styles.body}>{item.primaryAgency}</Text>
           </View>
           <Text style={styles.type}>Type: {item.typeOfService}</Text>
-        </View>
-        <View style={styles.metaRow}>
-          <Text style={styles.metaDate}>{formattedDate}</Text>
-          <Text style={styles.metaHours}>
-            Hours: {item.hoursOfService ?? 'N/A'}
-          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -295,16 +295,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 0,
+    marginBottom: 4,
   },
   metaDate: {
     color: 'white',
     fontSize: 12,
-    marginTop: 4,
   },
   metaHours: {
     color: 'white',
     fontSize: 12,
-    marginTop: 4,
   },
   addButton: {
     position: 'absolute',
