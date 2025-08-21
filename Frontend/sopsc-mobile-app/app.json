@@ -20,7 +20,11 @@
     "extra": {
       "eas": {
         "projectId": "a905a038-d584-4e7e-a7f9-cd2091702dc1"
-      }
+      },
+      "APP_VARIANT": "development",
+      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-kafbmb6h457qcp7i40rsr1rtt293j36i.apps.googleusercontent.com",
+      "EXPO_PUBLIC_API_URL": "https://7bc8a7c313d0.ngrok-free.app/api/",
+      "EXPO_PUBLIC_SOCKET_URL": "http://192.168.1.175:3001"
     },
     "ios": {
       "bundleIdentifier": "com.sirmrtyler.sopscmobileapp",

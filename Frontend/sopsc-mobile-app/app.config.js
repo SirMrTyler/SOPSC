@@ -54,11 +54,18 @@ export default ({ config }) => ({
     package: getUniqueIdentifier(),
   },
   extra: {
+    // Originally You Didn't Have This //
+    ...(config.extra || {}),
+    eas: {
+      ...(config.extra?.eas || {}),
+      projectId: "a905a038-d584-4e7e-a7f9-cd2091702dc1",
+    },
+    //---------------------------------//
     APP_VARIANT: variant,
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL,
     EXPO_PUBLIC_SOCKET_URL: process.env.EXPO_PUBLIC_SOCKET_URL,
     EXPO_PUBLIC_GOOGLE_CALENDAR_ID: process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_ID,
     EXPO_PUBLIC_GOOGLE_API_KEY: process.env.EXPO_PUBLIC_GOOGLE_API_KEY,
-  }
+  },
 });
