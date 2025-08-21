@@ -52,7 +52,7 @@ Keys/
 Google/
 client_secret_*.json
 google-auth-test.zip
-google-services.json
+Frontend/sopsc-mobile-app/google-services.json
 
 # Git submodule remnants
 .gitmodules
