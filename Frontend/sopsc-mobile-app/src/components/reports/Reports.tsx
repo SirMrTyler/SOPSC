@@ -206,15 +206,24 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
-  controls: {
+  title: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  paginationRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
   },
-  controlLabel: {
-    color: 'white',
-    marginRight: 8,
+  leftArrows: {
+    flexDirection: 'row',
+    gap: 12,
+    flex: 1,
   },
   pageSizeRow: {
     flexDirection: 'row',

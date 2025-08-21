@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 const ReportDetails: React.FC = () => {
   const route = useRoute();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { reportId } = route.params as { reportId: number };
   const [report, setReport] = useState<Report | null>(null);
   const { user } = useAuth();
@@ -47,8 +47,6 @@ const ReportDetails: React.FC = () => {
       console.error(err);
     }
   };
-
-  const isCommunity = report.chaplainDivision === 'Community';
 
   return (
     <ScreenContainer showBack title="SOPSC" showBottomBar={false}>
@@ -197,7 +195,44 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
   },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  header: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 4,
+  },
+  body: {
+    color: 'white',
+    fontSize: 14,
+  },
+  bodyCenter: {
+    color: 'white',
+    fontSize: 14,
+    textAlign: 'center',
+  },
   loading: {
+    color: 'white',
+  },
+  pageTitle: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
     color: 'white',
   },
   itemActions: {
