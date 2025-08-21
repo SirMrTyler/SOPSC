@@ -295,16 +295,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 0,
+    marginBottom: 4,
   },
   metaDate: {
     color: 'white',
     fontSize: 12,
-    marginTop: 4,
   },
   metaHours: {
     color: 'white',
     fontSize: 12,
-    marginTop: 4,
   },
   addButton: {
     position: 'absolute',
