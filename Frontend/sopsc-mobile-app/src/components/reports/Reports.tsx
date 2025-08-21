@@ -1,42 +1,120 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Button,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../../App';
 import ScreenContainer from '../navigation/ScreenContainer';
 import * as reportService from '../../services/reportService';
 import { Report } from '../../types/report';
 
 const Reports: React.FC = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [reports, setReports] = useState<Report[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [pageSizeInput, setPageSizeInput] = useState('10');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await reportService.getAll(0, 10);
-        setReports(data.item?.pagedItems || []);
+        setLoading(true);
+        const data = await reportService.getAll(pageIndex, pageSize);
+        const newItems: Report[] = data.item?.pagedItems || [];
+        setReports((prev) => {
+          const merged =
+            pageIndex === 0 ? newItems : [...prev, ...newItems];
+          return merged.sort(
+            (a, b) =>
+              new Date(b.dateCreated).getTime() -
+              new Date(a.dateCreated).getTime()
+          );
+        });
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     load();
-  }, []);
+  }, [pageIndex, pageSize]);
 
-  const renderItem = ({ item }: { item: Report }) => (
-    <View style={styles.item}>
-      <Text style={styles.chaplain}>{item.chaplain}</Text>
-      <Text style={styles.agency}>{item.primaryAgency}</Text>
-      <Text style={styles.narrative} numberOfLines={2}>
-        {item.narrative}
-      </Text>
-    </View>
-  );
+  const handlePageSizeChange = () => {
+    const size = parseInt(pageSizeInput, 10);
+    if (!isNaN(size) && size > 0) {
+      setReports([]);
+      setPageIndex(0);
+      setPageSize(size);
+    }
+  };
+
+  const handleScroll = (
+    e: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
+    const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+    const paddingToBottom = 20;
+    if (
+      layoutMeasurement.height + contentOffset.y >=
+        contentSize.height - paddingToBottom &&
+      !loading
+    ) {
+      setPageIndex((prev) => prev + 1);
+    }
+  };
 
   return (
     <ScreenContainer>
-      <FlatList
-        data={reports}
-        keyExtractor={(item) => item.reportId.toString()}
-        renderItem={renderItem}
+      <View style={styles.controls}>
+        <Text style={styles.controlLabel}>Page Size:</Text>
+        <TextInput
+          style={styles.pageInput}
+          value={pageSizeInput}
+          onChangeText={setPageSizeInput}
+          keyboardType="numeric"
+        />
+        <Button title="Set" onPress={handlePageSizeChange} />
+      </View>
+      <ScrollView
         contentContainerStyle={styles.container}
-      />
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
+      >
+        {reports.map((item) => (
+          <TouchableOpacity
+            key={item.reportId}
+            style={styles.item}
+            onPress={() =>
+              navigation.navigate('ReportDetails', {
+                reportId: item.reportId,
+              })
+            }
+          >
+            <Text style={styles.chaplain}>{item.chaplain}</Text>
+            <Text style={styles.date}>
+              {new Date(item.dateCreated).toLocaleDateString()}
+            </Text>
+            <Text style={styles.narrative} numberOfLines={2}>
+              {item.narrative}
+            </Text>
+            <Text style={styles.agency}>Agency: {item.primaryAgency}</Text>
+            <Text style={styles.type}>Service: {item.typeOfService}</Text>
+            <Text style={styles.hours}>
+              Hours: {item.hoursOfService ?? 'N/A'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </ScreenContainer>
   );
 };
@@ -45,14 +123,42 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
   },
+  controls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  controlLabel: {
+    color: 'white',
+    marginRight: 8,
+  },
+  pageInput: {
+    backgroundColor: 'white',
+    padding: 4,
+    width: 60,
+    marginRight: 8,
+    borderRadius: 4,
+  },
   item: {
     marginBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#555',
+    paddingBottom: 8,
   },
   chaplain: {
     color: 'white',
     fontWeight: 'bold',
   },
+  date: {
+    color: 'white',
+  },
   agency: {
+    color: 'white',
+  },
+  type: {
+    color: 'white',
+  },
+  hours: {
     color: 'white',
   },
   narrative: {

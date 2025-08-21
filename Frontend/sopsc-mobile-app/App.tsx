@@ -23,6 +23,7 @@ import { MessageConversation } from './src/types/messages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
 import PrayerRequests from './src/components/posts/Post'; // TODO: Make Prayer Requests component logic
 import Reports from './src/components/reports/Reports'; // TODO: Make Reports component logic
+import ReportDetails from './src/components/reports/ReportDetails';
 import Schedule from './src/components/schedule/Schedule';
 import Profile from './src/components/profile/Profile'; // TODO: Make Profile component logic
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -43,6 +44,7 @@ export type RootStackParamList = {
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
   Reports: undefined;
+  ReportDetails: { reportId: number };
   Schedule: undefined;
   Profile: undefined;
 };
@@ -96,6 +98,7 @@ export default function App() {
                   <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
                   <Stack.Screen name="Posts" component={Posts} />
                   <Stack.Screen name="Reports" component={Reports} />
+                  <Stack.Screen name="ReportDetails" component={ReportDetails} />
                   <Stack.Screen name="Schedule" component={Schedule} />
                   <Stack.Screen name="Profile" component={Profile} />
                   {/* Add other screens here as needed */}
