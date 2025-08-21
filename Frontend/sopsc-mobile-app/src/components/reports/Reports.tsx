@@ -130,10 +130,22 @@ const Reports: React.FC = () => {
 
   return (
     <ScreenContainer>
-      <View style={styles.controls}>
+      <Text style={styles.title}>REPORTS</Text>
+      <View style={styles.paginationRow}>
+        <View style={styles.leftArrows}>
+          <TouchableOpacity
+            onPress={() => setPageIndex((p) => Math.max(0, p - 2))}
+          >
+            <Text style={styles.arrowText}>{'<<'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setPageIndex((p) => Math.max(0, p - 1))}
+          >
+            <Text style={styles.arrowText}>{'<'}</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.pageSizeRow}>
-          <Text style={styles.controlLabel}>Page Size:</Text>
-          {['10', '25', 'All'].map((size) => {
+          {['5', '10', '20', '50', 'All'].map((size) => {
             const numeric = size === 'All' ? 9999 : parseInt(size, 10);
             const active = pageSize === numeric;
             return (
@@ -147,17 +159,7 @@ const Reports: React.FC = () => {
             );
           })}
         </View>
-        <View style={styles.arrows}>
-          <TouchableOpacity
-            onPress={() => setPageIndex((p) => Math.max(0, p - 2))}
-          >
-            <Text style={styles.arrowText}>{'<<'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setPageIndex((p) => Math.max(0, p - 1))}
-          >
-            <Text style={styles.arrowText}>{'<'}</Text>
-          </TouchableOpacity>
+        <View style={styles.rightArrows}>
           <TouchableOpacity onPress={() => setPageIndex((p) => p + 1)}>
             <Text style={styles.arrowText}>{'>'}</Text>
           </TouchableOpacity>
@@ -203,20 +205,30 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
-  controls: {
+  title: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  paginationRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
   },
-  controlLabel: {
-    color: 'white',
-    marginRight: 8,
+  leftArrows: {
+    flexDirection: 'row',
+    gap: 12,
+    flex: 1,
   },
   pageSizeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
+    flex: 1,
   },
   sizeButton: {
     paddingVertical: 4,
@@ -231,9 +243,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-  arrows: {
+  rightArrows: {
     flexDirection: 'row',
     gap: 12,
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   arrowText: {
     color: 'white',
