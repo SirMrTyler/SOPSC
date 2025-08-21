@@ -379,7 +379,6 @@ namespace SOPSC.Api.Services
                     ProfilePicturePath = reader.GetSafeString(startingIndex++),
                     IsActive = reader.GetSafeBool(startingIndex++),
                     RoleId = reader.GetSafeInt32(startingIndex++),
-                    AgencyId = reader.GetSafeInt32(startingIndex++),
                     HoursServed = reader.GetSafeDecimalNullable(startingIndex++),
                     DateCreated = reader.GetSafeDateTime(startingIndex++),
                     LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
@@ -456,8 +455,7 @@ namespace SOPSC.Api.Services
                         DateCreated = reader.GetSafeDateTime(startingIndex++),
                         LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
                         IsActive = reader.GetSafeBool(startingIndex++),
-                        RoleId = reader.GetSafeInt32(startingIndex++),
-                        AgencyId = reader.GetSafeInt32(startingIndex++)
+                        RoleId = reader.GetSafeInt32(startingIndex++)
                     };
                     totalCount = reader.GetSafeInt32(startingIndex++);
                     if (list == null)
@@ -593,8 +591,7 @@ namespace SOPSC.Api.Services
                 ProfilePicturePath = reader.GetSafeString(startingIndex++),
                 IsActive = reader.GetSafeBool(startingIndex++),
                 HoursServed = reader.GetSafeDecimal(startingIndex++),
-                RoleId = reader.GetSafeInt32(startingIndex++),
-                AgencyId = reader.GetSafeInt32(startingIndex++)
+                RoleId = reader.GetSafeInt32(startingIndex++)
             };
 
             return user;
