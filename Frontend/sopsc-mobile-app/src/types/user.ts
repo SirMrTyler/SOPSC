@@ -9,5 +9,5 @@ export interface UserResult {
   lastLoginDate: string | null;
   isActive: boolean;
   roleId: number;
-  agencyId?: number;
+  divisionId?: number;
 }

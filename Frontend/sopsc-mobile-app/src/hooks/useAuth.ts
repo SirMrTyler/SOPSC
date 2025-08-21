@@ -16,7 +16,7 @@ export interface AuthUser {
   profilePicturePath?: string;
   isConfirmed: boolean;
   isActive: boolean;
-  agencyId?: number;
+  divisionId?: number;
 }
 
 const mapUser = (u: any): AuthUser => ({
@@ -38,7 +38,7 @@ const mapUser = (u: any): AuthUser => ({
   profilePicturePath: u.profilePicturePath,
   isConfirmed: u.isConfirmed,
   isActive: u.isActive,
-  agencyId: u.agencyId,
+  divisionId: u.divisionId,
 });
 
 export const useAuth = () => {
