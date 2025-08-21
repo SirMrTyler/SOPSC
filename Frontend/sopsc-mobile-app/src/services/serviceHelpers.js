@@ -5,7 +5,12 @@ const onGlobalSuccess = response => {
 }
 
 const onGlobalError = err => {
-    console.error('[Service Error]', err?.response?.data || err);
+    if (err?.response?.status === 404) {
+        // Handle not found error
+        Alert.alert('Resource not found...');
+    } else {
+        console.error('[Service Error]', err?.response?.data || err);
+    }
     return Promise.reject(err);
 };
 
