@@ -1,5 +1,5 @@
 // Library imports
-import React, {useEffect, useState, useRef, useContext } from 'react';
+import React, {useEffect, useState, useContext, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,8 +20,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
     const { user } = useAuth();
     const socket = useContext(SocketContext);
+    const listRef = useRef<FlatList<Message>>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-    const flatListRef = useRef<FlatList<Message>>(null);
     const [loading, setLoading] = useState(true);
     const [pageIndex, setPageIndex] = useState(0);
     const pageSize = 20;
@@ -29,7 +29,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    
+    const [initialLoad, setInitialLoad] = useState(true);
+
     const uniqueById = (list: Message[]) => {
       const seen = new Set<number>();
       return list.filter(m => {
@@ -80,9 +81,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
               return m;
             })
           );
+            items = items.reverse();
             setTotalCount(paged.totalCount);
             setMessages(prev => {
-              const combined = nextPage === 0 ? items : [...prev, ...items];
+              const combined = nextPage === 0 ? items : [...items, ...prev];
               return uniqueById(combined);
             });
             setPageIndex(nextPage);
@@ -102,6 +104,12 @@ const Conversation: React.FC<Props> = ({ route }) => {
     useEffect(() => {
         load();
     }, []);
+    useEffect(() => {
+      if (initialLoad && !loading && messages.length > 0) {
+        listRef.current?.scrollToEnd({ animated: false });
+        setInitialLoad(false);
+      }
+    }, [initialLoad, loading, messages]);
     useFocusEffect(
       React.useCallback(() => {
         if (messages.length > 0) {
@@ -114,11 +122,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
       if (!socket) return;
       const handler = async (msg: Message) => {
         if (msg.senderId === conversation.otherUserId) {
-          setMessages(prev => {
-            const combined = [...prev, { ...msg, isRead: true }];
-            return uniqueById(combined);
-          });
-          flatListRef.current?.scrollToEnd({ animated: true });
+          setMessages(prev => uniqueById([...prev, { ...msg, isRead: true }]));
+          listRef.current?.scrollToEnd({ animated: true });
           try {
             await updateReadStatus(msg.messageId, true);
             socket?.emit('directMessageRead', {
@@ -151,16 +156,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
             socket.off('directMessageRead', handler);
         };
     }, [socket, user, conversation.otherUserId]);
-
-    useEffect(() => {
-      if (!loading && messages.length > 0) {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }
-    }, [messages]);
     
-    const handleEndReached = () => {
-        if (!loading && messages.length < totalCount) {
-        load(pageIndex + 1);
+    const handleScroll = (event: any) => {
+        if (event.nativeEvent.contentOffset.y <= 0 && !loading && messages.length < totalCount) {
+            load(pageIndex + 1);
         }
     };
 
@@ -239,12 +238,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
                 readTimestamp: null,
                 isRead: false,
             };
-            setMessages(prev => {
-              const combined = [...prev, message];
-              return uniqueById(combined);
-            });
+            setMessages(prev => uniqueById([...prev, message]));
+            listRef.current?.scrollToEnd({ animated: true });
             socket?.emit('sendDirectMessage', message);
-            flatListRef.current?.scrollToEnd({ animated: true });
             setNewMessage('');
         } catch (err) {
             console.error('[Conversation] Error sending message:', err);
@@ -268,11 +264,12 @@ const Conversation: React.FC<Props> = ({ route }) => {
               <ActivityIndicator />
           ) : (
               <FlatList
-              ref={flatListRef}
+              ref={listRef}
               data={messages}
               renderItem={renderItem}
               keyExtractor={(item) => item.messageId.toString()}
-              onEndReached={handleEndReached}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
               />
           )}
           <View style={styles.inputContainer}>
