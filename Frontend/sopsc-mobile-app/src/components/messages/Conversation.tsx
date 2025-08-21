@@ -61,6 +61,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const load = async (nextPage = 0) => {
         try {
         const data = await getConversation(conversation.chatId, nextPage, pageSize);
+        // Log all items in response
+        console.log('Conversation Data:', data.item);
         const paged = data?.item;
         if (paged) {
           let items: Message[] = await Promise.all(
