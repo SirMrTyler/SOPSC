@@ -88,7 +88,7 @@ const Reports: React.FC = () => {
     return (
       <View
         key={item.reportId}
-        style={[styles.card, selected && styles.selectedCard]}
+        style={[styles.cardContainer, selected && styles.selectedCard]}
       >
         <TouchableOpacity
           onPress={() => {
@@ -103,28 +103,30 @@ const Reports: React.FC = () => {
           onLongPress={() => canModify && toggleSelect(item.reportId)}
           activeOpacity={0.8}
         >
-          <View style={styles.row}>
-            <Text style={styles.header}>Created By:</Text>
-            <Text style={styles.body}>{item.chaplain}</Text>
-            <Text style={styles.header}>Hours:</Text>
-            <Text style={styles.body}>
-              {item.hoursOfService ?? 'N/A'}
-            </Text>
-            <Text style={styles.date}>{formattedDate}</Text>
-          </View>
-          <Text style={styles.division}>Division: {item.chaplainDivision}</Text>
-          <View style={styles.row}>
-            <View style={styles.leftRow}>
-              <Text style={styles.header}>Agency:</Text>
-              <Text style={styles.body}>{item.primaryAgency}</Text>
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <Text style={styles.header}>Chaplain:</Text>
+              <Text style={styles.body}>{item.chaplain}</Text>
+              <View style={styles.rowRight}>
+                <Text style={styles.header}>Division:</Text>
+                <Text style={styles.divisionBody}>{item.chaplainDivision}</Text>
+              </View>
             </View>
-            <Text style={styles.type}>Type: {item.typeOfService}</Text>
+            <View style={styles.row}>
+              <View style={styles.leftRow}>
+                <Text style={styles.header}>Agency:</Text>
+                <Text style={styles.body}>{item.primaryAgency}</Text>
+              </View>
+              <Text style={styles.type}>Type: {item.typeOfService}</Text>
+            </View>
           </View>
-          <Text style={styles.header}>Narrative:</Text>
-          <Text style={styles.narrative} numberOfLines={2}>
-            {item.narrative}
-          </Text>
         </TouchableOpacity>
+        <View style={styles.metaRow}>
+          <Text style={styles.metaDate}>{formattedDate}</Text>
+          <Text style={styles.metaHours}>
+            Hours: {item.hoursOfService ?? 'N/A'}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -240,6 +242,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
   },
+  cardContainer: {
+    position: 'relative',
+  },
   card: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 12,
@@ -258,6 +263,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+  },
   header: {
     color: 'white',
     fontWeight: 'bold',
@@ -267,21 +277,27 @@ const styles = StyleSheet.create({
     color: 'white',
     marginRight: 8,
   },
-  date: {
+  divisionBody: {
     color: 'white',
-    marginLeft: 'auto',
-  },
-  division: {
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: 4,
+    fontSize: 12,
+    marginLeft: 4,
   },
   type: {
     color: 'white',
     marginLeft: 'auto',
   },
-  narrative: {
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  metaDate: {
     color: 'white',
+    fontSize: 12,
+  },
+  metaHours: {
+    color: 'white',
+    fontSize: 12,
   },
   addButton: {
     position: 'absolute',
