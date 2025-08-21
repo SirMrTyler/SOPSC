@@ -48,101 +48,25 @@ const ReportDetails: React.FC = () => {
     }
   };
 
-  const isCommunity = report.chaplainDivision === 'Community';
-
   return (
     <ScreenContainer showBack title="SOPSC" showBottomBar={false}>
       <View style={styles.wrapper}>
         <Text style={styles.pageTitle}>Chaplain: {report.chaplain}</Text>
         <View style={styles.card}>
+          <View style={[styles.row, styles.rowRight]}>
+            <Text style={styles.header}>Hours Served:</Text>
+            <Text style={styles.body}>{report.hoursOfService ?? 'N/A'}</Text>
+          </View>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
-              <Text style={styles.header}>Chaplain:</Text>
-              <Text style={styles.body}>{report.chaplain}</Text>
+              <Text style={styles.header}>Chaplain Division:</Text>
+              <Text style={styles.body}>{report.chaplainDivision}</Text>
             </View>
-            {!isCommunity && (
-              <View style={styles.rowRight}>
-                <Text style={styles.header}>Contact:</Text>
-                <Text style={styles.body}>{report.contactName}</Text>
-              </View>
-            )}
+            <View style={styles.rowRight}>
+              <Text style={styles.header}>Created Date:</Text>
+              <Text style={styles.body}>{report.dateCreated}</Text>
+            </View>
           </View>
-          {isCommunity ? (
-            <>
-              {report.clientName && (
-                <View style={styles.row}>
-                  <Text style={styles.header}>Client:</Text>
-                  <Text style={styles.body}>{report.clientName}</Text>
-                </View>
-              )}
-              {report.clientPhone && (
-                <View style={styles.row}>
-                  <Text style={styles.header}>Client Phone:</Text>
-                  <Text style={styles.body}>{report.clientPhone}</Text>
-                </View>
-              )}
-              <View style={styles.row}>
-                <Text style={styles.header}>Hours of Service:</Text>
-                <Text style={styles.body}>{report.hoursOfService ?? 'N/A'}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.header}>Commute Time:</Text>
-                <Text style={styles.body}>{report.commuteTime ?? 'N/A'}</Text>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.row}>
-                <View style={styles.rowLeft}>
-                  <Text style={styles.header}>Agency:</Text>
-                  <Text style={styles.body}>{report.primaryAgency}</Text>
-                </View>
-                <View style={styles.rowRight}>
-                  <Text style={styles.header}>Services:</Text>
-                  <Text style={styles.body}>{report.typeOfService}</Text>
-                </View>
-              </View>
-              {report.pocPhone && (
-                <View style={styles.row}>
-                  <Text style={styles.header}>Phone:</Text>
-                  <Text style={styles.body}>{report.pocPhone}</Text>
-                </View>
-              )}
-              {report.pocEmail && (
-                <View style={styles.row}>
-                  <Text style={styles.header}>Email:</Text>
-                  <Text style={styles.body}>{report.pocEmail}</Text>
-                </View>
-              )}
-            </>
-          )}
-          {report.dispatchTime && (
-            <View style={styles.row}>
-              <Text style={styles.header}>Dispatch Time:</Text>
-              <Text style={styles.body}>{report.dispatchTime}</Text>
-            </View>
-          )}
-          {report.arrivalTime && (
-            <View style={styles.row}>
-              <Text style={styles.header}>Arrival Time:</Text>
-              <Text style={styles.body}>{report.arrivalTime}</Text>
-            </View>
-          )}
-          {report.addressDestination && (
-            <View style={styles.row}>
-              <Text style={styles.header}>Destination:</Text>
-              <Text style={styles.body}>
-                {report.addressDestination}
-                {report.cityDestination ? `, ${report.cityDestination}` : ''}
-              </Text>
-            </View>
-          )}
-          {typeof report.milesDriven === 'number' && (
-            <View style={styles.row}>
-              <Text style={styles.header}>Miles Driven:</Text>
-              <Text style={styles.body}>{report.milesDriven}</Text>
-            </View>
-          )}
           <Text style={styles.header}>Narrative:</Text>
           <Text style={styles.body}>{report.narrative}</Text>
           {canModify && (
@@ -178,15 +102,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
-    flexWrap: 'wrap',
   },
   rowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   header: {
     color: 'white',
