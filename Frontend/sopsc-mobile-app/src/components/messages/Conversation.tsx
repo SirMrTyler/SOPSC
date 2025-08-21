@@ -113,7 +113,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
     useFocusEffect(
       React.useCallback(() => {
         if (messages.length > 0) {
-            markAllRead(messages);
+            listRef.current?.scrollToEnd({ animated: false });
+          markAllRead(messages);
         }
       }, [messages])
     );

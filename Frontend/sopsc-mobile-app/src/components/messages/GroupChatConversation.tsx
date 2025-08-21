@@ -25,6 +25,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const [sending, setSending] = useState(false);
   const [members, setMembers] = useState<GroupChatMember[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [initialLoad, setInitialLoad] = useState(true);
   const flatListRef = useRef<FlatList<GroupChatMessage>>(null);
 
   const load = async (nextPage = 0) => {
@@ -61,10 +62,11 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   }, [socket, chatId]);
 
   useEffect(() => {
-    if (!loading && messages.length > 0) {
-      flatListRef.current?.scrollToEnd({ animated: true });
+    if (initialLoad && !loading && messages.length > 0) {
+      flatListRef.current?.scrollToEnd({ animated: false });
+      setInitialLoad(false);
     }
-  }, [messages]);
+  }, [initialLoad, loading, messages]);
   
   useEffect(() => {
     const fetchMembers = async () => {
