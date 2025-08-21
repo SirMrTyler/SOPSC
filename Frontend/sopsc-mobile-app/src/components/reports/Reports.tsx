@@ -1,24 +1,61 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import ScreenContainer from '../navigation/ScreenContainer';
+import * as reportService from '../../services/reportService';
+import { Report } from '../../types/report';
 
 const Reports: React.FC = () => {
+  const [reports, setReports] = useState<Report[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await reportService.getAll(0, 10);
+        setReports(data.item?.pagedItems || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    load();
+  }, []);
+
+  const renderItem = ({ item }: { item: Report }) => (
+    <View style={styles.item}>
+      <Text style={styles.chaplain}>{item.chaplain}</Text>
+      <Text style={styles.agency}>{item.primaryAgency}</Text>
+      <Text style={styles.narrative} numberOfLines={2}>
+        {item.narrative}
+      </Text>
+    </View>
+  );
+
   return (
     <ScreenContainer>
-      <View style={styles.container}>
-        <Text style={styles.text}>Reports Screen</Text>
-      </View>
+      <FlatList
+        data={reports}
+        keyExtractor={(item) => item.reportId.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={styles.container}
+      />
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 16,
   },
-  text: {
+  item: {
+    marginBottom: 12,
+  },
+  chaplain: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  agency: {
+    color: 'white',
+  },
+  narrative: {
     color: 'white',
   },
 });
