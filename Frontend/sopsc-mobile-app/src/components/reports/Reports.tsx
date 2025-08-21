@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import type { RootStackParamList } from '../../../App';
 import ScreenContainer from '../navigation/ScreenContainer';
 import * as reportService from '../../services/reportService';
 import { Report } from '../../types/report';
+import ReportForm from './ReportForm';
+import { useAuth } from '../../hooks/useAuth';
 
 const Reports: React.FC = () => {
   const navigation =
@@ -25,6 +27,10 @@ const Reports: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [pageSizeInput, setPageSizeInput] = useState('10');
   const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Report | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const load = async () => {
@@ -73,6 +79,43 @@ const Reports: React.FC = () => {
     }
   };
 
+  const refreshReports = async () => {
+    try {
+      setLoading(true);
+      const data = await reportService.getAll(0, pageSize);
+      const newItems: Report[] = data.item?.pagedItems || [];
+      setReports(
+        newItems.sort(
+          (a, b) =>
+            new Date(b.dateCreated).getTime() -
+            new Date(a.dateCreated).getTime()
+        )
+      );
+      setPageIndex(0);
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await reportService.remove(id);
+      await refreshReports();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const isAdmin = user?.Roles?.some(
+    (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
+  );
+  const userFullName = `${user?.firstName ?? ''} ${
+    user?.lastName ?? ''
+  }`.trim();
+
   return (
     <ScreenContainer>
       <View style={styles.controls}>
@@ -89,32 +132,70 @@ const Reports: React.FC = () => {
         contentContainerStyle={styles.container}
         onScroll={handleScroll}
         scrollEventThrottle={400}
+        ref={scrollRef}
       >
-        {reports.map((item) => (
-          <TouchableOpacity
-            key={item.reportId}
-            style={styles.item}
-            onPress={() =>
-              navigation.navigate('ReportDetails', {
-                reportId: item.reportId,
-              })
-            }
-          >
-            <Text style={styles.chaplain}>{item.chaplain}</Text>
-            <Text style={styles.date}>
-              {new Date(item.dateCreated).toLocaleDateString()}
-            </Text>
-            <Text style={styles.narrative} numberOfLines={2}>
-              {item.narrative}
-            </Text>
-            <Text style={styles.agency}>Agency: {item.primaryAgency}</Text>
-            <Text style={styles.type}>Service: {item.typeOfService}</Text>
-            <Text style={styles.hours}>
-              Hours: {item.hoursOfService ?? 'N/A'}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {reports.map((item) => {
+          const canModify =
+            isAdmin || item.chaplain === userFullName;
+          return (
+            <View key={item.reportId} style={styles.item}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('ReportDetails', {
+                    reportId: item.reportId,
+                  })
+                }
+              >
+                <Text style={styles.chaplain}>{item.chaplain}</Text>
+                <Text style={styles.date}>
+                  {new Date(item.dateCreated).toLocaleDateString()}
+                </Text>
+                <Text style={styles.narrative} numberOfLines={2}>
+                  {item.narrative}
+                </Text>
+                <Text style={styles.agency}>Agency: {item.primaryAgency}</Text>
+                <Text style={styles.type}>Service: {item.typeOfService}</Text>
+                <Text style={styles.hours}>
+                  Hours: {item.hoursOfService ?? 'N/A'}
+                </Text>
+              </TouchableOpacity>
+              {canModify && (
+                <View style={styles.itemActions}>
+                  <Button
+                    title="Edit"
+                    onPress={() => {
+                      setEditing(item);
+                      setShowForm(true);
+                    }}
+                  />
+                  <Button
+                    title="Delete"
+                    color="red"
+                    onPress={() => handleDelete(item.reportId)}
+                  />
+                </View>
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          setEditing(null);
+          setShowForm(true);
+        }}
+      >
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+      {showForm && (
+        <ReportForm
+          visible={showForm}
+          onClose={() => setShowForm(false)}
+          onSuccess={refreshReports}
+          initialValues={editing || undefined}
+        />
+      )}
     </ScreenContainer>
   );
 };
@@ -163,6 +244,27 @@ const styles = StyleSheet.create({
   },
   narrative: {
     color: 'white',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#007bff',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 24,
+    lineHeight: 24,
   },
 });
 
