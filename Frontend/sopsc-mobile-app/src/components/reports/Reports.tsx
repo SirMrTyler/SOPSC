@@ -1,14 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
-  Button,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,77 +14,28 @@ import * as reportService from '../../services/reportService';
 import { Report } from '../../types/report';
 import ReportForm from './ReportForm';
 import { useAuth } from '../../hooks/useAuth';
+import { TrashIcon } from 'react-native-heroicons/outline';
 
 const Reports: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [reports, setReports] = useState<Report[]>([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [pageSizeInput, setPageSizeInput] = useState('10');
+  const [pageSize, setPageSize] = useState<number>(10);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Report | null>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const { user } = useAuth();
   const divisionId = (user as any)?.divisionId;
-  const isAdmin = user?.Roles?.some((r) => r.roleName === 'Admin' || r.roleName === 'Administrator');
+  const isAdmin = user?.Roles?.some(
+    (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
+  );
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        const data = await reportService.getAll(
-          pageIndex,
-          pageSize,
-          divisionId
-        );
-        const newItems: Report[] = data.item?.pagedItems || [];
-        setReports((prev) => {
-          const merged =
-            pageIndex === 0 ? newItems : [...prev, ...newItems];
-          return merged.sort(
-            (a, b) =>
-              new Date(b.dateCreated).getTime() -
-              new Date(a.dateCreated).getTime()
-          );
-        });
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [pageIndex, pageSize, divisionId]);
-
-  const handlePageSizeChange = () => {
-    const size = parseInt(pageSizeInput, 10);
-    if (!isNaN(size) && size > 0) {
-      setReports([]);
-      setPageIndex(0);
-      setPageSize(size);
-    }
-  };
-
-  const handleScroll = (
-    e: NativeSyntheticEvent<NativeScrollEvent>
-  ) => {
-    const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
-    const paddingToBottom = 20;
-    if (
-      layoutMeasurement.height + contentOffset.y >=
-        contentSize.height - paddingToBottom &&
-      !loading
-    ) {
-      setPageIndex((prev) => prev + 1);
-    }
-  };
-
-  const refreshReports = async () => {
+  const load = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getAll(0, pageSize, divisionId);
+      const data = await reportService.getAll(pageIndex, pageSize, divisionId);
       const newItems: Report[] = data.item?.pagedItems || [];
       setReports(
         newItems.sort(
@@ -97,8 +44,6 @@ const Reports: React.FC = () => {
             new Date(a.dateCreated).getTime()
         )
       );
-      setPageIndex(0);
-      scrollRef.current?.scrollTo({ y: 0, animated: true });
     } catch (err) {
       console.error(err);
     } finally {
@@ -106,84 +51,124 @@ const Reports: React.FC = () => {
     }
   };
 
-  const handleDelete = async (item: Report) => {
-    if (!user || (!isAdmin && user.userId !== item.createdById)) {
-      return;
-    }
+  useEffect(() => {
+    load();
+  }, [pageIndex, pageSize, divisionId]);
+
+  const refreshReports = async () => {
+    await load();
+    setSelectedIds([]);
+    setPageIndex(0);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const deleteSelected = async () => {
     try {
-      await reportService.remove(item.reportId);
+      await reportService.removeBatch(selectedIds);
       await refreshReports();
     } catch (err) {
       console.error(err);
     }
   };
 
+  const renderReport = (item: Report) => {
+    const selected = selectedIds.includes(item.reportId);
+    const formattedDate = new Date(item.dateCreated).toLocaleDateString();
+    const canModify = isAdmin || user?.userId === item.createdById;
+    return (
+      <View
+        key={item.reportId}
+        style={[styles.card, selected && styles.selectedCard]}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            if (selectedIds.length > 0) {
+              if (canModify) toggleSelect(item.reportId);
+            } else {
+              navigation.navigate('ReportDetails', {
+                reportId: item.reportId,
+              });
+            }
+          }}
+          onLongPress={() => canModify && toggleSelect(item.reportId)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.row}>
+            <Text style={styles.header}>Created By:</Text>
+            <Text style={styles.body}>{item.chaplain}</Text>
+            <Text style={styles.header}>Hours:</Text>
+            <Text style={styles.body}>
+              {item.hoursOfService ?? 'N/A'}
+            </Text>
+            <Text style={styles.date}>{formattedDate}</Text>
+          </View>
+          <Text style={styles.division}>Division: {item.chaplainDivision}</Text>
+          <View style={styles.row}>
+            <View style={styles.leftRow}>
+              <Text style={styles.header}>Agency:</Text>
+              <Text style={styles.body}>{item.primaryAgency}</Text>
+            </View>
+            <Text style={styles.type}>Type: {item.typeOfService}</Text>
+          </View>
+          <Text style={styles.header}>Narrative:</Text>
+          <Text style={styles.narrative} numberOfLines={2}>
+            {item.narrative}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <ScreenContainer>
       <View style={styles.controls}>
-        <Text style={styles.controlLabel}>Page Size:</Text>
-        <TextInput
-          style={styles.pageInput}
-          value={pageSizeInput}
-          onChangeText={setPageSizeInput}
-          keyboardType="numeric"
-        />
-        <Button title="Set" onPress={handlePageSizeChange} />
-      </View>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        onScroll={handleScroll}
-        scrollEventThrottle={400}
-        ref={scrollRef}
-      >
-        {reports.map((item) => {
-          const canModify =
-            isAdmin || user?.userId === item.createdById;
-          return (
-            <View key={item.reportId} style={styles.item}>
+        <View style={styles.pageSizeRow}>
+          <Text style={styles.controlLabel}>Page Size:</Text>
+          {['10', '25', 'All'].map((size) => {
+            const numeric = size === 'All' ? 9999 : parseInt(size, 10);
+            const active = pageSize === numeric;
+            return (
               <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('ReportDetails', {
-                    reportId: item.reportId,
-                  })
-                }
+                key={size}
+                style={[styles.sizeButton, active && styles.sizeButtonActive]}
+                onPress={() => handlePageSizeChange(numeric)}
               >
-                <Text style={styles.chaplain}>{item.chaplain}</Text>
-                <Text style={styles.date}>
-                  {new Date(item.dateCreated).toLocaleDateString()}
-                </Text>
-                <Text style={styles.narrative} numberOfLines={2}>
-                  {item.narrative}
-                </Text>
-                <Text style={styles.agency}>Agency: {item.primaryAgency}</Text>
-                <Text style={styles.type}>Service: {item.typeOfService}</Text>
-                <Text style={styles.hours}>
-                  Hours: {item.hoursOfService ?? 'N/A'}
-                </Text>
-                <Text style={styles.miles}>
-                  Miles: {item.milesDriven ?? 'N/A'}
-                </Text>
+                <Text style={styles.sizeText}>{size}</Text>
               </TouchableOpacity>
-              {canModify && (
-                <View style={styles.itemActions}>
-                  <Button
-                    title="Edit"
-                    onPress={() => {
-                      setEditing(item);
-                      setShowForm(true);
-                    }}
-                  />
-                  <Button
-                    title="Delete"
-                    color="red"
-                    onPress={() => handleDelete(item)}
-                  />
-                </View>
-              )}
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
+        <View style={styles.arrows}>
+          <TouchableOpacity
+            onPress={() => setPageIndex((p) => Math.max(0, p - 2))}
+          >
+            <Text style={styles.arrowText}>{'<<'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setPageIndex((p) => Math.max(0, p - 1))}
+          >
+            <Text style={styles.arrowText}>{'<'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setPageIndex((p) => p + 1)}>
+            <Text style={styles.arrowText}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setPageIndex((p) => p + 2)}>
+            <Text style={styles.arrowText}>{'>>'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        {reports.map((r) => renderReport(r))}
       </ScrollView>
       <TouchableOpacity
         style={styles.addButton}
@@ -194,6 +179,14 @@ const Reports: React.FC = () => {
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
+      {selectedIds.length > 0 && (
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={deleteSelected}
+        >
+          <TrashIcon color="white" size={24} />
+        </TouchableOpacity>
+      )}
       {showForm && (
         <ReportForm
           visible={showForm}
@@ -209,9 +202,11 @@ const Reports: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    gap: 4,
   },
   controls: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
   },
@@ -219,51 +214,91 @@ const styles = StyleSheet.create({
     color: 'white',
     marginRight: 8,
   },
-  pageInput: {
-    backgroundColor: 'white',
-    padding: 4,
-    width: 60,
-    marginRight: 8,
+  pageSizeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sizeButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  item: {
-    marginBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#555',
-    paddingBottom: 8,
+  sizeButtonActive: {
+    backgroundColor: '#007bff',
   },
-  chaplain: {
+  sizeText: {
     color: 'white',
     fontWeight: 'bold',
   },
+  arrows: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  arrowText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  card: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 12,
+    borderRadius: 8,
+  },
+  selectedCard: {
+    borderWidth: 2,
+    borderColor: '#007bff',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  leftRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  header: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginRight: 4,
+  },
+  body: {
+    color: 'white',
+    marginRight: 8,
+  },
   date: {
     color: 'white',
+    marginLeft: 'auto',
   },
-  agency: {
+  division: {
     color: 'white',
+    textAlign: 'center',
+    marginVertical: 4,
   },
   type: {
     color: 'white',
-  },
-  hours: {
-    color: 'white',
-  },
-  miles: {
-    color: 'white',
+    marginLeft: 'auto',
   },
   narrative: {
     color: 'white',
-  },
-  itemActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
   },
   addButton: {
     position: 'absolute',
     bottom: 20,
     right: 20,
     backgroundColor: '#007bff',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    backgroundColor: '#dc3545',
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -278,3 +313,4 @@ const styles = StyleSheet.create({
 });
 
 export default Reports;
+
