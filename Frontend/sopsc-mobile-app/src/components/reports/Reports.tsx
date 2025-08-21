@@ -86,48 +86,45 @@ const Reports: React.FC = () => {
     const formattedDate = new Date(item.dateCreated).toLocaleDateString();
     const canModify = isAdmin || user?.userId === item.createdById;
     return (
-      <View
+      <TouchableOpacity
         key={item.reportId}
         style={[styles.cardContainer, selected && styles.selectedCard]}
+        onPress={() => {
+          if (selectedIds.length > 0) {
+            if (canModify) toggleSelect(item.reportId);
+          } else {
+            navigation.navigate('ReportDetails', {
+              reportId: item.reportId,
+            });
+          }
+        }}
+        onLongPress={() => canModify && toggleSelect(item.reportId)}
+        activeOpacity={0.8}
       >
-        <TouchableOpacity
-          onPress={() => {
-            if (selectedIds.length > 0) {
-              if (canModify) toggleSelect(item.reportId);
-            } else {
-              navigation.navigate('ReportDetails', {
-                reportId: item.reportId,
-              });
-            }
-          }}
-          onLongPress={() => canModify && toggleSelect(item.reportId)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Text style={styles.header}>Chaplain:</Text>
-              <Text style={styles.body}>{item.chaplain}</Text>
-              <View style={styles.rowRight}>
-                <Text style={styles.header}>Division:</Text>
-                <Text style={styles.divisionBody}>{item.chaplainDivision}</Text>
-              </View>
-            </View>
-            <View style={styles.row}>
-              <View style={styles.leftRow}>
-                <Text style={styles.header}>Agency:</Text>
-                <Text style={styles.body}>{item.primaryAgency}</Text>
-              </View>
-              <Text style={styles.type}>Type: {item.typeOfService}</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.header}>Chaplain:</Text>
+            <Text style={styles.body}>{item.chaplain}</Text>
+            <View style={styles.rowRight}>
+              <Text style={styles.header}>Division:</Text>
+              <Text style={styles.divisionBody}>{item.chaplainDivision}</Text>
             </View>
           </View>
-        </TouchableOpacity>
+          <View style={styles.row}>
+            <View style={styles.leftRow}>
+              <Text style={styles.header}>Agency:</Text>
+              <Text style={styles.body}>{item.primaryAgency}</Text>
+            </View>
+            <Text style={styles.type}>Type: {item.typeOfService}</Text>
+          </View>
+        </View>
         <View style={styles.metaRow}>
           <Text style={styles.metaDate}>{formattedDate}</Text>
           <Text style={styles.metaHours}>
             Hours: {item.hoursOfService ?? 'N/A'}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
