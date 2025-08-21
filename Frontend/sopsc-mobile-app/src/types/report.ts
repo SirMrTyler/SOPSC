@@ -20,4 +20,5 @@ export interface Report {
   milesDriven?: number | null;
   narrative: string;
   dateCreated: string;
+  createdById: number;
 }

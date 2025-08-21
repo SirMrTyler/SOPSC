@@ -32,6 +32,7 @@ const Reports: React.FC = () => {
   const scrollRef = useRef<ScrollView>(null);
   const { user } = useAuth();
   const divisionId = (user as any)?.divisionId;
+  const isAdmin = user?.Roles?.some((r) => r.roleName === 'Admin' || r.roleName === 'Administrator');
 
   useEffect(() => {
     const load = async () => {
@@ -105,21 +106,18 @@ const Reports: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (item: Report) => {
+    if (!user || (!isAdmin && user.userId !== item.createdById)) {
+      return;
+    }
     try {
-      await reportService.remove(id);
+      await reportService.remove(item.reportId);
       await refreshReports();
     } catch (err) {
       console.error(err);
     }
   };
 
-  const isAdmin = user?.Roles?.some(
-    (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
-  );
-  const userFullName = `${user?.firstName ?? ''} ${
-    user?.lastName ?? ''
-  }`.trim();
 
   return (
     <ScreenContainer>
@@ -141,7 +139,7 @@ const Reports: React.FC = () => {
       >
         {reports.map((item) => {
           const canModify =
-            isAdmin || item.chaplain === userFullName;
+            isAdmin || user?.userId === item.createdById;
           return (
             <View key={item.reportId} style={styles.item}>
               <TouchableOpacity
@@ -179,7 +177,7 @@ const Reports: React.FC = () => {
                   <Button
                     title="Delete"
                     color="red"
-                    onPress={() => handleDelete(item.reportId)}
+                    onPress={() => handleDelete(item)}
                   />
                 </View>
               )}
