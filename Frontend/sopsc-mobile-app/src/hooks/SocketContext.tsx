@@ -14,7 +14,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ user, children }
   const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://192.168.1.175:3001';
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.userId) return;
     const newSocket = io(socketUrl, {
       query: { userId: user.userId.toString() },
       transports: ['websocket'],

@@ -50,8 +50,6 @@ const Reports: React.FC = () => {
       );
     } catch (err: any) {
       if (err?.response?.status === 404) {
-        Alert.alert('No More Reports...');
-        setReports([]);
       } else {
         console.error(err);
       }
