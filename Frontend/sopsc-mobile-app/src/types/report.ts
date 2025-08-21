@@ -5,6 +5,8 @@ export interface Report {
   hoursOfService?: number | null;
   commuteTime?: number | null;
   primaryAgency: string;
+  secondaryAgency?: string | null;
+  otherAgency?: string | null;
   typeOfService: string;
   contactName: string;
   pocPhone?: string | null;
@@ -12,13 +14,17 @@ export interface Report {
   clientName?: string | null;
   clientPhone?: string | null;
   addressDispatch: string;
+  addressLine2Dispatch?: string | null;
   cityDispatch: string;
+  stateDispatch?: string | null;
+  postalCodeDispatch?: string | null;
   addressDestination?: string | null;
   cityDestination?: string | null;
   dispatchTime?: string | null;
   arrivalTime?: string | null;
   milesDriven?: number | null;
   narrative: string;
+  dateDispatch?: string | null;
   dateCreated: string;
   createdById: number;
 }
