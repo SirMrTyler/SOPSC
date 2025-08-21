@@ -16,7 +16,16 @@ namespace SOPSC.Api.Models.Interfaces.Messages
         List<MessageConversation> GetConversations(int userId);
         Paged<Message> GetConversationByChatId(int userId, int chatId, int pageIndex, int pageSize);
         void UpdateReadStatus(int messageId, bool isRead);
-        int SendMessage(int senderId, int chatId, string messageContent);
+
+        /// <summary>
+        /// Sends a message to another user. If the chat does not exist, it will be created.
+        /// </summary>
+        /// <param name="senderId">Id of the user sending the message.</param>
+        /// <param name="chatId">Existing chat id or 0 to create a new chat.</param>
+        /// <param name="recipientId">Id of the recipient user.</param>
+        /// <param name="messageContent">Text content of the message.</param>
+        /// <returns>The identifiers of the created message and chat.</returns>
+        MessageCreated SendMessage(int senderId, int chatId, int recipientId, string messageContent);
 
         /// <summary>
         /// Deletes messages by their ids.

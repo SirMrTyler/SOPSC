@@ -219,7 +219,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
         if (!newMessage.trim() || sending || !user) return;
         setSending(true);
         try {
-            const result: { item?: MessageCreated } = await send(conversation.chatId, newMessage.trim());
+            const result: { item?: MessageCreated } = await send(
+                conversation.chatId,
+                newMessage.trim(),
+                conversation.otherUserId
+            );
             
             const senderName =
               user?.firstName && user?.lastName
@@ -231,6 +235,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
             
             const messageId = result?.item?.id || Date.now();
             const chatId = result?.item?.chatId ?? conversation.chatId;
+            if (!conversation.chatId && chatId) {
+                conversation.chatId = chatId;
+            }
 
             const message: Message = {
                 messageId: messageId,

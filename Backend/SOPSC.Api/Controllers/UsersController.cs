@@ -138,7 +138,7 @@ public class UsersController : BaseApiController
             foreach (var adminId in adminIds)
             {
                 string content = $"{model.FirstName} {model.LastName} has joined the app.";
-                _messagesService.SendMessage(id, 0, content); // TODO: resolve chatId for admin conversation
+                _messagesService.SendMessage(id, 0, adminId, content); // TODO: resolve chatId for admin conversation
             }
 
             result = Ok200(response);

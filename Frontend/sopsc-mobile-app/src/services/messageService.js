@@ -33,13 +33,13 @@ const getConversation = async (chatId, pageIndex = 0, pageSize = 20) => {
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-const send = async (chatId, messageContent) => {
+const send = async (chatId, messageContent, recipientId) => {
     const token = await helper.getToken();
     const deviceId = await helper.getDeviceId();
     const config = {
         method: 'POST',
         url: endpoint,
-        data: { chatId, messageContent },
+        data: { chatId, recipientId, messageContent },
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
