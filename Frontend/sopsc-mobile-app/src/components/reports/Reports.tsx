@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -37,6 +38,9 @@ const Reports: React.FC = () => {
       setLoading(true);
       const data = await reportService.getAll(pageIndex, pageSize, divisionId);
       const newItems: Report[] = data.item?.pagedItems || [];
+      if (newItems.length === 0) {
+        Alert.alert('No More Reports...');
+      }
       setReports(
         newItems.sort(
           (a, b) =>
@@ -44,8 +48,13 @@ const Reports: React.FC = () => {
             new Date(a.dateCreated).getTime()
         )
       );
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        Alert.alert('No More Reports...');
+        setReports([]);
+      } else {
+        console.error(err);
+      }
     } finally {
       setLoading(false);
     }
