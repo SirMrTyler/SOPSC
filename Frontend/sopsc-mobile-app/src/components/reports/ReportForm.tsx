@@ -42,11 +42,11 @@ const ReportForm: React.FC<Props> = ({
   const [contactName, setContactName] = useState(
     initialValues.contactName || ''
   );
-  const [contactPhone, setContactPhone] = useState(
-    initialValues.contactPhone || ''
-  );
-  const [contactEmail, setContactEmail] = useState(
-    initialValues.contactEmail || ''
+  const [pocPhone, setPocPhone] = useState(initialValues.pocPhone || '');
+  const [pocEmail, setPocEmail] = useState(initialValues.pocEmail || '');
+  const [clientName, setClientName] = useState(initialValues.clientName || '');
+  const [clientPhone, setClientPhone] = useState(
+    initialValues.clientPhone || ''
   );
   const [addressDispatch, setAddressDispatch] = useState(
     initialValues.addressDispatch || ''
@@ -54,11 +54,26 @@ const ReportForm: React.FC<Props> = ({
   const [cityDispatch, setCityDispatch] = useState(
     initialValues.cityDispatch || ''
   );
+  const [addressDestination, setAddressDestination] = useState(
+    initialValues.addressDestination || ''
+  );
+  const [cityDestination, setCityDestination] = useState(
+    initialValues.cityDestination || ''
+  );
   const [hoursOfService, setHoursOfService] = useState(
     initialValues.hoursOfService ? String(initialValues.hoursOfService) : ''
   );
   const [commuteTime, setCommuteTime] = useState(
     initialValues.commuteTime ? String(initialValues.commuteTime) : ''
+  );
+  const [dispatchTime, setDispatchTime] = useState(
+    initialValues.dispatchTime || ''
+  );
+  const [arrivalTime, setArrivalTime] = useState(
+    initialValues.arrivalTime || ''
+  );
+  const [milesDriven, setMilesDriven] = useState(
+    initialValues.milesDriven ? String(initialValues.milesDriven) : ''
   );
   const [narrative, setNarrative] = useState(initialValues.narrative || '');
 
@@ -67,15 +82,24 @@ const ReportForm: React.FC<Props> = ({
     setPrimaryAgency(initialValues.primaryAgency || '');
     setTypeOfService(initialValues.typeOfService || '');
     setContactName(initialValues.contactName || '');
-    setContactPhone(initialValues.contactPhone || '');
-    setContactEmail(initialValues.contactEmail || '');
+    setPocPhone(initialValues.pocPhone || '');
+    setPocEmail(initialValues.pocEmail || '');
+    setClientName(initialValues.clientName || '');
+    setClientPhone(initialValues.clientPhone || '');
     setAddressDispatch(initialValues.addressDispatch || '');
     setCityDispatch(initialValues.cityDispatch || '');
+    setAddressDestination(initialValues.addressDestination || '');
+    setCityDestination(initialValues.cityDestination || '');
     setHoursOfService(
       initialValues.hoursOfService ? String(initialValues.hoursOfService) : ''
     );
     setCommuteTime(
       initialValues.commuteTime ? String(initialValues.commuteTime) : ''
+    );
+    setDispatchTime(initialValues.dispatchTime || '');
+    setArrivalTime(initialValues.arrivalTime || '');
+    setMilesDriven(
+      initialValues.milesDriven ? String(initialValues.milesDriven) : ''
     );
     setNarrative(initialValues.narrative || '');
   }, [initialValues, divisions]);
@@ -89,6 +113,8 @@ const ReportForm: React.FC<Props> = ({
     };
 
     if (isCommunity) {
+      payload.clientName = clientName;
+      payload.clientPhone = clientPhone;
       payload.hoursOfService = hoursOfService
         ? Number(hoursOfService)
         : undefined;
@@ -97,11 +123,17 @@ const ReportForm: React.FC<Props> = ({
       payload.primaryAgency = primaryAgency;
       payload.typeOfService = typeOfService;
       payload.contactName = contactName;
-      payload.contactPhone = contactPhone;
-      payload.contactEmail = contactEmail;
+      payload.pocPhone = pocPhone;
+      payload.pocEmail = pocEmail;
       payload.addressDispatch = addressDispatch;
       payload.cityDispatch = cityDispatch;
     }
+
+    payload.addressDestination = addressDestination;
+    payload.cityDestination = cityDestination;
+    payload.dispatchTime = dispatchTime;
+    payload.arrivalTime = arrivalTime;
+    payload.milesDriven = milesDriven ? Number(milesDriven) : undefined;
 
     try {
       if (initialValues.reportId) {
@@ -154,15 +186,15 @@ const ReportForm: React.FC<Props> = ({
             />
             <TextInput
               style={styles.input}
-              placeholder="Contact Phone"
-              value={contactPhone}
-              onChangeText={setContactPhone}
+              placeholder="POC Phone"
+              value={pocPhone}
+              onChangeText={setPocPhone}
             />
             <TextInput
               style={styles.input}
-              placeholder="Contact Email"
-              value={contactEmail}
-              onChangeText={setContactEmail}
+              placeholder="POC Email"
+              value={pocEmail}
+              onChangeText={setPocEmail}
             />
             <TextInput
               style={styles.input}
@@ -182,6 +214,18 @@ const ReportForm: React.FC<Props> = ({
           <>
             <TextInput
               style={styles.input}
+              placeholder="Client Name"
+              value={clientName}
+              onChangeText={setClientName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Client Phone"
+              value={clientPhone}
+              onChangeText={setClientPhone}
+            />
+            <TextInput
+              style={styles.input}
               placeholder="Hours of Service"
               value={hoursOfService}
               onChangeText={setHoursOfService}
@@ -196,6 +240,37 @@ const ReportForm: React.FC<Props> = ({
             />
           </>
         )}
+        <TextInput
+          style={styles.input}
+          placeholder="Dispatch Time"
+          value={dispatchTime}
+          onChangeText={setDispatchTime}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Arrival Time"
+          value={arrivalTime}
+          onChangeText={setArrivalTime}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Destination Address"
+          value={addressDestination}
+          onChangeText={setAddressDestination}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Destination City"
+          value={cityDestination}
+          onChangeText={setCityDestination}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Miles Driven"
+          value={milesDriven}
+          onChangeText={setMilesDriven}
+          keyboardType="numeric"
+        />
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Narrative"

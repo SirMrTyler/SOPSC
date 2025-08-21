@@ -38,6 +38,12 @@ const ReportDetails: React.FC = () => {
         <Text style={styles.label}>Chaplain: {report.chaplain}</Text>
         {isCommunity ? (
           <>
+            {report.clientName && (
+              <Text style={styles.label}>Client: {report.clientName}</Text>
+            )}
+            {report.clientPhone && (
+              <Text style={styles.label}>Client Phone: {report.clientPhone}</Text>
+            )}
             <Text style={styles.label}>
               Hours of Service: {report.hoursOfService ?? 'N/A'}
             </Text>
@@ -52,17 +58,30 @@ const ReportDetails: React.FC = () => {
               Type of Service: {report.typeOfService}
             </Text>
             <Text style={styles.label}>Contact: {report.contactName}</Text>
-            {report.contactPhone && (
-              <Text style={styles.label}>
-                Phone: {report.contactPhone}
-              </Text>
+            {report.pocPhone && (
+              <Text style={styles.label}>Phone: {report.pocPhone}</Text>
             )}
-            {report.contactEmail && (
-              <Text style={styles.label}>
-                Email: {report.contactEmail}
-              </Text>
+            {report.pocEmail && (
+              <Text style={styles.label}>Email: {report.pocEmail}</Text>
             )}
           </>
+        )}
+        {report.dispatchTime && (
+          <Text style={styles.label}>
+            Dispatch Time: {report.dispatchTime}
+          </Text>
+        )}
+        {report.arrivalTime && (
+          <Text style={styles.label}>Arrival Time: {report.arrivalTime}</Text>
+        )}
+        {report.addressDestination && (
+          <Text style={styles.label}>
+            Destination: {report.addressDestination}
+            {report.cityDestination ? `, ${report.cityDestination}` : ''}
+          </Text>
+        )}
+        {typeof report.milesDriven === 'number' && (
+          <Text style={styles.label}>Miles Driven: {report.milesDriven}</Text>
         )}
         <Text style={styles.label}>Narrative: {report.narrative}</Text>
       </View>
