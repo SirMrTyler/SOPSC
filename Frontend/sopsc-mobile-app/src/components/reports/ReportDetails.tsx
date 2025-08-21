@@ -27,9 +27,9 @@ const ReportDetails: React.FC = () => {
 
   if (!report) {
     return (
-      <ScreenContainer>
+      <ScreenContainer showBack title="SOPSC" showBottomBar={false}>
         <Text style={styles.loading}>Loading...</Text>
-        </ScreenContainer>
+      </ScreenContainer>
     );
   }
 
@@ -51,82 +51,151 @@ const ReportDetails: React.FC = () => {
   const isCommunity = report.chaplainDivision === 'Community';
 
   return (
-    <ScreenContainer>
-      <View style={styles.container}>
-        <Text style={styles.label}>Chaplain: {report.chaplain}</Text>
-        {isCommunity ? (
-          <>
-            {report.clientName && (
-              <Text style={styles.label}>Client: {report.clientName}</Text>
+    <ScreenContainer showBack title="SOPSC" showBottomBar={false}>
+      <View style={styles.wrapper}>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <Text style={styles.header}>Chaplain:</Text>
+              <Text style={styles.body}>{report.chaplain}</Text>
+            </View>
+            {!isCommunity && (
+              <View style={styles.rowRight}>
+                <Text style={styles.header}>Contact:</Text>
+                <Text style={styles.body}>{report.contactName}</Text>
+              </View>
             )}
-            {report.clientPhone && (
-              <Text style={styles.label}>Client Phone: {report.clientPhone}</Text>
-            )}
-            <Text style={styles.label}>
-              Hours of Service: {report.hoursOfService ?? 'N/A'}
-            </Text>
-            <Text style={styles.label}>
-              Commute Time: {report.commuteTime ?? 'N/A'}
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.label}>Agency: {report.primaryAgency}</Text>
-            <Text style={styles.label}>
-              Type of Service: {report.typeOfService}
-            </Text>
-            <Text style={styles.label}>Contact: {report.contactName}</Text>
-            {report.pocPhone && (
-              <Text style={styles.label}>Phone: {report.pocPhone}</Text>
-            )}
-            {report.pocEmail && (
-              <Text style={styles.label}>Email: {report.pocEmail}</Text>
-            )}
-          </>
-        )}
-        {report.dispatchTime && (
-          <Text style={styles.label}>
-            Dispatch Time: {report.dispatchTime}
-          </Text>
-        )}
-        {report.arrivalTime && (
-          <Text style={styles.label}>Arrival Time: {report.arrivalTime}</Text>
-        )}
-        {report.addressDestination && (
-          <Text style={styles.label}>
-            Destination: {report.addressDestination}
-            {report.cityDestination ? `, ${report.cityDestination}` : ''}
-          </Text>
-        )}
-        {typeof report.milesDriven === 'number' && (
-          <Text style={styles.label}>Miles Driven: {report.milesDriven}</Text>
-        )}
-        <Text style={styles.label}>Narrative: {report.narrative}</Text>
-        {canModify && (
-          <View style={styles.itemActions}>
-            <Button
-              title="Edit"
-              onPress={() => navigation.navigate('Reports')}
-            />
-            <Button
-              title="Delete"
-              color="red"
-              onPress={handleDelete}
-            />
           </View>
-        )}
+          {isCommunity ? (
+            <>
+              {report.clientName && (
+                <View style={styles.row}>
+                  <Text style={styles.header}>Client:</Text>
+                  <Text style={styles.body}>{report.clientName}</Text>
+                </View>
+              )}
+              {report.clientPhone && (
+                <View style={styles.row}>
+                  <Text style={styles.header}>Client Phone:</Text>
+                  <Text style={styles.body}>{report.clientPhone}</Text>
+                </View>
+              )}
+              <View style={styles.row}>
+                <Text style={styles.header}>Hours of Service:</Text>
+                <Text style={styles.body}>{report.hoursOfService ?? 'N/A'}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.header}>Commute Time:</Text>
+                <Text style={styles.body}>{report.commuteTime ?? 'N/A'}</Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.row}>
+                <View style={styles.rowLeft}>
+                  <Text style={styles.header}>Agency:</Text>
+                  <Text style={styles.body}>{report.primaryAgency}</Text>
+                </View>
+                <View style={styles.rowRight}>
+                  <Text style={styles.header}>Services:</Text>
+                  <Text style={styles.body}>{report.typeOfService}</Text>
+                </View>
+              </View>
+              {report.pocPhone && (
+                <View style={styles.row}>
+                  <Text style={styles.header}>Phone:</Text>
+                  <Text style={styles.body}>{report.pocPhone}</Text>
+                </View>
+              )}
+              {report.pocEmail && (
+                <View style={styles.row}>
+                  <Text style={styles.header}>Email:</Text>
+                  <Text style={styles.body}>{report.pocEmail}</Text>
+                </View>
+              )}
+            </>
+          )}
+          {report.dispatchTime && (
+            <View style={styles.row}>
+              <Text style={styles.header}>Dispatch Time:</Text>
+              <Text style={styles.body}>{report.dispatchTime}</Text>
+            </View>
+          )}
+          {report.arrivalTime && (
+            <View style={styles.row}>
+              <Text style={styles.header}>Arrival Time:</Text>
+              <Text style={styles.body}>{report.arrivalTime}</Text>
+            </View>
+          )}
+          {report.addressDestination && (
+            <View style={styles.row}>
+              <Text style={styles.header}>Destination:</Text>
+              <Text style={styles.body}>
+                {report.addressDestination}
+                {report.cityDestination ? `, ${report.cityDestination}` : ''}
+              </Text>
+            </View>
+          )}
+          {typeof report.milesDriven === 'number' && (
+            <View style={styles.row}>
+              <Text style={styles.header}>Miles Driven:</Text>
+              <Text style={styles.body}>{report.milesDriven}</Text>
+            </View>
+          )}
+          <Text style={styles.header}>Narrative:</Text>
+          <Text style={styles.body}>{report.narrative}</Text>
+          {canModify && (
+            <View style={styles.itemActions}>
+              <Button
+                title="Edit"
+                onPress={() => navigation.navigate('Reports')}
+              />
+              <Button
+                title="Delete"
+                color="red"
+                onPress={handleDelete}
+              />
+            </View>
+          )}
+        </View>
       </View>
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     padding: 16,
   },
-  label: {
-    color: 'white',
+  card: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 16,
+    borderRadius: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
+    flexWrap: 'wrap',
+  },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  header: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 4,
+  },
+  body: {
+    color: 'white',
+    fontSize: 14,
   },
   loading: {
     color: 'white',
