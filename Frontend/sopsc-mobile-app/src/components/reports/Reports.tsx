@@ -31,12 +31,17 @@ const Reports: React.FC = () => {
   const [editing, setEditing] = useState<Report | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const { user } = useAuth();
+  const divisionId = (user as any)?.divisionId;
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await reportService.getAll(pageIndex, pageSize);
+        const data = await reportService.getAll(
+          pageIndex,
+          pageSize,
+          divisionId
+        );
         const newItems: Report[] = data.item?.pagedItems || [];
         setReports((prev) => {
           const merged =
@@ -54,7 +59,7 @@ const Reports: React.FC = () => {
       }
     };
     load();
-  }, [pageIndex, pageSize]);
+  }, [pageIndex, pageSize, divisionId]);
 
   const handlePageSizeChange = () => {
     const size = parseInt(pageSizeInput, 10);
@@ -82,7 +87,7 @@ const Reports: React.FC = () => {
   const refreshReports = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getAll(0, pageSize);
+      const data = await reportService.getAll(0, pageSize, divisionId);
       const newItems: Report[] = data.item?.pagedItems || [];
       setReports(
         newItems.sort(
@@ -157,6 +162,9 @@ const Reports: React.FC = () => {
                 <Text style={styles.type}>Service: {item.typeOfService}</Text>
                 <Text style={styles.hours}>
                   Hours: {item.hoursOfService ?? 'N/A'}
+                </Text>
+                <Text style={styles.miles}>
+                  Miles: {item.milesDriven ?? 'N/A'}
                 </Text>
               </TouchableOpacity>
               {canModify && (
@@ -240,6 +248,9 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   hours: {
+    color: 'white',
+  },
+  miles: {
     color: 'white',
   },
   narrative: {

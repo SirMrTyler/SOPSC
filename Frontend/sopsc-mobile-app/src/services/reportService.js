@@ -3,12 +3,16 @@ import * as helper from './serviceHelpers';
 
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}reports`;
 
-const getAll = async (pageIndex = 0, pageSize = 10) => {
+const getAll = async (pageIndex = 0, pageSize = 10, divisionId) => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
+  let url = `${endpoint}?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+  if (divisionId) {
+    url += `&divisionId=${divisionId}`;
+  }
   const config = {
     method: 'GET',
-    url: `${endpoint}?pageIndex=${pageIndex}&pageSize=${pageSize}`,
+    url,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
@@ -39,7 +43,7 @@ const add = async (payload) => {
   const config = {
     method: 'POST',
     url: endpoint,
-    data: payload,
+    data: { ...payload },
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
@@ -55,7 +59,7 @@ const update = async (id, payload) => {
   const config = {
     method: 'PUT',
     url: `${endpoint}/${id}`,
-    data: payload,
+    data: { ...payload },
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,

@@ -7,10 +7,17 @@ export interface Report {
   primaryAgency: string;
   typeOfService: string;
   contactName: string;
-  contactPhone?: string | null;
-  contactEmail?: string | null;
+  pocPhone?: string | null;
+  pocEmail?: string | null;
+  clientName?: string | null;
+  clientPhone?: string | null;
   addressDispatch: string;
   cityDispatch: string;
+  addressDestination?: string | null;
+  cityDestination?: string | null;
+  dispatchTime?: string | null;
+  arrivalTime?: string | null;
+  milesDriven?: number | null;
   narrative: string;
   dateCreated: string;
 }
