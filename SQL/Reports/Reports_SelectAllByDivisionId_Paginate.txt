@@ -1,0 +1,52 @@
+ALTER PROC [dbo].[Reports_SelectAllByDivisionId_Paginate]
+    @DivisionId INT,
+    @PageNumber INT = 1,   -- which page
+    @PageSize   INT = 10   -- rows per page
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Calculate total row count for this division
+    DECLARE @TotalCount INT;
+    SELECT @TotalCount = COUNT(*)
+    FROM dbo.Reports
+    WHERE DivisionId = @DivisionId;
+
+    -- Return paginated results + total count
+    SELECT
+        r.ReportId, -- Won't be displayed; used for selections --
+
+        -- Chaplains Name, Contact, and Division --
+        u.FirstName + ' ' + u.LastName AS Chaplain,
+        d.DivisionName AS ChaplainDivision,
+        r.HoursOfService,
+        r.CommuteTime,
+
+        -- Agencies --
+        r.PrimaryAgency,
+        r.TypeOfService,
+
+        -- Point of Contact Info --
+        r.ContactName,
+        r.ContactPhone,
+        r.ContactEmail,
+
+        -- Dispatch Address --
+        r.AddressDispatch,
+        r.CityDispatch,
+
+        -- Description & Date --
+        r.Narrative, -- Will be truncated. This is a preview page.
+        r.DateCreated,
+
+        -- Include total row count for pagination UI
+        @TotalCount AS TotalCount
+    FROM dbo.Reports r
+    JOIN dbo.Users u ON r.UserId = u.UserId
+    JOIN dbo.Divisions d ON r.DivisionId = d.DivisionId
+    WHERE r.DivisionId = @DivisionId
+    ORDER BY r.DateCreated DESC
+    OFFSET (@PageNumber - 1) * @PageSize ROWS
+    FETCH NEXT @PageSize ROWS ONLY;
+END;
+GO

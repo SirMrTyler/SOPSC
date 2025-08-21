@@ -1,0 +1,45 @@
+ALTER PROC [dbo].[Reports_TransferOwnership]
+  @FromUserId INT,
+  @ToUserId   INT,
+  @ReportIds  dbo.IntIdList READONLY
+AS
+BEGIN
+  SET NOCOUNT ON; SET XACT_ABORT ON;
+
+  IF @FromUserId = @ToUserId RETURN;
+
+  BEGIN TRY
+    BEGIN TRAN;
+
+    ;WITH moved AS (
+      SELECT r.ReportId, r.HoursOfService
+      FROM dbo.Reports r
+      JOIN @ReportIds i ON i.Id = r.ReportId
+      WHERE r.UserId = @FromUserId
+    )
+    UPDATE r
+      SET r.UserId = @ToUserId,
+          r.DateModified = SYSUTCDATETIME()
+    FROM dbo.Reports r
+    JOIN moved m ON m.ReportId = r.ReportId;
+
+    DECLARE @Total NUMERIC(10,2) =
+      (SELECT SUM(ISNULL(HoursOfService,0)) FROM moved);
+
+    UPDATE u
+      SET u.HoursServed = CASE WHEN u.HoursServed - ISNULL(@Total,0) < 0 THEN 0
+                               ELSE u.HoursServed - ISNULL(@Total,0) END
+    FROM dbo.Users u WHERE u.UserId = @FromUserId;
+
+    UPDATE u
+      SET u.HoursServed = u.HoursServed + ISNULL(@Total,0)
+    FROM dbo.Users u WHERE u.UserId = @ToUserId;
+
+    COMMIT;
+  END TRY
+  BEGIN CATCH
+    IF XACT_STATE() <> 0 ROLLBACK;
+    THROW;
+  END CATCH
+END;
+GO

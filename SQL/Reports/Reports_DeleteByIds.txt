@@ -1,0 +1,51 @@
+/* Create TVP for passing lists of INTs, if it doesn't already exist */
+IF NOT EXISTS (
+  SELECT 1
+  FROM sys.types t
+  JOIN sys.schemas s ON s.schema_id = t.schema_id
+  WHERE t.is_table_type = 1 AND t.name = N'IntIdList' AND s.name = N'dbo'
+)
+  CREATE TYPE dbo.IntIdList AS TABLE (Id INT PRIMARY KEY);
+GO
+
+ALTER PROC [dbo].[Reports_DeleteByIds]
+  @ReportIds [dbo].[IntIdList] READONLY
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SET XACT_ABORT ON;
+
+  IF NOT EXISTS (SELECT 1 FROM @ReportIds) RETURN;
+
+  BEGIN TRY
+    BEGIN TRAN;
+
+    ;WITH to_delete AS (
+      SELECT r.ReportId, r.UserId, Hours = ISNULL(r.HoursOfService, 0.0)
+      FROM dbo.Reports r
+      JOIN @ReportIds i ON i.Id = r.ReportId
+    ),
+    per_user AS (
+      SELECT UserId, TotalHours = SUM(Hours)
+      FROM to_delete
+      GROUP BY UserId
+    )
+    UPDATE u
+      SET u.HoursServed =
+        CASE WHEN u.HoursServed - pu.TotalHours < 0 THEN 0
+             ELSE u.HoursServed - pu.TotalHours END
+    FROM dbo.Users u
+    JOIN per_user pu ON pu.UserId = u.UserId;
+
+    DELETE r
+    FROM dbo.Reports r
+    JOIN @ReportIds i ON i.Id = r.ReportId;
+
+    COMMIT TRAN;
+  END TRY
+  BEGIN CATCH
+    IF XACT_STATE() <> 0 ROLLBACK TRAN;
+    THROW;
+  END CATCH
+END;
+GO

@@ -1,0 +1,50 @@
+ALTER PROC [dbo].[Reports_Search_Paginate]
+  @DivisionId INT      = NULL,
+  @UserId     INT      = NULL,
+  @FromDate   DATE     = NULL,  -- compares to DateDispatchStarted
+  @ToDate     DATE     = NULL,  -- compares to DateDispatchEnded
+  @Agency     NVARCHAR(100) = NULL,  -- matches PrimaryAgency (prefix)
+  @Text       NVARCHAR(200) = NULL,  -- searches Narrative (LIKE)
+  @PageNumber INT = 1,
+  @PageSize   INT = 10
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  ;WITH base AS (
+    SELECT
+      r.ReportId,
+      u.FirstName + ' ' + u.LastName AS Chaplain,
+      d.DivisionName AS ChaplainDivision,
+      r.HoursOfService,
+      r.CommuteTime,
+      r.PrimaryAgency,
+      r.TypeOfService,
+      r.ContactName,
+      r.ContactPhone,
+      r.ContactEmail,
+      r.AddressDispatch,
+      r.CityDispatch,
+      r.Narrative,
+      r.DateCreated
+    FROM dbo.Reports r
+    JOIN dbo.Users u     ON r.UserId     = u.UserId
+    JOIN dbo.Divisions d ON r.DivisionId = d.DivisionId
+    WHERE (@DivisionId IS NULL OR r.DivisionId = @DivisionId)
+      AND (@UserId     IS NULL OR r.UserId     = @UserId)
+      AND (@FromDate   IS NULL OR r.DateDispatchStarted >= @FromDate)
+      AND (@ToDate     IS NULL OR r.DateDispatchEnded   <= @ToDate)
+      AND (@Agency     IS NULL OR r.PrimaryAgency LIKE @Agency + '%')
+      AND (@Text       IS NULL OR r.Narrative LIKE '%' + @Text + '%')
+  )
+  SELECT *
+  FROM (
+    SELECT b.*,
+           COUNT(*) OVER() AS TotalCount
+    FROM base AS b
+  ) AS t
+  ORDER BY t.DateCreated DESC
+  OFFSET (@PageNumber - 1) * @PageSize ROWS
+  FETCH NEXT @PageSize ROWS ONLY;
+END;
+GO

@@ -1,0 +1,27 @@
+ALTER PROC [dbo].[Reports_SelectById]
+  @ReportId INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  SELECT
+    r.ReportId,
+    u.FirstName + ' ' + u.LastName AS Chaplain,
+    d.DivisionName AS ChaplainDivision,
+    r.HoursOfService,
+    r.CommuteTime,
+    r.PrimaryAgency,
+    r.TypeOfService,
+    r.ContactName,
+    r.ContactPhone,
+    r.ContactEmail,
+    r.AddressDispatch,
+    r.CityDispatch,
+    r.Narrative,
+    r.DateCreated
+  FROM dbo.Reports r
+  JOIN dbo.Users u     ON r.UserId     = u.UserId
+  JOIN dbo.Divisions d ON r.DivisionId = d.DivisionId
+  WHERE r.ReportId = @ReportId;
+END;
+GO

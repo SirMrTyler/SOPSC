@@ -360,9 +360,9 @@ Roles & Features: Southern Oregon Public Safety Chaplains (SOPSC) App
              - Type: int Nullable: No
            - UserId:
              - Type: int Nullable: No
-           - MainAgency:
+           - PrimaryAgency:
              - Type: nvarchar(100) Nullable: No
-           - SecondAgency:
+           - SecondaryAgency:
              - Type: nvarchar(100) Nullable: Yes
            - OtherAgency:
              - Type: nvarchar(100) Nullable: Yes
@@ -376,14 +376,32 @@ Roles & Features: Southern Oregon Public Safety Chaplains (SOPSC) App
              - Type: time(0) Nullable: No
            - EndDispatchTime:
              - Type: time(0) Nullable: No
+           - TimeChaplainLeft:
+             - Type: time(0) Nullable: Yes
+           - DispatchStartTime:
+             - Type: time(0) Nullable: Yes
+           - DispatchEndTime:
+             - Type: time(0) Nullable: Yes
+           - TimeReturnedHome:
+             - Type: time(0) Nullable: Yes
+           - CommuteTime:
+             - Type: decimal(5, 2) Nullable: Yes
            - ContactName:
              - Type: nvarchar(100) Nullable: No
            - ContactPhone:
+             - Type: nvarchar(20) Nullable: Yes
+           - ClientName:
+             - Type: nvarchar(100) Nullable: Yes
+           - ClientPhone:
              - Type: nvarchar(20) Nullable: Yes
            - DispatchAddress:
              - Type: nvarchar(255) Nullable: No
            - DispatchAddressLine2:
              - Type: nvarchar(255) Nullable: Yes
+           - ClientAddress:
+             - Type: nvarchar(255) Nullable: Yes
+           - ClientCity:
+             - Type: nvarchar(100) Nullable: Yes
            - City:
              - Type: nvarchar(100) Nullable: No
            - State:
@@ -418,7 +436,9 @@ Roles & Features: Southern Oregon Public Safety Chaplains (SOPSC) App
        - Other Agency (optional)
        - Type of service (EX: Fire, Search and Rescue, Prayer, etc)
        - Begin/End Dispatch Date/Time
+       - Time chaplain left, dispatch start/end, time returned home, commute time
        - Contact(s) (person the chaplain worked with) Name/Phone
+       - Client Name/Phone/Address/City
        - Dispatch Address/City/State/Postal Code (Where did the callout happen)
        - Narrative (or "what the chaplain did/what happened")
        - Hours served (base on Dispatch Date/Time)
