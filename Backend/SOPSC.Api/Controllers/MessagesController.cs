@@ -79,7 +79,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ItemResponse<int>> Send(SendMessageRequest model)
+        public ActionResult<ItemResponse<MessageCreated>> Send(SendMessageRequest model)
         {
             int code = 201;
             BaseResponse response = null;
@@ -87,7 +87,8 @@ namespace SOPSC.Api.Controllers
             {
                 int senderId = _authService.GetCurrentUserId();
                 int id = _messagesService.SendMessage(senderId, model.ChatId, model.MessageContent);
-                response = new ItemResponse<int> { Item = id };
+                MessageCreated created = new MessageCreated { Id = id, ChatId = model.ChatId };
+                response = new ItemResponse<MessageCreated> { Item = created };
             }
             catch (Exception ex)
             {

@@ -54,6 +54,7 @@ const UserList: React.FC = () => {
         navigation.navigate('Conversation', {
             conversation: {
                 messageId: 0,
+                chatId: 0,
                 otherUserId: u.userId,
                 otherUserName: `${u.firstName} ${u.lastName}`,
                 otherUserProfilePicturePath: u.profilePicturePath || '',

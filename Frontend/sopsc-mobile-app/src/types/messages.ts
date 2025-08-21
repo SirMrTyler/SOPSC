@@ -21,3 +21,8 @@ export interface Message {
   readTimestamp: string | null;
   isRead: boolean;
 }
+
+export interface MessageCreated {
+  id: number;
+  chatId: number;
+}

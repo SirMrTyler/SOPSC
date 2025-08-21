@@ -1,0 +1,48 @@
+ALTER PROC [dbo].[ChatLookup_InsertOrGet]
+        @ChatId INT OUTPUT,
+        @User1Id INT,
+        @User2Id INT
+AS
+/* -- Testing Execution Block
+        DECLARE @ChatId INT;
+        EXEC dbo.ChatLookup_InsertOrGet
+                @ChatId OUTPUT,
+                @User1Id = 1,
+                @User2Id = 2;
+        SELECT *
+        FROM dbo.ChatLookup
+        WHERE ChatId = @ChatId;
+*/
+BEGIN
+        SET NOCOUNT ON;
+
+        DECLARE @UserLow INT;
+        DECLARE @UserHigh INT;
+
+        IF @User1Id < @User2Id
+        BEGIN
+                SET @UserLow = @User1Id;
+                SET @UserHigh = @User2Id;
+        END
+        ELSE
+        BEGIN
+                SET @UserLow = @User2Id;
+                SET @UserHigh = @User1Id;
+        END
+
+        SELECT @ChatId = ChatId
+        FROM dbo.ChatLookup WITH (UPDLOCK, HOLDLOCK)
+        WHERE UserOne = @UserLow AND UserTwo = @UserHigh;
+
+        IF @ChatId IS NULL
+        BEGIN
+                INSERT INTO dbo.ChatLookup (UserOne, UserTwo)
+                VALUES (@UserLow, @UserHigh);
+
+                SET @ChatId = SCOPE_IDENTITY();
+        END
+
+        SELECT *
+        FROM dbo.ChatLookup
+        WHERE ChatId = @ChatId;
+END;

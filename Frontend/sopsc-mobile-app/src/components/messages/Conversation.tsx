@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../App';
 // Components
-import { Message } from '../../types/messages';
+import { Message, MessageCreated } from '../../types/messages';
 // Services
 import { getConversation, send, deleteMessages, updateReadStatus } from '../../services/messageService.js';
 // Hooks and Utils
@@ -219,7 +219,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         if (!newMessage.trim() || sending || !user) return;
         setSending(true);
         try {
-            const result = await send(conversation.chatId, newMessage.trim());
+            const result: { item?: MessageCreated } = await send(conversation.chatId, newMessage.trim());
             
             const senderName =
               user?.firstName && user?.lastName
@@ -227,9 +227,12 @@ const Conversation: React.FC<Props> = ({ route }) => {
                 : user?.email || '';
             console.log('[Conversation] Sender Name:', senderName);
             
+            const messageId = result?.item?.id || Date.now();
+            const chatId = result?.item?.chatId ?? conversation.chatId;
+
             const message: Message = {
-                messageId: result?.item || Date.now(),
-                chatId: conversation.chatId,
+                messageId: messageId,
+                chatId: chatId,
                 senderId: user.userId,
                 senderName: senderName,
                 messageContent: newMessage.trim(),
