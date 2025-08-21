@@ -225,7 +225,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
               user?.firstName && user?.lastName
                 ? `${user.firstName} ${user.lastName}`
                 : user?.email || '';
-            console.log('[Conversation] Sender Name:', senderName);
+            if (__DEV__) {
+                console.log('[Conversation] Sender Name:', senderName);
+            }
             
             const messageId = result?.item?.id || Date.now();
             const chatId = result?.item?.chatId ?? conversation.chatId;
