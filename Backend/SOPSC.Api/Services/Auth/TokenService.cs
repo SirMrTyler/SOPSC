@@ -24,6 +24,12 @@ namespace SOPSC.Api.Services.Auth
         
         public void CreateToken(string token, int userId, string deviceId)
         {
+            string deleteProcName = "[dbo].[UserTokens_DeleteOldTokensByUserId]";
+            _dataProvider.ExecuteNonQuery(deleteProcName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+            });
+
             string procName = "[dbo].[UserTokens_Insert]";
             _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
             {
