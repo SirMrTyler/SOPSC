@@ -20,8 +20,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const { conversation } = route.params;
     const { user } = useAuth();
     const socket = useContext(SocketContext);
-    const listRef = useRef<FlatList<Message>>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+    const flatListRef = useRef<FlatList<Message>>(null);
     const [loading, setLoading] = useState(true);
     const [pageIndex, setPageIndex] = useState(0);
     const pageSize = 20;
@@ -29,7 +29,15 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    const [initialLoad, setInitialLoad] = useState(true);
+
+    const sortByTimestampAsc = (list: Message[]) =>
+    [...list].sort((a, b) => new Date(a.sentTimestamp).getTime() - new Date(b.sentTimestamp).getTime());
+
+    const scrollToBottom = (animated = false) => {
+      requestAnimationFrame(() => {
+        flatListRef.current?.scrollToEnd({ animated });
+      });
+    };
 
     const uniqueById = (list: Message[]) => {
       const seen = new Set<number>();
@@ -61,8 +69,6 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const load = async (nextPage = 0) => {
         try {
         const data = await getConversation(conversation.chatId, nextPage, pageSize);
-        // Log all items in response
-        console.log('Conversation Data:', data.item);
         const paged = data?.item;
         if (paged) {
           let items: Message[] = await Promise.all(
@@ -83,13 +89,15 @@ const Conversation: React.FC<Props> = ({ route }) => {
               return m;
             })
           );
-            items = items.reverse();
-            setTotalCount(paged.totalCount);
-            setMessages(prev => {
-              const combined = nextPage === 0 ? items : [...items, ...prev];
-              return uniqueById(combined);
-            });
-            setPageIndex(nextPage);
+
+          items = sortByTimestampAsc(items);
+
+          setTotalCount(paged.totalCount);
+          setMessages(prev => {
+            const combined = nextPage === 0 ? items : [...prev, ...items];
+            return sortByTimestampAsc(uniqueById(combined));
+          });
+          setPageIndex(nextPage);
         }
       } catch (err) {
         if (err?.response?.status === 404) {
@@ -106,17 +114,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
     useEffect(() => {
         load();
     }, []);
-    useEffect(() => {
-      if (initialLoad && !loading && messages.length > 0) {
-        listRef.current?.scrollToEnd({ animated: false });
-        setInitialLoad(false);
-      }
-    }, [initialLoad, loading, messages]);
+    
     useFocusEffect(
       React.useCallback(() => {
         if (messages.length > 0) {
-            listRef.current?.scrollToEnd({ animated: false });
-          markAllRead(messages);
+            markAllRead(messages);
         }
       }, [messages])
     );
@@ -124,9 +126,13 @@ const Conversation: React.FC<Props> = ({ route }) => {
     useEffect(() => {
       if (!socket) return;
       const handler = async (msg: Message) => {
-        if (msg.chatId === conversation.chatId && msg.senderId === conversation.otherUserId) {
-          setMessages(prev => uniqueById([...prev, { ...msg, isRead: true }]));
-          listRef.current?.scrollToEnd({ animated: true });
+        if (msg.senderId === conversation.otherUserId) {
+          setMessages(prev => {
+            const combined = [...prev, { ...msg, isRead: true }];
+            const normalized = sortByTimestampAsc(uniqueById(combined));
+            return normalized;
+          });
+          scrollToBottom(true);
           try {
             await updateReadStatus(msg.messageId, true);
             socket?.emit('directMessageRead', {
@@ -160,9 +166,21 @@ const Conversation: React.FC<Props> = ({ route }) => {
         };
     }, [socket, user, conversation.otherUserId]);
     
-    const handleScroll = (event: any) => {
-        if (event.nativeEvent.contentOffset.y <= 0 && !loading && messages.length < totalCount) {
-            load(pageIndex + 1);
+    useEffect(() => {
+      if (!loading && messages.length > 0) {
+        scrollToBottom(false);
+      }
+    }, [loading]);
+    
+    useEffect(() => {
+      if (!loading && messages.length > 0) {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }
+    }, [messages]);
+    
+    const handleEndReached = () => {
+        if (!loading && messages.length < totalCount) {
+        load(pageIndex + 1);
         }
     };
 
@@ -252,9 +270,12 @@ const Conversation: React.FC<Props> = ({ route }) => {
                 readTimestamp: null,
                 isRead: false,
             };
-            setMessages(prev => uniqueById([...prev, message]));
-            listRef.current?.scrollToEnd({ animated: true });
+            setMessages(prev => {
+              const combined = [...prev, message];
+              return sortByTimestampAsc(uniqueById(combined));
+            });
             socket?.emit('sendDirectMessage', message);
+            scrollToBottom(true);
             setNewMessage('');
         } catch (err) {
             console.error('[Conversation] Error sending message:', err);
@@ -278,12 +299,13 @@ const Conversation: React.FC<Props> = ({ route }) => {
               <ActivityIndicator />
           ) : (
               <FlatList
-              ref={listRef}
+              ref={flatListRef}
               data={messages}
               renderItem={renderItem}
               keyExtractor={(item) => item.messageId.toString()}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
+              onEndReached={handleEndReached}
+              onContentSizeChange={() => scrollToBottom(false)}
+              onEndReachedThreshold={0.2}
               />
           )}
           <View style={styles.inputContainer}>
