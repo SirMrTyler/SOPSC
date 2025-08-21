@@ -15,7 +15,8 @@
       ]
     ],
     "android": {
-      "package": "com.sirmrtyler.sopscmobileapp.dev"
+      "package": "com.sirmrtyler.sopscmobileapp.dev",
+      "googleServicesFile": "./google-services.json"
     },
     "extra": {
       "eas": {
