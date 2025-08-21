@@ -111,12 +111,10 @@ const Reports: React.FC = () => {
             </View>
           </View>
           <View style={styles.row}>
-            <View style={styles.leftRow}>
-              <Text style={styles.header}>Agency:</Text>
-              <Text style={styles.body}>{item.primaryAgency}</Text>
-            </View>
-            <Text style={styles.type}>Type: {item.typeOfService}</Text>
+            <Text style={styles.header}>Agency:</Text>
+            <Text style={styles.body}>{item.primaryAgency}</Text>
           </View>
+          <Text style={styles.type}>Type: {item.typeOfService}</Text>
         </View>
         <View style={styles.metaRow}>
           <Text style={styles.metaDate}>{formattedDate}</Text>
@@ -270,10 +268,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
   },
-  leftRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,20 +289,22 @@ const styles = StyleSheet.create({
   },
   type: {
     color: 'white',
-    marginLeft: 'auto',
+    marginTop: 4,
   },
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    paddingHorizontal: 0,
   },
   metaDate: {
     color: 'white',
     fontSize: 12,
+    marginTop: 4,
   },
   metaHours: {
     color: 'white',
     fontSize: 12,
+    marginTop: 4,
   },
   addButton: {
     position: 'absolute',
