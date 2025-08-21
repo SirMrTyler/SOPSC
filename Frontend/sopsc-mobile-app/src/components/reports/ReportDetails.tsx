@@ -53,6 +53,7 @@ const ReportDetails: React.FC = () => {
   return (
     <ScreenContainer showBack title="SOPSC" showBottomBar={false}>
       <View style={styles.wrapper}>
+        <Text style={styles.pageTitle}>Chaplain: {report.chaplain}</Text>
         <View style={styles.card}>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
@@ -198,6 +199,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loading: {
+    color: 'white',
+  },
+  pageTitle: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
     color: 'white',
   },
   itemActions: {
