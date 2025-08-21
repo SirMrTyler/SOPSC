@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 const ReportDetails: React.FC = () => {
   const route = useRoute();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { reportId } = route.params as { reportId: number };
   const [report, setReport] = useState<Report | null>(null);
   const { user } = useAuth();
@@ -83,6 +83,66 @@ const ReportDetails: React.FC = () => {
             </View>
           )}
         </View>
+        <View style={styles.card}>
+          <View style={[styles.row, styles.rowCenter]}>
+            <Text style={styles.header}>Call-Out Contacts</Text>
+          </View>
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <Text style={styles.header}>Contact:</Text>
+              <Text style={styles.body}>{report.contactName}</Text>
+            </View>
+            <View style={styles.rowRight}>
+              <Text style={styles.header}>Phone:</Text>
+              <Text style={styles.body}>{report.pocPhone ?? 'N/A'}</Text>
+            </View>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.header}>Agency:</Text>
+            <Text style={styles.body}>
+              {[report.primaryAgency, report.secondaryAgency, report.otherAgency]
+                .filter(Boolean)
+                .join(', ')}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.header}>Service Type:</Text>
+            <Text style={styles.body}>{report.typeOfService}</Text>
+          </View>
+          {report.pocEmail && (
+            <View style={styles.row}>
+              <Text style={styles.header}>Email:</Text>
+              <Text style={styles.body}>{report.pocEmail}</Text>
+            </View>
+          )}
+          <View style={[styles.row, styles.rowCenter]}>
+            <Text style={styles.bodyCenter}>{report.addressDispatch}</Text>
+          </View>
+          {report.addressLine2Dispatch && (
+            <View style={[styles.row, styles.rowCenter]}>
+              <Text style={styles.bodyCenter}>{report.addressLine2Dispatch}</Text>
+            </View>
+          )}
+          <View style={[styles.row, styles.rowCenter]}>
+            <Text style={styles.bodyCenter}>
+              {`${report.cityDispatch}${
+                report.stateDispatch ? `, ${report.stateDispatch}` : ''
+              }${
+                report.postalCodeDispatch ? ` ${report.postalCodeDispatch}` : ''
+              }`}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <Text style={styles.header}>Date of Dispatch:</Text>
+              <Text style={styles.body}>{report.dateDispatch ?? 'N/A'}</Text>
+            </View>
+            <View style={styles.rowRight}>
+              <Text style={styles.header}>Commute Time:</Text>
+              <Text style={styles.body}>{report.commuteTime ?? 'N/A'}</Text>
+            </View>
+          </View>
+        </View>
       </View>
     </ScreenContainer>
   );
@@ -113,6 +173,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
+  rowCenter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   header: {
     color: 'white',
     fontWeight: 'bold',
@@ -122,6 +188,11 @@ const styles = StyleSheet.create({
   body: {
     color: 'white',
     fontSize: 14,
+  },
+  bodyCenter: {
+    color: 'white',
+    fontSize: 14,
+    textAlign: 'center',
   },
   loading: {
     color: 'white',
