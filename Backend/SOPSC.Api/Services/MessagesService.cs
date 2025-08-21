@@ -37,6 +37,7 @@ namespace SOPSC.Api.Services
                     MessageConversation mc = new MessageConversation
                     {
                         MessageId = reader.GetSafeInt32(startingIndex++),
+                        ChatId = reader.GetSafeInt32(startingIndex++),
                         OtherUserId = reader.GetSafeInt32(startingIndex++),
                         OtherUserName = reader.GetSafeString(startingIndex++),
                         OtherUserProfilePicturePath = reader.GetSafeString(startingIndex++),
@@ -58,18 +59,18 @@ namespace SOPSC.Api.Services
         }
 
 
-        public Paged<Message> GetConversationByUserId(int userId, int otherUserId, int pageIndex, int pageSize)
+        public Paged<Message> GetConversationByChatId(int userId, int chatId, int pageIndex, int pageSize)
         {
             List<Message> list = null;
             Paged<Message> pagedList = null;
             int totalCount = 0;
-            string procName = "[dbo].[Messages_SelectConversationByUserId]";
+            string procName = "[dbo].[Messages_SelectByChatId]";
 
             _dataProvider.ExecuteCmd(procName,
                 inputParamMapper: delegate (SqlParameterCollection param)
                 {
+                    param.AddWithValue("@ChatId", chatId);
                     param.AddWithValue("@UserId", userId);
-                    param.AddWithValue("@OtherUserId", otherUserId);
                     param.AddWithValue("@PageIndex", pageIndex);
                     param.AddWithValue("@PageSize", pageSize);
                 },
@@ -79,10 +80,9 @@ namespace SOPSC.Api.Services
                     Message message = new Message
                     {
                         MessageId = reader.GetSafeInt32(startingIndex++),
+                        ChatId = reader.GetSafeInt32(startingIndex++),
                         SenderId = reader.GetSafeInt32(startingIndex++),
                         SenderName = reader.GetSafeString(startingIndex++),
-                        RecipientId = reader.GetSafeInt32(startingIndex++),
-                        RecipientName = reader.GetSafeString(startingIndex++),
                         MessageContent = reader.GetSafeString(startingIndex++),
                         SentTimestamp = reader.GetSafeUtcDateTime(startingIndex++),
                         ReadTimestamp = reader.GetSafeUtcDateTimeNullable(startingIndex++),
@@ -104,6 +104,7 @@ namespace SOPSC.Api.Services
 
             return pagedList;
         }
+
         public void UpdateReadStatus(int messageId, bool isRead)
         {
             string procName = "[dbo].[Messages_UpdateReadStatus]";
@@ -116,7 +117,7 @@ namespace SOPSC.Api.Services
                 });
         }
 
-        public int SendMessage(int senderId, int recipientId, string messageContent)
+        public int SendMessage(int senderId, int chatId, string messageContent)
         {
             int messageId = 0;
             string procName = "[dbo].[Messages_Insert]";
@@ -124,8 +125,8 @@ namespace SOPSC.Api.Services
             _dataProvider.ExecuteNonQuery(procName,
                 delegate (SqlParameterCollection param)
                 {
+                    param.AddWithValue("@ChatId", chatId);
                     param.AddWithValue("@SenderId", senderId);
-                    param.AddWithValue("@RecipientId", recipientId);
                     param.AddWithValue("@MessageContent", messageContent);
 
                     SqlParameter idOut = new SqlParameter("@MessageId", SqlDbType.Int);
@@ -149,15 +150,14 @@ namespace SOPSC.Api.Services
                 param => { param.AddWithValue("@MessageIds", messageIds); });
         }
 
-        public void DeleteConversation(int userId, int otherUserId)
+        public void DeleteConversation(int chatId)
         {
             string procName = "[dbo].[Messages_DeleteConversation]";
 
             _dataProvider.ExecuteNonQuery(procName,
                 param =>
                 {
-                    param.AddWithValue("@UserId", userId);
-                    param.AddWithValue("@OtherUserId", otherUserId);
+                    param.AddWithValue("@ChatId", chatId);
                 });
         }
     }

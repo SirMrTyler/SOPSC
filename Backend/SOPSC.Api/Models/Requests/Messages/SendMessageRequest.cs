@@ -8,10 +8,10 @@ namespace SOPSC.Api.Models.Requests.Messages
     public class SendMessageRequest
     {
         /// <summary>
-        /// Gets or sets the recipient user's id.
+        /// Gets or sets the chat id.
         /// </summary>
         [Required]
-        public int RecipientId { get; set; }
+        public int ChatId { get; set; }
 
         /// <summary>
         /// Gets or sets the text content of the message.

@@ -60,7 +60,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
     const load = async (nextPage = 0) => {
         try {
-        const data = await getConversation(conversation.otherUserId, nextPage, pageSize);
+        const data = await getConversation(conversation.chatId, nextPage, pageSize);
         const paged = data?.item;
         if (paged) {
           let items: Message[] = await Promise.all(
@@ -121,7 +121,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
     useEffect(() => {
       if (!socket) return;
       const handler = async (msg: Message) => {
-        if (msg.senderId === conversation.otherUserId) {
+        if (msg.chatId === conversation.chatId && msg.senderId === conversation.otherUserId) {
           setMessages(prev => uniqueById([...prev, { ...msg, isRead: true }]));
           listRef.current?.scrollToEnd({ animated: true });
           try {
@@ -219,7 +219,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         if (!newMessage.trim() || sending || !user) return;
         setSending(true);
         try {
-            const result = await send(conversation.otherUserId, newMessage.trim());
+            const result = await send(conversation.chatId, newMessage.trim());
             
             const senderName =
               user?.firstName && user?.lastName
@@ -229,10 +229,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
             
             const message: Message = {
                 messageId: result?.item || Date.now(),
+                chatId: conversation.chatId,
                 senderId: user.userId,
                 senderName: senderName,
-                recipientId: conversation.otherUserId,
-                recipientName: conversation.otherUserName,
                 messageContent: newMessage.trim(),
                 sentTimestamp: new Date().toISOString(),
                 readTimestamp: null,

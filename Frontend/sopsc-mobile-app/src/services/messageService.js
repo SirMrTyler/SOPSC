@@ -18,12 +18,12 @@ const getAll = async () => {
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-const getConversation = async (otherUserId, pageIndex = 0, pageSize = 20) => {
+const getConversation = async (chatId, pageIndex = 0, pageSize = 20) => {
     const token = await helper.getToken();
     const deviceId = await helper.getDeviceId();
     const config = {
         method: 'GET',
-        url: `${endpoint}/${otherUserId}?pageIndex=${pageIndex}&pageSize=${pageSize}`,
+        url: `${endpoint}/${chatId}?pageIndex=${pageIndex}&pageSize=${pageSize}`,
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -33,13 +33,13 @@ const getConversation = async (otherUserId, pageIndex = 0, pageSize = 20) => {
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-const send = async (recipientId, messageContent) => {
+const send = async (chatId, messageContent) => {
     const token = await helper.getToken();
     const deviceId = await helper.getDeviceId();
     const config = {
         method: 'POST',
         url: endpoint,
-        data: { recipientId, messageContent },
+        data: { chatId, messageContent },
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -65,12 +65,12 @@ const deleteMessages = async (messageIds) => {
     return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
-const deleteConversation = async (otherUserId) => {
+const deleteConversation = async (chatId) => {
     const token = await helper.getToken();
     const deviceId = await helper.getDeviceId();
     const config = {
         method: 'DELETE',
-        url: `${endpoint}/conversation/${otherUserId}`,
+        url: `${endpoint}/conversation/${chatId}`,
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

@@ -1,0 +1,33 @@
+ALTER PROC [dbo].[Messages_SelectByChatId]
+        @ChatId INT,
+        @UserId INT,
+        @PageIndex INT,
+        @PageSize INT
+AS
+BEGIN
+        DECLARE @Offset INT = @PageIndex * @PageSize;
+
+        UPDATE dbo.Messages
+        SET
+                IsRead = 1,
+                ReadTimestamp = SYSDATETIME()
+        WHERE ChatId = @ChatId
+                AND SenderId <> @UserId
+                AND IsRead = 0;
+
+        SELECT
+                m.MessageId,
+                m.ChatId,
+                m.SenderId,
+                s.FirstName + ' ' + s.LastName AS SenderName,
+                m.MessageContent,
+                m.SentTimestamp,
+                m.ReadTimestamp,
+                m.IsRead,
+                COUNT(1) OVER() AS TotalCount
+        FROM dbo.Messages AS m
+        JOIN dbo.Users AS s ON m.SenderId = s.UserId
+        WHERE m.ChatId = @ChatId
+        ORDER BY m.SentTimestamp DESC
+        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+END;

@@ -1,5 +1,6 @@
 export interface MessageConversation {
   messageId: number;
+  chatId: number;
   otherUserId: number;
   otherUserName: string;
   otherUserProfilePicturePath: string;
@@ -12,10 +13,9 @@ export interface MessageConversation {
 
 export interface Message {
   messageId: number;
+  chatId: number;
   senderId: number;
   senderName: string;
-  recipientId: number;
-  recipientName: string;
   messageContent: string;
   sentTimestamp: string;
   readTimestamp: string | null;

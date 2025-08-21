@@ -40,7 +40,7 @@ const Messages: React.FC = () => {
         });
     };
 
-    const handleDeleteConversation = (otherUserId: number) => {
+    const handleDeleteConversation = (chatId: number) => {
         Alert.alert('Delete Conversation', 'Are you sure you want to delete this conversation?', [
             { text: 'Cancel', style: 'cancel' },
             {
@@ -48,9 +48,9 @@ const Messages: React.FC = () => {
                 style: 'destructive',
                 onPress: async () => {
                     try {
-                        await deleteConversation(otherUserId);
-                        setMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
-                        setFilteredMessages(prev => prev.filter(c => c.otherUserId !== otherUserId));
+                        await deleteConversation(chatId);
+                        setMessages(prev => prev.filter(c => c.chatId !== chatId));
+                        setFilteredMessages(prev => prev.filter(c => c.chatId !== chatId));
                     } catch (err) {
                         console.error('[Messages] Error deleting conversation:', err);
                     }
@@ -197,7 +197,7 @@ const Messages: React.FC = () => {
                                 onPress={() =>
                                     navigation.navigate('Conversation', { conversation: item })
                                 }
-                                onLongPress={() => handleDeleteConversation(item.otherUserId)}
+                                onLongPress={() => handleDeleteConversation(item.chatId)}
                             />
                         )}
                     />

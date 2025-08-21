@@ -1,7 +1,7 @@
 CREATE TABLE [dbo].[Messages](
 	[MessageId] [int] IDENTITY(1,1) NOT NULL,
+	[ChatId] [int] NOT NULL,
 	[SenderId] [int] NOT NULL,
-	[RecipientId] [int] NOT NULL,
 	[MessageContent] [nvarchar](max) NOT NULL,
 	[SentTimestamp] [datetime2](7) NOT NULL,
 	[ReadTimestamp] [datetime2](7) NULL,
@@ -23,18 +23,18 @@ GO
 ALTER TABLE [dbo].[Messages] ADD  CONSTRAINT [DF_Messages_IsLastMessageFromUser]  DEFAULT ((0)) FOR [IsLastMessageFromUser]
 GO
 
+ALTER TABLE [dbo].[Messages]  WITH CHECK ADD  CONSTRAINT [FK_Messages_ChatLookup] FOREIGN KEY([ChatId])
+REFERENCES [dbo].[ChatLookup] ([ChatId])
+GO
+
+ALTER TABLE [dbo].[Messages] CHECK CONSTRAINT [FK_Messages_ChatLookup]
+GO
+
 ALTER TABLE [dbo].[Messages]  WITH CHECK ADD  CONSTRAINT [FK_Messages_Users] FOREIGN KEY([SenderId])
 REFERENCES [dbo].[Users] ([UserId])
 GO
 
 ALTER TABLE [dbo].[Messages] CHECK CONSTRAINT [FK_Messages_Users]
-GO
-
-ALTER TABLE [dbo].[Messages]  WITH CHECK ADD  CONSTRAINT [FK_Messages_Users1] FOREIGN KEY([RecipientId])
-REFERENCES [dbo].[Users] ([UserId])
-GO
-
-ALTER TABLE [dbo].[Messages] CHECK CONSTRAINT [FK_Messages_Users1]
 GO
 
 

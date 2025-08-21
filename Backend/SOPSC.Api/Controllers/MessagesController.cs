@@ -48,15 +48,15 @@ namespace SOPSC.Api.Controllers
             return StatusCode(code, response);
         }
 
-        [HttpGet("{otherUserId:int}")]
-        public ActionResult<ItemResponse<Paged<Message>>> GetConversation(int otherUserId, int pageIndex, int pageSize)
+        [HttpGet("{chatId:int}")]
+        public ActionResult<ItemResponse<Paged<Message>>> GetConversation(int chatId, int pageIndex, int pageSize)
         {
             int code = 200;
             BaseResponse response = null;
             try
             {
                 int userId = _authService.GetCurrentUserId();
-                Paged<Message> paged = _messagesService.GetConversationByUserId(userId, otherUserId, pageIndex, pageSize);
+                Paged<Message> paged = _messagesService.GetConversationByChatId(userId, chatId, pageIndex, pageSize);
 
                 if (paged == null)
                 {
@@ -86,7 +86,7 @@ namespace SOPSC.Api.Controllers
             try
             {
                 int senderId = _authService.GetCurrentUserId();
-                int id = _messagesService.SendMessage(senderId, model.RecipientId, model.MessageContent);
+                int id = _messagesService.SendMessage(senderId, model.ChatId, model.MessageContent);
                 response = new ItemResponse<int> { Item = id };
             }
             catch (Exception ex)
@@ -140,15 +140,15 @@ namespace SOPSC.Api.Controllers
             return StatusCode(code, response);
         }
 
-        [HttpDelete("conversation/{otherUserId:int}")]
-        public ActionResult<SuccessResponse> DeleteConversation(int otherUserId)
+        [HttpDelete("conversation/{chatId:int}")]
+        public ActionResult<SuccessResponse> DeleteConversation(int chatId)
         {
             int code = 200;
             BaseResponse response = null;
             try
             {
                 int userId = _authService.GetCurrentUserId();
-                _messagesService.DeleteConversation(userId, otherUserId);
+                _messagesService.DeleteConversation(chatId);
                 response = new SuccessResponse();
             }
             catch (Exception ex)

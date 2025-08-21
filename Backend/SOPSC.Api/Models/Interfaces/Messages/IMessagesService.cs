@@ -14,9 +14,9 @@ namespace SOPSC.Api.Models.Interfaces.Messages
         /// <param name="userId">The id of the user.</param>
         /// <returns>List of message conversations.</returns>
         List<MessageConversation> GetConversations(int userId);
-        Paged<Message> GetConversationByUserId(int userId, int otherUserId, int pageIndex, int pageSize);
+        Paged<Message> GetConversationByChatId(int userId, int chatId, int pageIndex, int pageSize);
         void UpdateReadStatus(int messageId, bool isRead);
-        int SendMessage(int senderId, int recipientId, string messageContent);
+        int SendMessage(int senderId, int chatId, string messageContent);
 
         /// <summary>
         /// Deletes messages by their ids.
@@ -25,8 +25,8 @@ namespace SOPSC.Api.Models.Interfaces.Messages
         void DeleteMessages(string messageIds);
 
         /// <summary>
-        /// Deletes an entire conversation between two users.
+        /// Deletes an entire conversation by chat id.
         /// </summary>
-        void DeleteConversation(int userId, int otherUserId);
+        void DeleteConversation(int chatId);
     }
 }

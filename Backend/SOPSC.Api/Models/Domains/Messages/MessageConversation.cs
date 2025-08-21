@@ -6,6 +6,7 @@
     public class MessageConversation
     {
         public int MessageId { get; set; }
+        public int ChatId { get; set; }
         public int OtherUserId { get; set; }
         public string OtherUserName { get; set; }
         public string OtherUserProfilePicturePath { get; set; }
