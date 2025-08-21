@@ -117,8 +117,30 @@ namespace SOPSC.Api.Services
                 });
         }
 
-        public int SendMessage(int senderId, int chatId, string messageContent)
+        public MessageCreated SendMessage(int senderId, int chatId, int recipientId, string messageContent)
         {
+            // Ensure a chat exists between the users
+            if (chatId <= 0)
+            {
+                string chatProc = "[dbo].[ChatLookup_InsertOrGet]";
+                _dataProvider.ExecuteNonQuery(chatProc,
+                    delegate (SqlParameterCollection param)
+                    {
+                        SqlParameter chatOut = new SqlParameter("@ChatId", SqlDbType.Int)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        param.Add(chatOut);
+                        param.AddWithValue("@User1Id", senderId);
+                        param.AddWithValue("@User2Id", recipientId);
+                    },
+                    delegate (SqlParameterCollection returnCollection)
+                    {
+                        object cId = returnCollection["@ChatId"].Value;
+                        int.TryParse(cId.ToString(), out chatId);
+                    });
+            }
+
             int messageId = 0;
             string procName = "[dbo].[Messages_Insert]";
 
@@ -129,8 +151,10 @@ namespace SOPSC.Api.Services
                     param.AddWithValue("@SenderId", senderId);
                     param.AddWithValue("@MessageContent", messageContent);
 
-                    SqlParameter idOut = new SqlParameter("@MessageId", SqlDbType.Int);
-                    idOut.Direction = ParameterDirection.Output;
+                    SqlParameter idOut = new SqlParameter("@MessageId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
                     param.Add(idOut);
                 },
                 delegate (SqlParameterCollection returnCollection)
@@ -139,7 +163,7 @@ namespace SOPSC.Api.Services
                     int.TryParse(oId.ToString(), out messageId);
                 });
 
-            return messageId;
+            return new MessageCreated { Id = messageId, ChatId = chatId };
         }
 
         public void DeleteMessages(string messageIds)

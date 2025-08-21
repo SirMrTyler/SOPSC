@@ -86,8 +86,7 @@ namespace SOPSC.Api.Controllers
             try
             {
                 int senderId = _authService.GetCurrentUserId();
-                int id = _messagesService.SendMessage(senderId, model.ChatId, model.MessageContent);
-                MessageCreated created = new MessageCreated { Id = id, ChatId = model.ChatId };
+                MessageCreated created = _messagesService.SendMessage(senderId, model.ChatId, model.RecipientId, model.MessageContent);
                 response = new ItemResponse<MessageCreated> { Item = created };
             }
             catch (Exception ex)
