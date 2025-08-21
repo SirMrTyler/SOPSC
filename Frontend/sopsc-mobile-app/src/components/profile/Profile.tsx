@@ -22,6 +22,7 @@ const Profile: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [divisionId, setDivisionId] = useState('');
   const [profilePicturePath, setProfilePicturePath] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -31,6 +32,7 @@ const Profile: React.FC = () => {
       setLastName(user.lastName || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
+      setDivisionId(user.divisionId ? String(user.divisionId) : '');
       setProfilePicturePath(user.profilePicturePath || '');
     }
   }, [user]);
@@ -57,6 +59,7 @@ const Profile: React.FC = () => {
       lastName,
       email,
       phone,
+      divisionId: divisionId ? parseInt(divisionId, 10) : undefined,
       profilePicturePath,
       roleId: user.Roles[0]?.roleId || 4,
     });
@@ -70,6 +73,7 @@ const Profile: React.FC = () => {
       setLastName(user.lastName || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
+      setDivisionId(user.divisionId ? String(user.divisionId) : '');
       setProfilePicturePath(user.profilePicturePath || '');
     }
     setIsEditing(false);
@@ -159,6 +163,21 @@ const Profile: React.FC = () => {
               />
             ) : (
               <Text style={styles.sectionValue}>{phone}</Text>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Division</Text>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, styles.sectionInput]}
+                placeholder="Division"
+                placeholderTextColor="#888"
+                value={divisionId}
+                onChangeText={setDivisionId}
+              />
+            ) : (
+              <Text style={styles.sectionValue}>{divisionId}</Text>
             )}
           </View>
         </View>
