@@ -14,27 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "191358823571-3impgegl9okl0966fq9i528o2dm32qgk.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sirmrtyler.sopscmobileapp",
-            "certificate_hash": "e9774e2bbba009da5d6073625a5c1b995cc5d2f3"
-          }
-        },
-        {
           "client_id": "191358823571-6pnu9bstor643tvde54kn71r9ecqbbls.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.sirmrtyler.sopscmobileapp",
             "certificate_hash": "5def6da84472d3db3c7bd4fa6e3c7b03b44d516b"
-          }
-        },
-        {
-          "client_id": "191358823571-dqspv1ar1fpbdd764d5qo2kpauubpomm.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sirmrtyler.sopscmobileapp",
-            "certificate_hash": "8022d34a794ec50aaf85144b97b689659e9eb8c4"
           }
         },
         {
@@ -74,22 +58,6 @@
         }
       },
       "oauth_client": [
-        {
-          "client_id": "191358823571-4s8on2na8vb16vobfmm82c6jlp72onii.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sirmrtyler.sopscmobileapp.dev",
-            "certificate_hash": "e9774e2bbba009da5d6073625a5c1b995cc5d2f3"
-          }
-        },
-        {
-          "client_id": "191358823571-r1ct5cg4hnm76pidac077h95t67381j2.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sirmrtyler.sopscmobileapp.dev",
-            "certificate_hash": "8022d34a794ec50aaf85144b97b689659e9eb8c4"
-          }
-        },
         {
           "client_id": "191358823571-t3mpu20s0cnerl6v4ennhro0md96t4cp.apps.googleusercontent.com",
           "client_type": 1,
