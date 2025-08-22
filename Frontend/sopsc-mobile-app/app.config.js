@@ -45,7 +45,7 @@ const getAppName = () => {
 export default ({ config }) => ({
   ...config,
   name: getAppName(),
-  plugins: [...(config.plugins || [], "expo-notifications")],
+  plugins: [...(config.plugins || []), "expo-notifications"],
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
