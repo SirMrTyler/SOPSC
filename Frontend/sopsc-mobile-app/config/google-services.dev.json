@@ -1,0 +1,100 @@
+{
+  "project_info": {
+    "project_number": "191358823571",
+    "project_id": "sopsc-19c4c",
+    "storage_bucket": "sopsc-19c4c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191358823571:android:27c59032d159dfa3e93166",
+        "android_client_info": {
+          "package_name": "com.sirmrtyler.sopscmobileapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "191358823571-6pnu9bstor643tvde54kn71r9ecqbbls.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sirmrtyler.sopscmobileapp",
+            "certificate_hash": "e9774e2bbba009da5d6073625a5c1b995cc5d2f3"
+          }
+        },
+        {
+          "client_id": "191358823571-5d3nohpk3g2c51j1cj3hs0r09mi8evcq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvD9cL8kNesD64uKsGCFnxyV3tOeObwFk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "191358823571-5d3nohpk3g2c51j1cj3hs0r09mi8evcq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "191358823571-l1akoht5jiqfpjovtlei5uqqgo934gfb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sirmrtyler.sopscmobileapp",
+                "app_store_id": "6742360277"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191358823571:android:0b864d388f977d43e93166",
+        "android_client_info": {
+          "package_name": "com.sopsc.sopscmobileapp.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "191358823571-r1ct5cg4hnm76pidac077h95t67381j2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sopsc.sopscmobileapp.dev",
+            "certificate_hash": "e9774e2bbba009da5d6073625a5c1b995cc5d2f3"
+          }
+        },
+        {
+          "client_id": "191358823571-5d3nohpk3g2c51j1cj3hs0r09mi8evcq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvD9cL8kNesD64uKsGCFnxyV3tOeObwFk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "191358823571-5d3nohpk3g2c51j1cj3hs0r09mi8evcq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "191358823571-l1akoht5jiqfpjovtlei5uqqgo934gfb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sirmrtyler.sopscmobileapp",
+                "app_store_id": "6742360277"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
