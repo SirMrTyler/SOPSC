@@ -16,6 +16,9 @@ const io = new Server(server, {
 
 const expo = new Expo();
 
+// Map of userId -> number of active sockets
+const activeSockets = {};
+
 async function getPushTokens(userId) {
   const baseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
   try {
@@ -69,7 +72,20 @@ io.on('connection', socket => {
 
   if (userId) {
     socket.join(`user:${userId}`);
-    console.log(`[socket.io] Joined room user:${userId}`);
+    activeSockets[userId] = (activeSockets[userId] || 0) + 1;
+    console.log(
+      `[socket.io] Joined room user:${userId}; active connections=${activeSockets[userId]}`
+    );
+
+    socket.on('disconnect', () => {
+      activeSockets[userId] = (activeSockets[userId] || 1) - 1;
+      if (activeSockets[userId] <= 0) {
+        delete activeSockets[userId];
+      }
+      console.log(
+        `[socket.io] socket.id=${socket.id} disconnected; user:${userId} connections=${activeSockets[userId] || 0}`
+      );
+    });
   }
 
   // Handle direct message
@@ -80,8 +96,15 @@ io.on('connection', socket => {
     if (recipientId) {
       io.to(`user:${recipientId}`).emit('newDirectMessage', payload);
 
-      const tokens = await getPushTokens(recipientId);
-      await Promise.all(tokens.map(token => sendPushWithRetry(token, messageContent)));
+      const active = activeSockets[recipientId] || 0;
+      if (active === 0) {
+        const tokens = await getPushTokens(recipientId);
+        await Promise.all(tokens.map(token => sendPushWithRetry(token, messageContent)));
+      } else {
+        console.log(
+          `[sendDirectMessage] recipient ${recipientId} has ${active} active socket(s); skipping push`
+        );
+      }
     }
   });
 
