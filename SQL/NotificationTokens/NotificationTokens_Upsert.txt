@@ -1,0 +1,32 @@
+ALTER PROC [dbo].[NotificationTokens_Upsert]
+        @UserId INT,
+        @ExpoPushToken NVARCHAR(255) = NULL,
+        @DeviceToken NVARCHAR(255) = NULL,
+        @Platform NVARCHAR(50)
+AS
+BEGIN
+        IF EXISTS (SELECT 1 FROM dbo.NotificationTokens WHERE UserId = @UserId)
+        BEGIN
+                UPDATE dbo.NotificationTokens
+                SET ExpoPushToken = @ExpoPushToken,
+                    DeviceToken = @DeviceToken,
+                    Platform = @Platform,
+                    UpdatedAt = SYSUTCDATETIME()
+                WHERE UserId = @UserId;
+        END
+        ELSE
+        BEGIN
+                INSERT INTO dbo.NotificationTokens
+                        (UserId,
+                        ExpoPushToken,
+                        DeviceToken,
+                        Platform,
+                        UpdatedAt)
+                VALUES
+                        (@UserId,
+                        @ExpoPushToken,
+                        @DeviceToken,
+                        @Platform,
+                        SYSUTCDATETIME());
+        END
+END
