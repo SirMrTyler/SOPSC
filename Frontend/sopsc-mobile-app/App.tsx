@@ -29,6 +29,7 @@ import Profile from './src/components/profile/Profile'; // TODO: Make Profile co
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SocketProvider } from './src/hooks/SocketContext';
 import Posts from './src/components/posts/Post';
+import { usePushNotifications } from './src/hooks/usePushNotifications';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -63,6 +64,7 @@ const AppTheme = {
 
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
+  usePushNotifications(user);
 
   return (
     <SafeAreaProvider>

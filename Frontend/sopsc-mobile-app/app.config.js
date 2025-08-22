@@ -45,6 +45,7 @@ const getAppName = () => {
 export default ({ config }) => ({
   ...config,
   name: getAppName(),
+  plugins: [...(config.plugins || [], "expo-notifications")],
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
@@ -52,6 +53,10 @@ export default ({ config }) => ({
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
+    googleServicesFile:
+      variant === "development"
+        ? "./config/google-services.dev.json"
+        : "./config/google-services.prod.json",
   },
   extra: {
     // Originally You Didn't Have This //
