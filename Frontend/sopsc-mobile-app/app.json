@@ -19,7 +19,7 @@
         "projectId": "a905a038-d584-4e7e-a7f9-cd2091702dc1"
       },
       "APP_VARIANT": "production",
-      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "203699688611-22395m5an9cgtfldgrmvvfok5uk21dva.apps.googleusercontent.com",
+      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "191358823571-lu4grtd5hqslue3h04m2hjof1jsb3j4d.apps.googleusercontent.com",
       "EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
       "EXPO_PUBLIC_SOCKET_URL": "https://sopsc-realtime-bgeaz4httczeh2g6j.canadacentral-01.azurewebsites.net"
     },
