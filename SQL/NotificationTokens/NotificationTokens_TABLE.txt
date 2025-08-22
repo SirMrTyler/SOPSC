@@ -1,0 +1,22 @@
+CREATE TABLE [dbo].[NotificationTokens](
+        [UserId] [int] NOT NULL,
+        [ExpoPushToken] [nvarchar](255) NULL,
+        [DeviceToken] [nvarchar](255) NULL,
+        [Platform] [nvarchar](50) NOT NULL,
+        [UpdatedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_NotificationTokens] PRIMARY KEY CLUSTERED
+(
+        [UserId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[NotificationTokens] ADD  CONSTRAINT [DF_NotificationTokens_UpdatedAt]  DEFAULT (sysutcdatetime()) FOR [UpdatedAt]
+GO
+
+ALTER TABLE [dbo].[NotificationTokens]  WITH CHECK ADD  CONSTRAINT [FK_NotificationTokens_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+
+ALTER TABLE [dbo].[NotificationTokens] CHECK CONSTRAINT [FK_NotificationTokens_Users]
+GO
