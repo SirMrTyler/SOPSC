@@ -12,7 +12,7 @@
       ]
     ],
     "android": {
-      "package": "com.sirmrtyler.sopscmobileapp.dev"
+      "package": "com.sirmrtyler.sopscmobileapp"
     },
     "extra": {
       "eas": {
