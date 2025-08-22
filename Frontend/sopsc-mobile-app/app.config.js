@@ -41,6 +41,8 @@ const getAppName = () => {
   return 'com.sirmrtyler.sopscmobileapp';
 };
 
+console.log("📦 Package name for this build:", getUniqueIdentifier());
+
 // The parameter config is destructured to copy all existing properties from app.json
 export default ({ config }) => ({
   ...config,
