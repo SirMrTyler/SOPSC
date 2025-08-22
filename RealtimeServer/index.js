@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const { Expo } = require('expo-server-sdk');
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,55 @@ const io = new Server(server, {
   },
 });
 
+const expo = new Expo();
+
+async function getPushTokens(userId) {
+  const baseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
+  try {
+    const res = await fetch(`${baseUrl}/api/notifications/token/${userId}`);
+    if (!res.ok) {
+      console.error(`[push] Failed to fetch tokens for user ${userId}: status ${res.status}`);
+      return [];
+    }
+    const data = await res.json();
+    return data.items?.map(t => t.expoPushToken).filter(Boolean) || [];
+  } catch (err) {
+    console.error(`[push] Error fetching tokens for user ${userId}:`, err);
+    return [];
+  }
+}
+
+async function sendPushWithRetry(expoPushToken, messageContent) {
+  if (!Expo.isExpoPushToken(expoPushToken)) {
+    console.warn(`[push] Invalid Expo push token: ${expoPushToken}`);
+    return;
+  }
+
+  const message = {
+    to: expoPushToken,
+    title: 'New message',
+    body: messageContent,
+  };
+
+  let delay = 1000;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const ticket = await expo.sendPushNotificationsAsync([message]);
+      console.log(`[push] Sent to ${expoPushToken}`, ticket);
+      return;
+    } catch (err) {
+      if (err?.statusCode === 429 && attempt < 4) {
+        console.warn(`[push] Rate limited sending to ${expoPushToken}. retrying in ${delay}ms`);
+        await new Promise(res => setTimeout(res, delay));
+        delay *= 2;
+      } else {
+        console.error(`[push] Failed to send to ${expoPushToken}`, err);
+        return;
+      }
+    }
+  }
+}
+
 io.on('connection', socket => {
   const { userId } = socket.handshake.query;
   console.log(`[socket.io] New connection: socket.id=${socket.id}, userId=${userId}`);
@@ -23,12 +73,15 @@ io.on('connection', socket => {
   }
 
   // Handle direct message
-  socket.on('sendDirectMessage', payload => {
+  socket.on('sendDirectMessage', async payload => {
     const { recipientId, senderId, messageContent } = payload;
     console.log(`[sendDirectMessage] ${senderId} → ${recipientId}: ${messageContent}`);
 
     if (recipientId) {
       io.to(`user:${recipientId}`).emit('newDirectMessage', payload);
+
+      const tokens = await getPushTokens(recipientId);
+      await Promise.all(tokens.map(token => sendPushWithRetry(token, messageContent)));
     }
   });
 
