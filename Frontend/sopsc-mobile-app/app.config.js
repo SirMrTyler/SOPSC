@@ -19,14 +19,14 @@ const IS_PREVIEW = variant === 'preview';
 const getUniqueIdentifier = () => {
 
     if (IS_DEV) {
-        return 'com.sopsc.sopscmobileapp.dev';
+        return 'com.sirmrtyler.sopscmobileapp.dev';
     }
 
     if (IS_PREVIEW) {
-        return 'com.sopsc.sopscmobileapp.preview';
+        return 'com.sirmrtyler.sopscmobileapp.preview';
     }
 
-    return 'com.sopsc.sopscmobile.app';
+    return 'com.sirmrtyler.sopscmobileapp';
 }
 
 const getAppName = () => {
@@ -35,10 +35,10 @@ const getAppName = () => {
   }
 
   if (IS_PREVIEW) {
-    return 'com.sopsc.sopscmobileapp.preview';
+    return 'com.sirmrtyler.sopscmobileapp.preview';
   }
 
-  return 'com.sopsc.sopscmobile.app';
+  return 'com.sirmrtyler.sopscmobileapp';
 };
 
 // The parameter config is destructured to copy all existing properties from app.json
