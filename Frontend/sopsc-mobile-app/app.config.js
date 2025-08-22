@@ -26,7 +26,7 @@ const getUniqueIdentifier = () => {
         return 'com.sopsc.sopscmobileapp.preview';
     }
 
-    return 'com.sopsc.sopscmobileapp';
+    return 'com.sopsc.sopscmobile.app';
 }
 
 const getAppName = () => {
@@ -38,7 +38,7 @@ const getAppName = () => {
     return 'com.sopsc.sopscmobileapp.preview';
   }
 
-  return 'com.sopsc.sopscmobileapp';
+  return 'com.sopsc.sopscmobile.app';
 };
 
 // The parameter config is destructured to copy all existing properties from app.json
