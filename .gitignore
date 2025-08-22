@@ -18,6 +18,10 @@ dist/
 build/
 PROMPTS.txt
 
+# React Native native projects
+Frontend/sopsc-mobile-app/android/
+Frontend/sopsc-mobile-app/ios/
+
 # Android
 android/.gradle/
 android/app/build/
