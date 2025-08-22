@@ -1,3 +1,4 @@
+// This is a boilerplate file used to register a provider for push notifications //
 // Library imports
 import React, {useEffect, useState, useContext, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
