@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { register as registerUser } from '../../services/userService.js';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
+import Constants from 'expo-constants';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -23,12 +24,20 @@ const Register: React.FC<RegisterProps> = ({ navigation, onRegisterSuccess }) =>
     const [googleLoading, setGoogleLoading] = useState(false);
     const { user, signInGoogle } = useAuth();
 
+const extra = Constants.expoConfig?.extra || {};
+const WEB_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ??
+  (extra.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID as string | undefined);
+
 useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-      offlineAccess: true,
-    });
-  }, []);
+  if (__DEV__) { console.log("📦 Google Web Client ID:", WEB_CLIENT_ID?.slice(0, 16)); }
+
+  GoogleSignin.configure({
+    webClientId: WEB_CLIENT_ID,
+    iosClientId: '203699688611-5uibr1f84mjjdn3b80920r21p8vuohho.apps.googleusercontent.com',
+    offlineAccess: true,
+  });
+}, []);
 
   useEffect(() => {
     if (user) {

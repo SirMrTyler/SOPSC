@@ -20,10 +20,16 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   const { user, loading, signInEmail, signInGoogle } = useAuth();
 
   const config = Constants.expoConfig?.extra || {};
+
+  const WEB_CLIENT_ID =
+    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ??
+    (config.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID as string | undefined);
   
   useEffect(() => {
+    if (__DEV__) { console.log("📦 Google Web Client ID:", WEB_CLIENT_ID?.slice(0, 16)); }
+
     GoogleSignin.configure({
-      webClientId: config.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      webClientId: WEB_CLIENT_ID,
       iosClientId: '203699688611-5uibr1f84mjjdn3b80920r21p8vuohho.apps.googleusercontent.com',
       offlineAccess: true,
     });
