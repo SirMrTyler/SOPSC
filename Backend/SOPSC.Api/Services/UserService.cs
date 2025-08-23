@@ -166,7 +166,7 @@ namespace SOPSC.Api.Services
             return userId;
         }
 
-        public int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId)
+        public async Task<int> GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId)
         {
             _logger.LogInformation($"GoogleSignIn request: {JsonConvert.SerializeObject(model)}");
 
@@ -190,11 +190,11 @@ namespace SOPSC.Api.Services
                 GoogleJsonWebSignature.Payload payload;
                 try
                 {
-                    payload = GoogleJsonWebSignature
+                    payload = await GoogleJsonWebSignature
                         .ValidateAsync(model.IdToken, new GoogleJsonWebSignature.ValidationSettings
                         {
                             Audience = audience
-                        }).GetAwaiter().GetResult();
+                        });
                 }
                 catch (InvalidJwtException ex)
                 {
@@ -293,7 +293,7 @@ namespace SOPSC.Api.Services
                     Roles = new List<string> { roleName }
                 };
 
-                token = _authenticationService.GenerateJwtToken(userAuth, deviceId).GetAwaiter().GetResult();
+                token = await _authenticationService.GenerateJwtToken(userAuth, deviceId);
 
                 // Save token to UserTokens table
                 _tokenService.CreateToken(token, userId, deviceId);

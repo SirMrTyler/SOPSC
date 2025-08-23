@@ -155,7 +155,7 @@ public class UsersController : BaseApiController
 
     [AllowAnonymous]
     [HttpPost("google")]
-    public ActionResult<ItemResponse<object>> GoogleSignIn(GoogleSignInRequest model)
+    public async Task<ActionResult<ItemResponse<object>>> GoogleSignIn(GoogleSignInRequest model)
     {
         int iCode = 200;
         BaseResponse response = null;
@@ -171,7 +171,7 @@ public class UsersController : BaseApiController
             string token;
             string deviceId;
 
-            int userId = _userService.GoogleSignIn(model, out token, out deviceId);
+            int userId = await _userService.GoogleSignIn(model, out token, out deviceId);
 
             if (userId == 0)
             {

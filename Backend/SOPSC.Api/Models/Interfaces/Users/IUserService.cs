@@ -55,7 +55,7 @@ namespace SOPSC.Api.Models.Interfaces.Users
         /// <param name="roleId">Role identifier.</param>
         /// <returns>List of user ids matching that role.</returns>
         List<int> GetUserIdsByRole(int roleId);
-        int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId);
+        Task<int> GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId);
         Task<string> LogInAsync(string email, string password, string? deviceId);
         Task LogOutAsync(UserLogOutRequest request);
         void ConfirmUser(int userId);
