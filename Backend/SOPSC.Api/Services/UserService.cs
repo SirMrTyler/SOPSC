@@ -11,6 +11,7 @@ using SOPSC.Api.Data.Interfaces;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
 
 namespace SOPSC.Api.Services
 {
@@ -186,11 +187,20 @@ namespace SOPSC.Api.Services
                 }
 
                 // Validate the Google IdToken
-                GoogleJsonWebSignature.Payload payload = GoogleJsonWebSignature
-                    .ValidateAsync(model.IdToken, new GoogleJsonWebSignature.ValidationSettings
-                    {
-                        Audience = audience
-                    }).GetAwaiter().GetResult();
+                GoogleJsonWebSignature.Payload payload;
+                try
+                {
+                    payload = GoogleJsonWebSignature
+                        .ValidateAsync(model.IdToken, new GoogleJsonWebSignature.ValidationSettings
+                        {
+                            Audience = audience
+                        }).GetAwaiter().GetResult();
+                }
+                catch (InvalidJwtException ex)
+                {
+                    _logger.LogError(ex, "Invalid Google IdToken.");
+                    throw new UnauthorizedAccessException("Invalid Google IdToken.", ex);
+                }
 
                 // Extract user info from the payload
                 string email = payload.Email;
