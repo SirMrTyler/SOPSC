@@ -8,6 +8,7 @@ using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Requests.Users;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -189,6 +190,12 @@ public class UsersController : BaseApiController
                     }
                 };
             }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            iCode = 401;
+            response = new ErrorResponse("Invalid Google token.");
         }
         catch (Exception ex)
         {
