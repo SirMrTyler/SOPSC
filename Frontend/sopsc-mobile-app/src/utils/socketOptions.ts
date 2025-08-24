@@ -9,6 +9,7 @@ export function getSocketOptions(userId?: string): Partial<ManagerOptions & Sock
   const options: Partial<ManagerOptions & SocketOptions> = {
     extraHeaders: headers,
     transportOptions: { polling: { extraHeaders: headers } },
+    transports: ['websocket'],
   };
   if (userId) {
     options.query = { userId };
