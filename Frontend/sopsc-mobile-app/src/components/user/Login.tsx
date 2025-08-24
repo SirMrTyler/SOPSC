@@ -20,7 +20,6 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   const { user, loading, signInEmail, signInGoogle } = useAuth();
 
   const config = Constants.expoConfig?.extra || {};
-  console.log("✅ Loaded Config:", config);
 
   useEffect(() => {
     const webId = Constants.expoConfig?.extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
@@ -29,7 +28,6 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
       iosClientId: config.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
       offlineAccess: true,
     });
-    console.log("Google Sign In Configured with:", webId)
   }, []);
 
   useEffect(() => {
