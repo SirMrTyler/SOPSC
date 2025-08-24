@@ -1,21 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getSocketUrl } from '../utils/socketUrl';
+import { getSocketOptions } from '../utils/socketOptions';
 
 export const useSocket = (user: any) => {
     const socketRef = useRef<Socket | null>(null);
-    const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://192.168.1.175:3001'; // Fallback for local development
+    const socketUrl = getSocketUrl();
 
     useEffect(() => {
         if (!user || socketRef.current) return;
         
 
-        // Establish socket connection with userId query
-        socketRef.current = io(socketUrl, {
-        query: {
-            userId: user?.userId?.toString(),
-        },
-        transports: ['websocket'],
-        });
+        // Establish socket connection with userId query and ngrok headers
+        socketRef.current = io(
+            socketUrl,
+            getSocketOptions(user?.userId?.toString()),
+        );
 
         /* Connection status logs
         socketRef.current.on('connect', () => {
