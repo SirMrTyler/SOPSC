@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getSocketUrl } from '../utils/socketUrl';
 
 export const useSocket = (user: any) => {
     const socketRef = useRef<Socket | null>(null);
-    const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://192.168.1.175:3001'; // Fallback for local development
+    const socketUrl = getSocketUrl();
 
     useEffect(() => {
         if (!user || socketRef.current) return;
@@ -14,7 +15,6 @@ export const useSocket = (user: any) => {
         query: {
             userId: user?.userId?.toString(),
         },
-        transports: ['websocket'],
         });
 
         /* Connection status logs
