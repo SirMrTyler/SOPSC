@@ -175,11 +175,18 @@ namespace SOPSC.Api.Services
 
             try
             {
-                var audience = new List<string>
+                var audience = new List<string>();
+                var webClientIds = _configuration
+                    .GetSection("GoogleOAuth:WebClientId")
+                    .Get<string[]>();
+                if (webClientIds != null)
                 {
-                    _configuration["GoogleOAuth:WebClientId"]
-                };
-                var androidClientIds = _configuration.GetSection("GoogleOAuth:AndroidClientIds").Get<string[]>();
+                    audience.AddRange(webClientIds);
+                }
+
+                var androidClientIds = _configuration
+                    .GetSection("GoogleOAuth:AndroidClientIds")
+                    .Get<string[]>();
                 if (androidClientIds != null)
                 {
                     audience.AddRange(androidClientIds);
