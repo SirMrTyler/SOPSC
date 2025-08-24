@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import axios from "axios";
+import { getToken, getDeviceId } from "../services/serviceHelpers";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -26,23 +28,37 @@ export const usePushNotifications = (user: any) => {
     ) {
       const maxRetries = 3;
       const payload = { expoPushToken, deviceToken, platform };
+      const api = axios.create({
+        baseURL: process.env.EXPO_PUBLIC_API_URL,
+      });
+      const token = await getToken();
+      const deviceId = await getDeviceId();
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          const response = await fetch("/api/notifications/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+          await api.post("/notifications/token", payload, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+              DeviceId: deviceId,
+            },
           });
-
-          if (!response.ok) {
-            throw new Error(`Request failed with status ${response.status}`);
-          }
 
           return;
         } catch (error) {
           if (attempt === maxRetries) {
-            console.error("Failed to send push tokens", error);
+            if (axios.isAxiosError(error)) {
+              if (error.response) {
+                console.error(
+                  `Request failed with status ${error.response.status}`,
+                  error.response.data
+                );
+              } else {
+                console.error("Network error sending push tokens", error.message);
+              }
+            } else {
+              console.error("Failed to send push tokens", error);
+            }
           } else {
             await new Promise((resolve) =>
               setTimeout(resolve, 1000 * attempt)
