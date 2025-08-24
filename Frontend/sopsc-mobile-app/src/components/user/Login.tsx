@@ -20,13 +20,16 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   const { user, loading, signInEmail, signInGoogle } = useAuth();
 
   const config = Constants.expoConfig?.extra || {};
-  
+  console.log("✅ Loaded Config:", config);
+
   useEffect(() => {
+    const webId = Constants.expoConfig?.extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
     GoogleSignin.configure({
-      webClientId: config.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      webClientId: webId,
       iosClientId: config.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
       offlineAccess: true,
     });
+    console.log("Google Sign In Configured with:", webId)
   }, []);
 
   useEffect(() => {
@@ -35,47 +38,46 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
     }
   }, [user]);
 
-  const googleSignIn = async () => {
-    if (googleLoading) {
-      return;
-    }
-    setGoogleLoading(true);
-    try {
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const userInfo: any = await GoogleSignin.signIn();
-      const idToken = userInfo.idToken;
+  const withTimeout = <T,>(p: Promise<T>, ms: number, label: string) =>
+  Promise.race([
+    p,
+    new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`${label} timed out`)), ms)),
+  ]);
 
-      const googleUser =
-        userInfo.user || userInfo.data?.user || userInfo.data || {};
+const googleSignIn = async () => {
+  if (googleLoading) return;
+  setGoogleLoading(true);
+  try {
+    console.log('[1] hasPlayServices...');
+    await withTimeout(
+      GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true }),
+      8000,
+      'hasPlayServices'
+    );
+    console.log('[2] signIn()...');
+    const userInfo: any = await withTimeout(GoogleSignin.signIn(), 20000, 'signIn');
 
-      const {
-        givenName = '',
-        familyName = '',
-        email = '',
-        photo = '',
-      } = googleUser;
+    console.log('[3] getTokens()...');
+    const { idToken } = await withTimeout(GoogleSignin.getTokens(), 8000, 'getTokens');
+    if (!idToken) throw new Error('No idToken');
 
-      if (!idToken) throw new Error('No ID token returned from Google Sign In');
-      await signInGoogle(idToken);
-      onLoginSuccess({ firstName: givenName, lastName: familyName, email, photo });
-    } catch (error: any) {
-        if (error.code === statusCodes.IN_PROGRESS) {
-          return;
-        }
-        console.log("✅ Runtime Config:", config);
-        console.error(
-          `\n
-          ----------------------------------
-          \nAndroid Package Name: ${Constants.expoConfig?.android?.package}
-          \nGoogle Sign In Error Code: ${error.code}
-          \nGoogle Sign In Error Message: ${JSON.stringify(error.message)}
-          \nGoogle Sign In Error: ${JSON.stringify(error)}`
-        );
-        alert(`Google Sign In Error: ${JSON.stringify(error.message)}`);
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
+    const { givenName = '', familyName = '', email = '', photo = '' } =
+      userInfo?.user ?? userInfo?.data?.user ?? {};
+
+    // ===== DIAGNOSTIC SWITCH =====
+    // Temporarily comment out the next 2 lines to see if the hang is your backend call.
+    console.log('[4] signInGoogle() to API...');
+    await withTimeout(signInGoogle(idToken), 15000, 'signInGoogle(backend)');
+
+    console.log('[5] onLoginSuccess()');
+    onLoginSuccess({ firstName: givenName, lastName: familyName, email, photo });
+  } catch (e: any) {
+    console.log('Google Sign In Error:', JSON.stringify(e, Object.getOwnPropertyNames(e)));
+    alert(`Google Sign In Error: ${e.code ?? ''} ${e.message ?? ''}`);
+  } finally {
+    setGoogleLoading(false);
+  }
+};
 
   if (loading) {
     return (
