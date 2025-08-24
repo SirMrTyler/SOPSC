@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { AuthUser } from './useAuth';
+import { getSocketUrl } from '../utils/socketUrl';
 
 export const SocketContext = createContext<Socket | null>(null);
 
@@ -11,13 +12,12 @@ interface SocketProviderProps {
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ user, children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://192.168.1.175:3001';
+  const socketUrl = getSocketUrl();
 
   useEffect(() => {
     if (!user?.userId) return;
     const newSocket = io(socketUrl, {
       query: { userId: user.userId.toString() },
-      transports: ['websocket'],
     });
 
     newSocket.on('connect_error', err => {
