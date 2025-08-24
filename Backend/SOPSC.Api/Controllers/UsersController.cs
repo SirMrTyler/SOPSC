@@ -8,6 +8,7 @@ using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Requests.Users;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -225,9 +226,12 @@ public class UsersController : BaseApiController
                 return StatusCode(statusCode, response);
             }
 
-            var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(userToken.Token);
-            if (jwt.ValidTo < DateTime.UtcNow)
+            ClaimsPrincipal principal;
+            try
+            {
+                principal = _authenticationService.ValidateToken(userToken.Token);
+            }
+            catch (SecurityTokenException)
             {
                 _tokenService.DeleteTokenAndDeviceId(userToken.Token, deviceId);
                 statusCode = 401;
@@ -237,7 +241,7 @@ public class UsersController : BaseApiController
 
             UserWithRole user = _userService.GetUserWithRoleById(userToken.UserId);
 
-            var existingRole = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            var existingRole = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             string tokenToReturn = userToken.Token;
 
             if (existingRole != user.RoleName)

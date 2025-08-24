@@ -28,5 +28,16 @@ namespace SOPSC.Api.Services.Auth.Interfaces
         /// </remarks>
         /// <returns></returns>
         IUserAuthData GetCurrentUser();
+
+        /// <summary>
+        /// Validates a JWT and returns the associated <see cref="ClaimsPrincipal"/>.
+        /// </summary>
+        /// <remarks>
+        /// Definition Location: SOPSC.Api.Services.Auth
+        /// </remarks>
+        /// <param name="token">The JWT to validate.</param>
+        /// <returns>The <see cref="ClaimsPrincipal"/> extracted from the token.</returns>
+        /// <exception cref="Microsoft.IdentityModel.Tokens.SecurityTokenException">Thrown when validation fails.</exception>
+        ClaimsPrincipal ValidateToken(string token);
     }
 }

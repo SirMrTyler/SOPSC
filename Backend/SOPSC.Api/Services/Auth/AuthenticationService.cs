@@ -94,6 +94,32 @@ namespace SOPSC.Api.Services.Auth
         }
 
         /// <summary>
+        /// Validates the provided JWT and returns the claims principal.
+        /// </summary>
+        /// <param name="token">The JWT to validate.</param>
+        /// <returns>The <see cref="ClaimsPrincipal"/> extracted from the token.</returns>
+        /// <exception cref="SecurityTokenException">Thrown when validation fails.</exception>
+        public ClaimsPrincipal ValidateToken(string token)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidAudience = _configuration["Jwt:Audience"],
+                IssuerSigningKey = key,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
+
+            return principal;
+        }
+
+        /// <summary>
         /// Checks if current user is logged in by validating the Authorization header token.
         /// </summary>
         /// <remarks>
