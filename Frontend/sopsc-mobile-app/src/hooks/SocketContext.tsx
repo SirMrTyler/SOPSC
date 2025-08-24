@@ -4,6 +4,7 @@ import { AuthUser } from './useAuth';
 import { getSocketUrl } from '../utils/socketUrl';
 import { getSocketOptions } from '../utils/socketOptions';
 
+
 export const SocketContext = createContext<Socket | null>(null);
 
 interface SocketProviderProps {

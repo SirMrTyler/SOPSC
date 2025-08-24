@@ -10,7 +10,6 @@ export const useSocket = (user: any) => {
     useEffect(() => {
         if (!user || socketRef.current) return;
         
-
         // Establish socket connection with userId query and ngrok headers
         socketRef.current = io(
             socketUrl,
