@@ -2,6 +2,8 @@ import React, { createContext, useEffect, useState, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { AuthUser } from './useAuth';
 import { getSocketUrl } from '../utils/socketUrl';
+import { getSocketOptions } from '../utils/socketOptions';
+
 
 export const SocketContext = createContext<Socket | null>(null);
 
@@ -16,9 +18,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ user, children }
 
   useEffect(() => {
     if (!user?.userId) return;
-    const newSocket = io(socketUrl, {
-      query: { userId: user.userId.toString() },
-    });
+    const newSocket = io(
+      socketUrl,
+      getSocketOptions(user.userId.toString()),
+    );
 
     newSocket.on('connect_error', err => {
       console.error('[Socket.IO] Connection error:', err.message);
