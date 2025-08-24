@@ -3,6 +3,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 const variant = process.env.APP_VARIANT || 'development';
+
 // Load environment variables from .env and .env.{variant} if present
 const baseEnv = path.resolve(__dirname, '.env');
 const variantEnv = path.resolve(__dirname, `.env.${variant}`);
@@ -18,27 +19,17 @@ const IS_PREVIEW = variant === 'preview';
 
 const getUniqueIdentifier = () => {
 
-    if (IS_DEV) {
-        return 'com.sirmrtyler.sopscmobileapp.dev';
-    }
-
-    if (IS_PREVIEW) {
-        return 'com.sirmrtyler.sopscmobileapp.preview';
-    }
-
+    if (IS_DEV) return 'com.sirmrtyler.sopscmobileapp.dev';
+    if (IS_PREVIEW) return 'com.sirmrtyler.sopscmobileapp.preview';
+    
     return 'com.sirmrtyler.sopscmobileapp';
 }
 
 const getAppName = () => {
-  if (IS_DEV) {
-    return 'com.sopsc.sopscmobileapp.dev';
-  }
+  if (IS_DEV) return 'SOPSC Mobile App (Dev)';
+  if (IS_PREVIEW) return 'SOPSC Mobile App (Preview)';
 
-  if (IS_PREVIEW) {
-    return 'com.sirmrtyler.sopscmobileapp.preview';
-  }
-
-  return 'com.sirmrtyler.sopscmobileapp';
+  return 'SOPSC Mobile App';
 };
 
 console.log("📦 Package name for this build:", getUniqueIdentifier());
@@ -55,10 +46,6 @@ export default ({ config }) => ({
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
-    googleServicesFile:
-      variant === "development"
-        ? "./config/google-services.dev.json"
-        : "./config/google-services.prod.json",
   },
   extra: {
     // Originally You Didn't Have This //
