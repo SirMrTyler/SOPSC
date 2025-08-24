@@ -24,7 +24,7 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: config.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-      iosClientId: '203699688611-5uibr1f84mjjdn3b80920r21p8vuohho.apps.googleusercontent.com',
+      iosClientId: config.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
       offlineAccess: true,
     });
   }, []);
@@ -41,11 +41,9 @@ const Login: React.FC<LoginProps> = ({onLoginSuccess, navigation}) => {
     }
     setGoogleLoading(true);
     try {
-      await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo: any = await GoogleSignin.signIn();
-      const tokens = await GoogleSignin.getTokens();
-      const idToken = tokens.idToken;
+      const idToken = userInfo.idToken;
 
       const googleUser =
         userInfo.user || userInfo.data?.user || userInfo.data || {};
