@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Button } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TextInput, Button, Image } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import { Message } from '../../types/messages';
@@ -20,6 +20,25 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const messages = useMessages<Message>(`conversations/${conversation.chatId}/messages`);
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList<Message>>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const markRead = async () => {
+      await updateDoc(doc(db, 'conversations', conversation.chatId), {
+        [`readBy.${user.userId}`]: true,
+        isRead: true,
+      });
+      messages.forEach(msg => {
+        if (!msg.readBy || !msg.readBy[user.userId]) {
+          updateDoc(doc(db, `conversations/${conversation.chatId}/messages`, msg.messageId), {
+            [`readBy.${user.userId}`]: true,
+            isRead: true,
+          });
+        }
+      });
+    };
+    markRead();
+  }, [messages, user, conversation.chatId]);
 
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
@@ -44,11 +63,29 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   const renderItem = ({ item }: { item: Message }) => {
     const incoming = item.senderId === conversation.otherUserId;
+    const sentDate =
+      typeof item.sentTimestamp === 'string'
+        ? new Date(item.sentTimestamp)
+        : item.sentTimestamp.toDate();
+    const isRead = item.readBy
+      ? incoming
+        ? !!item.readBy[String(user?.userId ?? '')]
+        : !!item.readBy[String(conversation.otherUserId)]
+      : item.isRead;
     return (
-      <View style={incoming ? styles.messageLeft : styles.messageRight}>
-        <Text>{item.messageContent}</Text>
-        <View style={styles.meta}>
-          <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
+      <View style={incoming ? styles.messageRowLeft : styles.messageRowRight}>
+        {incoming && (
+          <Image
+            source={{ uri: conversation.otherUserProfilePicturePath }}
+            style={styles.avatar}
+          />
+        )}
+        <View style={incoming ? styles.messageLeft : styles.messageRight}>
+          <Text>{item.messageContent}</Text>
+          <View style={styles.meta}>
+            <Text style={styles.time}>{formatTimestamp(sentDate)}</Text>
+            <Text style={styles.readStatus}>{isRead ? 'Read' : 'Unread'}</Text>
+          </View>
         </View>
       </View>
     );
@@ -81,17 +118,30 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  messageLeft: {
+  messageRowLeft: {
+    flexDirection: 'row',
     alignSelf: 'flex-start',
-    backgroundColor: '#eee',
     marginVertical: 4,
+  },
+  messageRowRight: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    marginVertical: 4,
+    justifyContent: 'flex-end',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  messageLeft: {
+    backgroundColor: '#eee',
     padding: 8,
     borderRadius: 4,
   },
   messageRight: {
-    alignSelf: 'flex-end',
     backgroundColor: '#cfe9ff',
-    marginVertical: 4,
     padding: 8,
     borderRadius: 4,
   },
@@ -103,6 +153,11 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 12,
     color: '#666',
+  },
+  readStatus: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
   },
   inputContainer: {
     flexDirection: 'row',
