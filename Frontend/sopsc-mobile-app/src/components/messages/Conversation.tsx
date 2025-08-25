@@ -66,7 +66,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const sentDate =
       typeof item.sentTimestamp === 'string'
         ? new Date(item.sentTimestamp)
-        : item.sentTimestamp.toDate();
+        : item.sentTimestamp?.toDate();
     const isRead = item.readBy
       ? incoming
         ? !!item.readBy[String(user?.userId ?? '')]

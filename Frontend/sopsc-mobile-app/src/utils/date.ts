@@ -5,7 +5,10 @@ type TimestampInput =
   | Date
   | string;
 
-export const formatTimestamp = (timestamp: TimestampInput) => {
+export const formatTimestamp = (
+  timestamp?: TimestampInput | null,
+): string => {
+  if (!timestamp) return '';
   let date: Date;
   if (timestamp instanceof Date) {
     date = timestamp;
