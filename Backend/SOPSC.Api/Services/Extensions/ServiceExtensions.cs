@@ -70,13 +70,25 @@ namespace SOPSC.Api.Services.Extensions
             services.AddScoped<INotificationService, NotificationService>();
             
             // Firestore and FCM
-            var projectId = configuration["Firebase:ProjectId"];
             FirestoreDb firestore = null;
-            if (!string.IsNullOrWhiteSpace(projectId))
+            try
             {
-                firestore = FirestoreDb.Create(projectId);
+                var projectId = configuration["Firebase:ProjectId"];
+                if (!string.IsNullOrWhiteSpace(projectId))
+                {
+                    firestore = FirestoreDb.Create(projectId);
+                }
             }
-            services.AddSingleton(firestore);
+            catch
+            {
+                // Ignore if Firebase credentials are not configured
+            }
+
+            if (firestore != null)
+            {
+                services.AddSingleton(firestore);
+                services.AddScoped<IReportRealtimeService, ReportRealtimeService>();
+            }
 
             FirebaseMessaging messaging = null;
             try
@@ -91,8 +103,11 @@ namespace SOPSC.Api.Services.Extensions
             {
                 // Ignore if Firebase credentials are not configured
             }
-            services.AddSingleton(messaging);
-            services.AddScoped<IReportRealtimeService, ReportRealtimeService>();
+
+            if (messaging != null)
+            {
+                services.AddSingleton(messaging);
+            }
             /// <summary>
             /// Adds HTTP context accessor for accessing the current HTTP context.
             /// </summary>
