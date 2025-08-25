@@ -46,7 +46,7 @@ const Messages: React.FC = () => {
                     chatId: data.chatId || doc.id,
                     otherUserId: data.otherUserId,
                     otherUserName: data.otherUserName,
-                    otherUserProfilePicturePath: '',
+                    otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',
                     mostRecentMessage:
                         mostRecent.length > PREVIEW_LENGTH
                             ? mostRecent.slice(0, PREVIEW_LENGTH) + '...'
