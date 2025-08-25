@@ -1,341 +1,77 @@
-// This is a boilerplate file used to register a provider for push notifications //
-// Library imports
-import React, {useEffect, useState, useContext, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TextInput, Button } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../App';
-// Components
-import { Message, MessageCreated } from '../../types/messages';
-// Services
-import { getConversation, send, deleteMessages, updateReadStatus } from '../../services/messageService.js';
-// Hooks and Utils
-import { formatTimestamp } from '../../utils/date';
+import { Message } from '../../types/messages';
+import { useMessages } from '../../hooks/useMessages';
 import { useAuth } from '../../hooks/useAuth';
-import { SocketContext } from '../../hooks/SocketContext';
+import firestore from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
+import { formatTimestamp } from '../../utils/date';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Conversation'>;
+interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
 
 const Conversation: React.FC<Props> = ({ route }) => {
-    const { conversation } = route.params;
-    const { user } = useAuth();
-    const socket = useContext(SocketContext);
-    const [messages, setMessages] = useState<Message[]>([]);
-    const flatListRef = useRef<FlatList<Message>>(null);
-    const [loading, setLoading] = useState(true);
-    const [pageIndex, setPageIndex] = useState(0);
-    const pageSize = 20;
-    const [totalCount, setTotalCount] = useState(0);
-    const [newMessage, setNewMessage] = useState('');
-    const [sending, setSending] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const { conversation } = route.params;
+  const { user } = useAuth();
+  const messages = useMessages<Message>(`conversations/${conversation.chatId}/messages`);
+  const [newMessage, setNewMessage] = useState('');
+  const flatListRef = useRef<FlatList<Message>>(null);
 
-    const sortByTimestampAsc = (list: Message[]) =>
-    [...list].sort((a, b) => new Date(a.sentTimestamp).getTime() - new Date(b.sentTimestamp).getTime());
-
-    const scrollToBottom = (animated = false) => {
-      requestAnimationFrame(() => {
-        flatListRef.current?.scrollToEnd({ animated });
+  const handleSend = async () => {
+    if (!user || !newMessage.trim()) return;
+    await firestore()
+      .collection(`conversations/${conversation.chatId}/messages`)
+      .add({
+        senderId: user.userId,
+        senderName: `${user.firstName} ${user.lastName}`,
+        messageContent: newMessage.trim(),
+        sentTimestamp: firestore.FieldValue.serverTimestamp(),
+        readBy: { [user.userId]: true },
       });
-    };
+    setNewMessage('');
+    flatListRef.current?.scrollToEnd({ animated: true });
+  };
 
-    const uniqueById = (list: Message[]) => {
-      const seen = new Set<number>();
-      return list.filter(m => {
-        if (seen.has(m.messageId)) return false;
-        seen.add(m.messageId);
-        return true;
-      });
-    };
-
-    const markAllRead = async (list: Message[]) => {
-      const unread = list.filter(m => !m.isRead && m.senderId === conversation.otherUserId);
-      if (unread.length === 0) return;
-      for (const m of unread) {
-        try {
-          await updateReadStatus(m.messageId, true);
-          socket?.emit('directMessageRead', {
-            messageId: m.messageId,
-            senderId: m.senderId,
-            readerId: user?.userId,
-          });
-        } catch (err) {
-            console.error('[Conversation] Error updating read status:', err);
-        }
-      }
-      setMessages(prev => prev.map(m => unread.some(u => u.messageId === m.messageId) ? { ...m, isRead: true } : m));
-    };
-
-    const load = async (nextPage = 0) => {
-        try {
-        const data = await getConversation(conversation.chatId, nextPage, pageSize);
-        const paged = data?.item;
-        if (paged) {
-          let items: Message[] = await Promise.all(
-            paged.pagedItems.map(async m => {
-              if (!m.isRead && m.senderId === conversation.otherUserId) {
-                try {
-                  await updateReadStatus(m.messageId, true);
-                  socket?.emit('directMessageRead', {
-                    messageId: m.messageId,
-                    senderId: m.senderId,
-                    readerId: user?.userId,
-                  });
-                } catch (err) {
-                    console.error('[Conversation] Error updating read status:', err);
-                }
-                return { ...m, isRead: true };
-              }
-              return m;
-            })
-          );
-
-          items = sortByTimestampAsc(items);
-
-          setTotalCount(paged.totalCount);
-          setMessages(prev => {
-            const combined = nextPage === 0 ? items : [...prev, ...items];
-            return sortByTimestampAsc(uniqueById(combined));
-          });
-          setPageIndex(nextPage);
-        }
-      } catch (err) {
-        if (err?.response?.status === 404) {
-          setMessages([]);
-          setTotalCount(0);
-        } else {
-            console.error('[Conversation] Error fetching messages:', err);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    useEffect(() => {
-        load();
-    }, []);
-    
-    useFocusEffect(
-      React.useCallback(() => {
-        if (messages.length > 0) {
-            markAllRead(messages);
-        }
-      }, [messages])
-    );
-
-    useEffect(() => {
-      if (!socket) return;
-      const handler = async (msg: Message) => {
-        if (msg.senderId === conversation.otherUserId) {
-          setMessages(prev => {
-            const combined = [...prev, { ...msg, isRead: true }];
-            const normalized = sortByTimestampAsc(uniqueById(combined));
-            return normalized;
-          });
-          scrollToBottom(true);
-          try {
-            await updateReadStatus(msg.messageId, true);
-            socket?.emit('directMessageRead', {
-              messageId: msg.messageId,
-              senderId: msg.senderId,
-              readerId: user?.userId,
-            });
-          } catch (err) {
-            console.error('[Conversation] Error updating read status:', err);
-          }
-        }
-      };
-      socket.on('newDirectMessage', handler);
-      return () => {
-          socket.off('newDirectMessage', handler);
-      };
-    }, [socket]);
-
-    useEffect(() => {
-        if (!socket) return;
-        const handler = (payload: { messageId: number; senderId: number; readerId: number }) => {
-            if (payload.senderId === user?.userId) {
-                setMessages(prev => prev.map(m =>
-                    m.messageId === payload.messageId ? { ...m, isRead: true } : m
-                ));
-            }
-        };
-        socket.on('directMessageRead', handler);
-        return () => {
-            socket.off('directMessageRead', handler);
-        };
-    }, [socket, user, conversation.otherUserId]);
-    
-    useEffect(() => {
-      if (!loading && messages.length > 0) {
-        scrollToBottom(false);
-      }
-    }, [loading]);
-    
-    useEffect(() => {
-      if (!loading && messages.length > 0) {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }
-    }, [messages]);
-    
-    const handleEndReached = () => {
-        if (!loading && messages.length < totalCount) {
-        load(pageIndex + 1);
-        }
-    };
-
-    const toggleSelect = (id: number) => {
-        setSelectedIds(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-        );
-    };
-
-    const deleteSelected = () => {
-        if (selectedIds.length === 0) return;
-        Alert.alert('Delete Messages', 'Delete selected messages?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Delete',
-                style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await deleteMessages(selectedIds);
-                        setMessages(prev => prev.filter(m => !selectedIds.includes(m.messageId)));
-                        setSelectedIds([]);
-                    } catch (err) {
-                        console.error('[Conversation] Error deleting messages:', err);
-                    }
-                },
-            },
-        ]);
-    };
-
-    const cancelSelection = () => setSelectedIds([]);
-
-    const renderItem = ({ item }: { item: Message }) => {
-        const incoming = item.senderId === conversation.otherUserId;
-        const selected = selectedIds.includes(item.messageId);
-        return (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onLongPress={() => toggleSelect(item.messageId)}
-            >
-              <View style={[
-                  incoming ? styles.messageLeft : styles.messageRight,
-                  selected && styles.selected
-                ]}>
-                <Text>{item.messageContent}</Text>
-                <View style={styles.meta}>
-                    <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
-                    {!incoming && (
-                        <Text style={styles.status}>{item.isRead ? ' Read' : ' Unread'}</Text>
-                    )}
-                </View>
-            </View>
-        </TouchableOpacity>
-        );
-    };
-
-    const handleSend = async () => {
-        if (!newMessage.trim() || sending || !user) return;
-        setSending(true);
-        try {
-            const result: { item?: MessageCreated } = await send(
-                conversation.chatId,
-                newMessage.trim(),
-                conversation.otherUserId
-            );
-            
-            const senderName =
-              user?.firstName && user?.lastName
-                ? `${user.firstName} ${user.lastName}`
-                : user?.email || '';
-            if (__DEV__) {
-                console.log('[Conversation] Sender Name:', senderName);
-            }
-            
-            const messageId = result?.item?.id || Date.now();
-            const chatId = result?.item?.chatId ?? conversation.chatId;
-            if (!conversation.chatId && chatId) {
-                conversation.chatId = chatId;
-            }
-
-            const message: Message = {
-                messageId: messageId,
-                chatId: chatId,
-                senderId: user.userId,
-                senderName: senderName,
-                messageContent: newMessage.trim(),
-                sentTimestamp: new Date().toISOString(),
-                readTimestamp: null,
-                isRead: false,
-            };
-            setMessages(prev => {
-              const combined = [...prev, message];
-              return sortByTimestampAsc(uniqueById(combined));
-            });
-            socket?.emit('sendDirectMessage', message);
-            scrollToBottom(true);
-            setNewMessage('');
-        } catch (err) {
-            console.error('[Conversation] Error sending message:', err);
-        } finally {
-            setSending(false);
-        }
-    };
-
+  const renderItem = ({ item }: { item: Message }) => {
+    const incoming = item.senderId === conversation.otherUserId;
     return (
-      <ScreenContainer showBottomBar={false} showBack title={conversation.otherUserName}>
-        <View style={styles.container}>
-          {selectedIds.length > 0 && (
-              <View style={styles.selectionBar}>
-                <Text style={styles.selectionText}>{selectedIds.length} selected</Text>
-                <Button title="Delete" onPress={deleteSelected} />
-                <Button title="Cancel" onPress={cancelSelection} />
-              </View>
-          )}
-          {/* title handled by top bar */}
-          {loading && messages.length === 0 ? (
-              <ActivityIndicator />
-          ) : (
-              <FlatList
-              ref={flatListRef}
-              data={messages}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.messageId.toString()}
-              onEndReached={handleEndReached}
-              onContentSizeChange={() => scrollToBottom(false)}
-              onEndReachedThreshold={0.2}
-              />
-          )}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Type a message"
-              placeholderTextColor={'#999'}
-              value={newMessage}
-              onChangeText={setNewMessage}
-              editable={!sending}
-            />
-            <Button title="Send" onPress={handleSend} disabled={sending || !newMessage.trim()} />
-          </View>
+      <View style={incoming ? styles.messageLeft : styles.messageRight}>
+        <Text>{item.messageContent}</Text>
+        <View style={styles.meta}>
+          <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
         </View>
-      </ScreenContainer>
+      </View>
     );
+  };
+
+  return (
+    <ScreenContainer showBottomBar={false} showBack title={conversation.otherUserName}>
+      <View style={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={item => item.messageId.toString()}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message"
+            placeholderTextColor={'#999'}
+            value={newMessage}
+            onChangeText={setNewMessage}
+          />
+          <Button title="Send" onPress={handleSend} disabled={!newMessage.trim()} />
+        </View>
+      </View>
+    </ScreenContainer>
+  );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 8,
-    color: 'white'
-  },
+  container: { flex: 1, padding: 16 },
   messageLeft: {
     alignSelf: 'flex-start',
     backgroundColor: '#eee',
@@ -350,19 +86,12 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 4,
   },
-  selected: {
-    opacity: 0.6,
-  },
   meta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 2,
   },
   time: {
-    fontSize: 12,
-    color: '#666',
-  },
-  status: {
     fontSize: 12,
     color: '#666',
   },
@@ -379,16 +108,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
-  },
-  selectionBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  selectionText: {
-    color: 'white',
-    fontWeight: 'bold',
   },
 });
 

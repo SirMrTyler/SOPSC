@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -6,128 +6,63 @@ import {
     FlatList,
     StyleSheet,
     TextInput,
-    TouchableOpacity,
-    Alert
+    TouchableOpacity
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
-import { getAll, deleteConversation } from '../../services/messageService.js';
 import ConversationItem from './ConversationItem';
-import { MessageConversation, Message } from '../../types/messages';
+import { MessageConversation } from '../../types/messages';
 import { useAuth } from '../../hooks/useAuth';
-import { SocketContext } from '../../hooks/SocketContext';
+import firestore from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
 
-const PREVIEW_LENGTH = 50; // Characters to show in preview
+const PREVIEW_LENGTH = 50;
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
-    const socket = useContext(SocketContext);
     const [messages, setMessages] = useState<MessageConversation[]>([]);
     const [filteredMessages, setFilteredMessages] = useState<MessageConversation[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-    const uniqueById = (list: MessageConversation[]) => {
-        const seen = new Set<number>();
-        return list.filter(item => {
-            if (seen.has(item.messageId)) return false;
-            seen.add(item.messageId);
-            return true;
-        });
-    };
-
-    const handleDeleteConversation = (chatId: number) => {
-        Alert.alert('Delete Conversation', 'Are you sure you want to delete this conversation?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Delete',
-                style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await deleteConversation(chatId);
-                        setMessages(prev => prev.filter(c => c.chatId !== chatId));
-                        setFilteredMessages(prev => prev.filter(c => c.chatId !== chatId));
-                    } catch (err) {
-                        console.error('[Messages] Error deleting conversation:', err);
-                    }
-                },
-            },
-        ]);
-    };
-
-    const load = async () => {
-        try {
-            const data = await getAll();
-            let list: MessageConversation[] = [];
-            if (Array.isArray(data?.items)) {
-                list = data.items as MessageConversation[];
-            } else if (Array.isArray(data)) {
-                list = data as MessageConversation[];
-            }
-            list = list.map(item => ({
-                ...item,
-                mostRecentMessage:
-                    item.mostRecentMessage.length > PREVIEW_LENGTH
-                        ? item.mostRecentMessage.slice(0, PREVIEW_LENGTH) + '...'
-                        : item.mostRecentMessage,
-            }));
-            list = uniqueById(list);
-            setMessages(list);
-            setFilteredMessages(list);
-        } catch (err) {
-            console.error('[Messages] Error fetching messages:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useFocusEffect(
-        React.useCallback(() => {
-            load();
-        }, [])
-    );
-
     useEffect(() => {
-        load();
-    }, []);
-
-    useEffect(() => {
-        if (!socket) return;
-        const handler = (_msg: Message) => load();
-        socket.on('newDirectMessage', handler);
-        return () => {
-            socket.off('newDirectMessage', handler);
-        };
-    }, [socket]);
-        
-    useEffect(() => {
-        if (!socket) return;
-        const handler = (payload: { messageId: number; senderId: number; readerId: number }) => {
-            if (payload.senderId === user?.userId) {
-                setMessages(prev => {
-                    const updated = prev.map(c =>
-                        c.otherUserId === payload.readerId
-                            ? { ...c, isRead: true, numMessages: Math.max(0, c.numMessages - 1) }
-                            : c
-                    );
-                    setFilteredMessages(updated);
-                    return updated;
+        if (!user) return;
+        const unsubscribe = firestore()
+            .collection('conversations')
+            .where(`participants.${user.userId}`, '==', true)
+            .onSnapshot(snapshot => {
+                const list: MessageConversation[] = snapshot.docs.map(doc => {
+                    const data = doc.data() as any;
+                    const mostRecent = data.mostRecentMessage || '';
+                    return {
+                        messageId: data.lastMessageId || 0,
+                        chatId: doc.id as any,
+                        otherUserId: data.otherUserId,
+                        otherUserName: data.otherUserName,
+                        otherUserProfilePicturePath: '',
+                        mostRecentMessage:
+                            mostRecent.length > PREVIEW_LENGTH
+                                ? mostRecent.slice(0, PREVIEW_LENGTH) + '...'
+                                : mostRecent,
+                        isRead: data.isRead,
+                        sentTimestamp: data.sentTimestamp,
+                        numMessages: data.numMessages || 0,
+                        isLastMessageFromUser: data.isLastMessageFromUser || false,
+                    };
                 });
-            }
-        };
-        socket.on('directMessageRead', handler);
-        return () => {
-            socket.off('directMessageRead', handler);
-        };
-    }, [socket, user]);
-    
+                setMessages(list);
+                setFilteredMessages(list);
+                setLoading(false);
+            });
+        return () => unsubscribe();
+    }, [user]);
+
     useEffect(() => {
         const q = query.trim().toLowerCase();
-        if(!q) {
+        if (!q) {
             setFilteredMessages(messages);
         } else {
             setFilteredMessages(
@@ -148,29 +83,21 @@ const Messages: React.FC = () => {
         <ScreenContainer>
             <View style={styles.container}>
                 <View style={styles.headerRow}>
-
-                    {/* Title | Header for messages */}
                     <Text style={styles.header}>Messages</Text>
-
-                    {/* Row container for group chat and create conversation icons */}
                     <View style={styles.iconRow}>
-                        {/* Group chat icon, opens list of group chats */}
                         <TouchableOpacity
                             style={styles.iconButton}
                             onPress={() => navigation.navigate('GroupChats')}
                         >
                             <UsersIcon size={28} color="white" />
                         </TouchableOpacity>
-
-                        {/* Create conversation icon, navigates to UserList for finding and selecting users */}
-                        <TouchableOpacity 
-                            style={styles.iconButton} 
+                        <TouchableOpacity
+                            style={styles.iconButton}
                             onPress={() => navigation.navigate('UserList')}
                         >
                             <PencilSquareIcon size={28} color="white" />
                         </TouchableOpacity>
                     </View>
-                    
                 </View>
                 <View style={styles.searchRow}>
                     <TextInput
@@ -197,7 +124,6 @@ const Messages: React.FC = () => {
                                 onPress={() =>
                                     navigation.navigate('Conversation', { conversation: item })
                                 }
-                                onLongPress={() => handleDeleteConversation(item.chatId)}
                             />
                         )}
                     />
@@ -221,9 +147,8 @@ const styles = StyleSheet.create({
     },
     iconRow: {
         flexDirection: 'row',
-        gap: 10, // Optional, or use marginRight in iconButton
+        gap: 10,
     },
-
     iconButton: {
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
         borderRadius: 10,
