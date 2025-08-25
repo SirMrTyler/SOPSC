@@ -10,6 +10,7 @@ export function getSocketOptions(userId?: string): Partial<ManagerOptions & Sock
     extraHeaders: headers,
     transportOptions: { polling: { extraHeaders: headers } },
     transports: ['websocket'],
+    rejectUnauthorized: false,
   };
   if (userId) {
     options.query = { userId };
