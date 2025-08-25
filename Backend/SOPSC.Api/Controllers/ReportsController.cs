@@ -6,6 +6,7 @@ using SOPSC.Api.Models.Interfaces.Reports;
 using SOPSC.Api.Models.Requests.Reports;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
+using System.Threading.Tasks;
 
 namespace SOPSC.Api.Controllers
 {
@@ -16,11 +17,13 @@ namespace SOPSC.Api.Controllers
     {
         private readonly IReportsService _service;
         private readonly IAuthenticationService<int> _authService;
+        private readonly IReportRealtimeService _realtime;
 
-        public ReportsController(IReportsService service, IAuthenticationService<int> authService, ILogger<ReportsController> logger) : base(logger)
+        public ReportsController(IReportsService service, IAuthenticationService<int> authService, IReportRealtimeService realtime, ILogger<ReportsController> logger) : base(logger)
         {
             _service = service;
             _authService = authService;
+            _realtime = realtime;
         }
 
         [HttpGet]
@@ -159,7 +162,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ItemResponse<int>> Create(ReportAddRequest model)
+        public async Task<ActionResult<ItemResponse<int>>> Create(ReportAddRequest model)
         {
             int code = 201;
             BaseResponse response = null;
@@ -167,6 +170,8 @@ namespace SOPSC.Api.Controllers
             {
                 int userId = _authService.GetCurrentUserId();
                 int id = _service.Add(userId, model);
+                var report = _service.GetById(id);
+                await _realtime.UpsertAsync(report, model.DivisionId, userId);
                 response = new ItemResponse<int> { Item = id };
             }
             catch (Exception ex)
@@ -179,7 +184,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult<SuccessResponse> Update(int id, ReportUpdateRequest model)
+        public async Task<ActionResult<SuccessResponse>> Update(int id, ReportUpdateRequest model)
         {
             int code = 200;
             BaseResponse response = null;
@@ -188,6 +193,8 @@ namespace SOPSC.Api.Controllers
                 int userId = _authService.GetCurrentUserId();
                 model.ReportId = id;
                 _service.Update(userId, model);
+                var report = _service.GetById(id);
+                await _realtime.UpsertAsync(report, model.DivisionId, model.CreatedBy);
                 response = new SuccessResponse();
             }
             catch (Exception ex)
@@ -200,13 +207,14 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult<SuccessResponse> Delete(int id)
+        public async Task<ActionResult<SuccessResponse>> Delete(int id)
         {
             int code = 200;
             BaseResponse response = null;
             try
             {
                 _service.Delete(id);
+                await _realtime.DeleteAsync(id);
                 response = new SuccessResponse();
             }
             catch (Exception ex)
@@ -219,13 +227,17 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpDelete]
-        public ActionResult<SuccessResponse> DeleteByIds(ReportIdsRequest model)
+        public async Task<ActionResult<SuccessResponse>> DeleteByIds(ReportIdsRequest model)
         {
             int code = 200;
             BaseResponse response = null;
             try
             {
                 _service.DeleteByIds(model.ReportIds);
+                foreach (var id in model.ReportIds)
+                {
+                    await _realtime.DeleteAsync(id);
+                }
                 response = new SuccessResponse();
             }
             catch (Exception ex)
