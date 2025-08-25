@@ -56,7 +56,11 @@ const googleSignIn = async () => {
     const userInfo: any = await withTimeout(GoogleSignin.signIn(), 20000, 'signIn');
 
     console.log('[3] getTokens()...');
-    const { idToken } = await withTimeout(GoogleSignin.getTokens(), 8000, 'getTokens');
+    const { idToken } = await withTimeout<{ idToken: string | null }>(
+      GoogleSignin.getTokens(),
+      8000,
+      'getTokens'
+    );
     if (!idToken) throw new Error('No idToken');
 
     const { givenName = '', familyName = '', email = '', photo = '' } =

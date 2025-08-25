@@ -5,8 +5,15 @@ type TimestampInput =
   | Date
   | string;
 
+interface FormatOptions {
+  includeDate?: boolean;
+  includeDay?: boolean;
+  includeTime?: boolean;
+}
+
 export const formatTimestamp = (
   timestamp?: TimestampInput | null,
+  options: FormatOptions = { includeDate: true, includeDay: true, includeTime: true },
 ): string => {
   if (!timestamp) return '';
   let date: Date;
@@ -17,12 +24,22 @@ export const formatTimestamp = (
   } else {
     date = timestamp.toDate();
   }
-  return date.toLocaleString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+
+  const formatOptions: Intl.DateTimeFormatOptions = {};
+  if (options.includeDay) {
+    formatOptions.weekday = 'short';
+  }
+  if (options.includeDate) {
+    formatOptions.month = 'short';
+    formatOptions.day = 'numeric';
+  }
+  if (options.includeTime) {
+    formatOptions.hour = 'numeric';
+    formatOptions.minute = '2-digit';
+    formatOptions.hour12 = true;
+  }
+
+  return date.toLocaleString('en-US', formatOptions);
 };
+
+export type { FormatOptions };

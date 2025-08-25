@@ -43,7 +43,7 @@ const Messages: React.FC = () => {
                 const mostRecent = data.mostRecentMessage || '';
                 return {
                     messageId: data.lastMessageId || '',
-                    chatId: data.chatId || doc.id,
+                    chatId: doc.id,
                     otherUserId: data.otherUserId,
                     otherUserName: data.otherUserName,
                     otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',

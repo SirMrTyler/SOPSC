@@ -63,10 +63,6 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   const renderItem = ({ item }: { item: Message }) => {
     const incoming = item.senderId === conversation.otherUserId;
-    const sentDate =
-      typeof item.sentTimestamp === 'string'
-        ? new Date(item.sentTimestamp)
-        : item.sentTimestamp?.toDate();
     const isRead = item.readBy
       ? incoming
         ? !!item.readBy[String(user?.userId ?? '')]
@@ -83,7 +79,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         <View style={incoming ? styles.messageLeft : styles.messageRight}>
           <Text>{item.messageContent}</Text>
           <View style={styles.meta}>
-            <Text style={styles.time}>{formatTimestamp(sentDate)}</Text>
+            <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
             <Text style={styles.readStatus}>{isRead ? 'Read' : 'Unread'}</Text>
           </View>
         </View>
