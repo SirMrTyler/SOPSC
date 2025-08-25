@@ -10,6 +10,9 @@ using SOPSC.Api.Models.Interfaces.Notifications;
 using SOPSC.Api.Services.Auth;
 using SOPSC.Api.Services.Auth.Interfaces;
 using SOPSC.Api.Services;
+using Google.Cloud.Firestore;
+using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
 
 namespace SOPSC.Api.Services.Extensions
 {
@@ -63,6 +66,31 @@ namespace SOPSC.Api.Services.Extensions
             services.AddScoped<IScheduleCategoriesService, ScheduleCategoriesService>();
             services.AddScoped<IReportsService, ReportsService>();
             services.AddScoped<INotificationService, NotificationService>();
+            
+            // Firestore and FCM
+            var projectId = configuration["Firebase:ProjectId"];
+            FirestoreDb firestore = null;
+            if (!string.IsNullOrWhiteSpace(projectId))
+            {
+                firestore = FirestoreDb.Create(projectId);
+            }
+            services.AddSingleton(firestore);
+
+            FirebaseMessaging messaging = null;
+            try
+            {
+                if (FirebaseApp.DefaultInstance == null)
+                {
+                    FirebaseApp.Create();
+                }
+                messaging = FirebaseMessaging.DefaultInstance;
+            }
+            catch
+            {
+                // Ignore if Firebase credentials are not configured
+            }
+            services.AddSingleton(messaging);
+            services.AddScoped<IReportRealtimeService, ReportRealtimeService>();
             /// <summary>
             /// Adds HTTP context accessor for accessing the current HTTP context.
             /// </summary>

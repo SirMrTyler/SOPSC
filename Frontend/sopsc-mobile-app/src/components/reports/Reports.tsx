@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
 import ScreenContainer from '../navigation/ScreenContainer';
 import * as reportService from '../../services/reportService';
 import { Report } from '../../types/report';
+import firestore from '@react-native-firebase/firestore';
 import ReportForm from './ReportForm';
 import { useAuth } from '../../hooks/useAuth';
 import { TrashIcon } from 'react-native-heroicons/outline';
@@ -33,37 +27,36 @@ const Reports: React.FC = () => {
     (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
   );
 
-  const load = async () => {
-    try {
-      setLoading(true);
-      const data = await reportService.getAll(pageIndex, pageSize, divisionId);
-      const newItems: Report[] = data.item?.pagedItems || [];
-      if (newItems.length === 0) {
-        Alert.alert('No More Reports...');
-      }
-      setReports(
-        newItems.sort(
-          (a, b) =>
-            new Date(b.dateCreated).getTime() -
-            new Date(a.dateCreated).getTime()
-        )
-      );
-    } catch (err: any) {
-      if (err?.response?.status === 404) {
-      } else {
-        console.error(err);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, [pageIndex, pageSize, divisionId]);
+    if (!divisionId) return;
+    setLoading(true);
+    const unsubscribe = firestore()
+      .collection('reports')
+      .where('divisionId', '==', divisionId)
+      .orderBy('dateCreated', 'desc')
+      .onSnapshot(
+        snapshot => {
+          const items: Report[] = snapshot.docs.map(doc => {
+            const data = doc.data() as any;
+            return { ...data } as Report;
+          });
+          setReports(items);
+          setLoading(false);
+        },
+        err => {
+          console.error(err);
+          setLoading(false);
+        }
+      );
+    return () => unsubscribe();
+  }, [divisionId]);
+
+  const pagedReports = reports.slice(
+    pageIndex * pageSize,
+    pageIndex * pageSize + pageSize
+  );
 
   const refreshReports = async () => {
-    await load();
     setSelectedIds([]);
     setPageIndex(0);
   };
@@ -174,7 +167,7 @@ const Reports: React.FC = () => {
         </View>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-        {reports.map((r) => renderReport(r))}
+        {pagedReports.map((r) => renderReport(r))}
       </ScrollView>
       <TouchableOpacity
         style={styles.addButton}
