@@ -3,8 +3,11 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import axios from "axios";
-import messaging from '@react-native-firebase/messaging';
+import {getApp} from '@react-native-firebase/app';
+import {getMessaging, getToken as getFcmToken} from '@react-native-firebase/messaging';
 import { getToken, getDeviceId } from "../services/serviceHelpers";
+
+const messagingInst = getMessaging(getApp());
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -87,7 +90,7 @@ export const usePushNotifications = (user: any) => {
       ).data;
       console.log("Expo token:", expoToken);
 
-      const deviceToken = await messaging().getToken();
+      const deviceToken = await getFcmToken(messagingInst);
       console.log("FCM token:", deviceToken);
 
       if (

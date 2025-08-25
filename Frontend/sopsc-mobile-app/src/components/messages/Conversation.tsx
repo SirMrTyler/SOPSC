@@ -5,11 +5,14 @@ import type { RootStackParamList } from '../../../App';
 import { Message } from '../../types/messages';
 import { useMessages } from '../../hooks/useMessages';
 import { useAuth } from '../../hooks/useAuth';
-import firestore from '@react-native-firebase/firestore';
+import {getApp} from '@react-native-firebase/app';
+import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp} from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { formatTimestamp } from '../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
+
+const db = getFirestore(getApp());
 
 const Conversation: React.FC<Props> = ({ route }) => {
   const { conversation } = route.params;
@@ -20,15 +23,13 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
-    await firestore()
-      .collection(`conversations/${conversation.chatId}/messages`)
-      .add({
-        senderId: user.userId,
-        senderName: `${user.firstName} ${user.lastName}`,
-        messageContent: newMessage.trim(),
-        sentTimestamp: firestore.FieldValue.serverTimestamp(),
-        readBy: { [user.userId]: true },
-      });
+    await addDoc(collection(db, `conversations/${conversation.chatId}/messages`), {
+      senderId: user.userId,
+      senderName: `${user.firstName} ${user.lastName}`,
+      messageContent: newMessage.trim(),
+      sentTimestamp: serverTimestamp(),
+      readBy: { [user.userId]: true },
+    });
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });
   };

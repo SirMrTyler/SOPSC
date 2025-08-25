@@ -5,11 +5,14 @@ import type { RootStackParamList } from '../../../App';
 import { GroupChatMessage } from '../../types/groupChat';
 import { useMessages } from '../../hooks/useMessages';
 import { useAuth } from '../../hooks/useAuth';
-import firestore from '@react-native-firebase/firestore';
+import {getApp} from '@react-native-firebase/app';
+import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp} from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { formatTimestamp } from '../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'> {}
+
+const db = getFirestore(getApp());
 
 const GroupChatConversation: React.FC<Props> = ({ route }) => {
   const { chatId, name } = route.params;
@@ -20,16 +23,14 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
 
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
-    await firestore()
-      .collection(`groupChats/${chatId}/messages`)
-      .add({
-        groupChatId: chatId,
-        senderId: user.userId,
-        senderName: `${user.firstName} ${user.lastName}`,
-        messageContent: newMessage.trim(),
-        sentTimestamp: firestore.FieldValue.serverTimestamp(),
-        readBy: { [user.userId]: true },
-      });
+    await addDoc(collection(db, `groupChats/${chatId}/messages`), {
+      groupChatId: chatId,
+      senderId: user.userId,
+      senderName: `${user.firstName} ${user.lastName}`,
+      messageContent: newMessage.trim(),
+      sentTimestamp: serverTimestamp(),
+      readBy: { [user.userId]: true },
+    });
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });
   };
