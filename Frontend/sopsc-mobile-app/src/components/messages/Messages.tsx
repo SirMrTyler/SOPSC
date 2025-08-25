@@ -15,53 +15,57 @@ import type { RootStackParamList } from '../../../App';
 import ConversationItem from './ConversationItem';
 import { MessageConversation } from '../../types/messages';
 import { useAuth } from '../../hooks/useAuth';
-import firestore from '@react-native-firebase/firestore';
+import {getApp} from '@react-native-firebase/app';
+import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where} from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
 
 const PREVIEW_LENGTH = 50;
+
+const db = getFirestore(getApp());
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
     const [messages, setMessages] = useState<MessageConversation[]>([]);
     const [filteredMessages, setFilteredMessages] = useState<MessageConversation[]>([]);
     const [loading, setLoading] = useState(true);
-    const [query, setQuery] = useState('');
+    const [queryString, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     useEffect(() => {
         if (!user) return;
-        const unsubscribe = firestore()
-            .collection('conversations')
-            .where(`participants.${user.userId}`, '==', true)
-            .onSnapshot(snapshot => {
-                const list: MessageConversation[] = snapshot.docs.map(doc => {
-                    const data = doc.data() as any;
-                    const mostRecent = data.mostRecentMessage || '';
-                    return {
-                        messageId: data.lastMessageId || 0,
-                        chatId: doc.id as any,
-                        otherUserId: data.otherUserId,
-                        otherUserName: data.otherUserName,
-                        otherUserProfilePicturePath: '',
-                        mostRecentMessage:
-                            mostRecent.length > PREVIEW_LENGTH
-                                ? mostRecent.slice(0, PREVIEW_LENGTH) + '...'
-                                : mostRecent,
-                        isRead: data.isRead,
-                        sentTimestamp: data.sentTimestamp,
-                        numMessages: data.numMessages || 0,
-                        isLastMessageFromUser: data.isLastMessageFromUser || false,
-                    };
-                });
-                setMessages(list);
-                setFilteredMessages(list);
-                setLoading(false);
+        const q = query(
+            collection(db, 'conversations'),
+            where(`participants.${user.userId}`, '==', true)
+        );
+        const unsubscribe = onSnapshot(q, snapshot => {
+            const list: MessageConversation[] = snapshot.docs.map(doc => {
+                const data = doc.data() as any;
+                const mostRecent = data.mostRecentMessage || '';
+                return {
+                    messageId: data.lastMessageId || 0,
+                    chatId: doc.id as any,
+                    otherUserId: data.otherUserId,
+                    otherUserName: data.otherUserName,
+                    otherUserProfilePicturePath: '',
+                    mostRecentMessage:
+                        mostRecent.length > PREVIEW_LENGTH
+                            ? mostRecent.slice(0, PREVIEW_LENGTH) + '...'
+                            : mostRecent,
+                    isRead: data.isRead,
+                    sentTimestamp: data.sentTimestamp,
+                    numMessages: data.numMessages || 0,
+                    isLastMessageFromUser: data.isLastMessageFromUser || false,
+                };
             });
+            setMessages(list);
+            setFilteredMessages(list);
+            setLoading(false);
+        });
         return () => unsubscribe();
     }, [user]);
 
     useEffect(() => {
-        const q = query.trim().toLowerCase();
+        const q = queryString.trim().toLowerCase();
         if (!q) {
             setFilteredMessages(messages);
         } else {
@@ -69,7 +73,7 @@ const Messages: React.FC = () => {
                 messages.filter(m => m.mostRecentMessage.toLowerCase().includes(q))
             );
         }
-    }, [query, messages]);
+    }, [queryString, messages]);
 
     if (loading) {
         return (
@@ -104,7 +108,7 @@ const Messages: React.FC = () => {
                         style={styles.searchInput}
                         placeholder='Search messages...'
                         placeholderTextColor={'#DED3C4'}
-                        value={query}
+                        value={queryString}
                         onChangeText={setQuery}
                     />
                 </View>
