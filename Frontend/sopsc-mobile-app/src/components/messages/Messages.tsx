@@ -42,8 +42,8 @@ const Messages: React.FC = () => {
                 const data = doc.data() as any;
                 const mostRecent = data.mostRecentMessage || '';
                 return {
-                    messageId: data.lastMessageId || 0,
-                    chatId: doc.id as any,
+                    messageId: data.lastMessageId || '',
+                    chatId: data.chatId || doc.id,
                     otherUserId: data.otherUserId,
                     otherUserName: data.otherUserName,
                     otherUserProfilePicturePath: '',
@@ -119,9 +119,7 @@ const Messages: React.FC = () => {
                 ) : (
                     <FlatList
                         data={filteredMessages}
-                        keyExtractor={(item, index) =>
-                            item.messageId?.toString() ?? index.toString()
-                        }
+                        keyExtractor={(item) => item.chatId}
                         renderItem={({ item }) => (
                             <ConversationItem
                                 conversation={item}

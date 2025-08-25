@@ -1,6 +1,6 @@
 export interface MessageConversation {
-  messageId: number;
-  chatId: number;
+  messageId: string;
+  chatId: string;
   otherUserId: number;
   otherUserName: string;
   otherUserProfilePicturePath: string;
@@ -12,8 +12,8 @@ export interface MessageConversation {
 }
 
 export interface Message {
-  messageId: number;
-  chatId: number;
+  messageId: string;
+  chatId: string;
   senderId: number;
   senderName: string;
   messageContent: string;
@@ -23,6 +23,6 @@ export interface Message {
 }
 
 export interface MessageCreated {
-  id: number;
-  chatId: number;
+  id: string;
+  chatId: string;
 }

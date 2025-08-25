@@ -31,7 +31,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
       sentTimestamp: serverTimestamp(),
       readBy: { [user.userId]: true },
     });
-    await updateDoc(doc(db, 'conversations', conversation.chatId as any), {
+    await updateDoc(doc(db, 'conversations', conversation.chatId), {
       mostRecentMessage: content,
       lastMessageId: msgRef.id,
       sentTimestamp: serverTimestamp(),
@@ -61,7 +61,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
-          keyExtractor={item => item.messageId.toString()}
+          keyExtractor={item => item.messageId}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
         />
         <View style={styles.inputContainer}>
