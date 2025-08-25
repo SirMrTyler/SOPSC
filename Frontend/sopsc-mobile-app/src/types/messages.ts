@@ -1,3 +1,5 @@
+import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+
 export interface MessageConversation {
   messageId: string;
   chatId: string;
@@ -6,7 +8,7 @@ export interface MessageConversation {
   otherUserProfilePicturePath: string;
   mostRecentMessage: string;
   isRead: boolean;
-  sentTimestamp: string;
+  sentTimestamp: FirebaseFirestoreTypes.Timestamp | string | null;
   numMessages: number;
   isLastMessageFromUser: boolean;
 }
@@ -17,9 +19,10 @@ export interface Message {
   senderId: number;
   senderName: string;
   messageContent: string;
-  sentTimestamp: string;
+  sentTimestamp: FirebaseFirestoreTypes.Timestamp | string | null;
   readTimestamp: string | null;
   isRead: boolean;
+  readBy?: Record<string, boolean>;
 }
 
 export interface MessageCreated {
