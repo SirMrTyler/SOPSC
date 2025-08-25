@@ -119,7 +119,7 @@ const Messages: React.FC = () => {
                 ) : (
                     <FlatList
                         data={filteredMessages}
-                        keyExtractor={(item) => item.chatId}
+                        keyExtractor={(item) => item.chatId.toString()}
                         renderItem={({ item }) => (
                             <ConversationItem
                                 conversation={item}
