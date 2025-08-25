@@ -8,7 +8,6 @@ export function getSocketOptions(userId?: string): Partial<ManagerOptions & Sock
   const headers = { 'ngrok-skip-browser-warning': 'true' };
   const options: Partial<ManagerOptions & SocketOptions> = {
     extraHeaders: headers,
-    transportOptions: { polling: { extraHeaders: headers } },
     transports: ['websocket'],
     rejectUnauthorized: false,
   };
