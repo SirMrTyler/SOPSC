@@ -5,8 +5,8 @@ import type { RootStackParamList } from '../../../App';
 import { Message } from '../../types/messages';
 import { useMessages } from '../../hooks/useMessages';
 import { useAuth } from '../../hooks/useAuth';
-import {getApp} from '@react-native-firebase/app';
-import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp} from '@react-native-firebase/firestore';
+import { getApp } from '@react-native-firebase/app';
+import { getFirestore, collection, addDoc, doc, updateDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { formatTimestamp } from '../../utils/date';
 
@@ -23,12 +23,20 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
-    await addDoc(collection(db, `conversations/${conversation.chatId}/messages`), {
+    const content = newMessage.trim();
+    const msgRef = await addDoc(collection(db, `conversations/${conversation.chatId}/messages`), {
       senderId: user.userId,
       senderName: `${user.firstName} ${user.lastName}`,
-      messageContent: newMessage.trim(),
+      messageContent: content,
       sentTimestamp: serverTimestamp(),
       readBy: { [user.userId]: true },
+    });
+    await updateDoc(doc(db, 'conversations', conversation.chatId as any), {
+      mostRecentMessage: content,
+      lastMessageId: msgRef.id,
+      sentTimestamp: serverTimestamp(),
+      isLastMessageFromUser: true,
+      isRead: false,
     });
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });

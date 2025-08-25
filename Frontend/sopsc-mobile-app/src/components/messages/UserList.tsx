@@ -7,6 +7,10 @@ import { getAll } from '../../services/userService';
 import { useAuth } from '../../hooks/useAuth';
 import { UserResult } from '../../types/user';
 import ScreenContainer from '../navigation/ScreenContainer';
+import { getApp } from '@react-native-firebase/app';
+import { getFirestore, collection, query as fsQuery, where, getDocs, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+
+const db = getFirestore(getApp());
 
 const UserList: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -50,21 +54,46 @@ const UserList: React.FC = () => {
         return () => clearTimeout(timeout);
     }, [query, users]);
 
-    const handleUserPress = (u: UserResult) => {
-        navigation.navigate('Conversation', {
-            conversation: {
-                messageId: 0,
-                chatId: 0,
-                otherUserId: u.userId,
-                otherUserName: `${u.firstName} ${u.lastName}`,
-                otherUserProfilePicturePath: u.profilePicturePath || '',
-                mostRecentMessage: '',
-                isRead: true,
-                sentTimestamp: '',
-                numMessages: 0,
-                isLastMessageFromUser: false,
-            },
-        });
+    const handleUserPress = async (u: UserResult) => {
+        if (!user) return;
+        try {
+            const convRef = collection(db, 'conversations');
+            const q = fsQuery(
+                convRef,
+                where(`participants.${user.userId}`, '==', true),
+                where(`participants.${u.userId}`, '==', true)
+            );
+            const snapshot = await getDocs(q);
+            let chatId: string;
+            if (!snapshot.empty) {
+                chatId = snapshot.docs[0].id;
+            } else {
+                const docRef = await addDoc(convRef, {
+                    participants: { [user.userId]: true, [u.userId]: true },
+                    otherUserId: u.userId,
+                    otherUserName: `${u.firstName} ${u.lastName}`,
+                    mostRecentMessage: '',
+                    sentTimestamp: serverTimestamp(),
+                });
+                chatId = docRef.id;
+            }
+            navigation.navigate('Conversation', {
+                conversation: {
+                    messageId: 0,
+                    chatId: chatId as any,
+                    otherUserId: u.userId,
+                    otherUserName: `${u.firstName} ${u.lastName}`,
+                    otherUserProfilePicturePath: u.profilePicturePath || '',
+                    mostRecentMessage: '',
+                    isRead: true,
+                    sentTimestamp: '',
+                    numMessages: 0,
+                    isLastMessageFromUser: false,
+                },
+            });
+        } catch (err) {
+            console.log('[UserList] error navigating to conversation', err);
+        }
     };
 
     return (
@@ -126,3 +155,4 @@ const styles = StyleSheet.create({
 });
 
 export default UserList;
+
