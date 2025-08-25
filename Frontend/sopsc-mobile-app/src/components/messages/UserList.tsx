@@ -72,6 +72,7 @@ const UserList: React.FC = () => {
                     participants: { [user.userId]: true, [u.userId]: true },
                     otherUserId: u.userId,
                     otherUserName: `${u.firstName} ${u.lastName}`,
+                    otherUserProfilePicturePath: u.profilePicturePath || '',
                     mostRecentMessage: '',
                     sentTimestamp: serverTimestamp(),
                 });
