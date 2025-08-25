@@ -37,7 +37,9 @@ namespace SOPSC.Api.Services.Extensions
                 throw new InvalidOperationException("DefaultConnection string is not configured. Set 'ConnectionStrings__DefaultConnection' or define it in appsettings.Development.json.");
             }
             // Register services
-            services.AddHttpClient<IEmailService, SendInBlueEmailService>();
+            services.AddHttpClient<SendInBlueEmailService>();
+            services.AddScoped<IEmailService>(sp =>
+                sp.GetRequiredService<SendInBlueEmailService>());
             /// <summary>
             /// Registers authentication service with user identifier as <c>int</c>.
             /// </summary>

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using SOPSC.Api.Models.Interfaces.Emails;
 using SOPSC.Api.Models.Requests.Emails;
 
+namespace SOPSC.Api.Services.Auth;
+
 public class SendInBlueEmailService : IEmailService
 {
     private readonly HttpClient _httpClient;
