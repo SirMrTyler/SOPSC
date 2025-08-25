@@ -9,7 +9,6 @@ export const formatTimestamp = (
   timestamp?: TimestampInput | null,
 ): string => {
   if (!timestamp) return '';
-
   let date: Date;
   if (timestamp instanceof Date) {
     date = timestamp;
@@ -18,7 +17,6 @@ export const formatTimestamp = (
   } else {
     date = timestamp.toDate();
   }
-
   return date.toLocaleString('en-US', {
     weekday: 'short',
     month: 'short',
