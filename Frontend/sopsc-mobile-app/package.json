@@ -2,9 +2,9 @@
   "dependencies": {
     "@babel/core": "^7.27.4",
     "@react-native-community/datetimepicker": "8.4.1",
-    "@react-native-firebase/app": "^20.4.0",
+    "@react-native-firebase/app": "^23.1.2",
     "@react-native-firebase/firestore": "^23.1.2",
-    "@react-native-firebase/messaging": "^20.4.0",
+    "@react-native-firebase/messaging": "^23.1.2",
     "@react-native-google-signin/google-signin": "^15.0.0",
     "@react-native-picker/picker": "^2.11.1",
     "@react-navigation/native": "^7.1.14",

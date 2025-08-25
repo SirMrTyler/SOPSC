@@ -2,13 +2,35 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>GOOGLE_APP_ID</key>
-    <string>1:1234567890:ios:example</string>
-    <key>GCM_SENDER_ID</key>
-    <string>1234567890</string>
-    <key>BUNDLE_ID</key>
-    <string>com.example.app</string>
-    <key>PROJECT_ID</key>
-    <string>example</string>
+	<key>CLIENT_ID</key>
+	<string>191358823571-l1akoht5jiqfpjovtlei5uqqgo934gfb.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.191358823571-l1akoht5jiqfpjovtlei5uqqgo934gfb</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>191358823571-6pnu9bstor643tvde54kn71r9ecqbbls.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCbZX98-L4aJIbgA4BCFueeBsxtnNiWkqc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>191358823571</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.sirmrtyler.sopscmobileapp</string>
+	<key>PROJECT_ID</key>
+	<string>sopsc-19c4c</string>
+	<key>STORAGE_BUCKET</key>
+	<string>sopsc-19c4c.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:191358823571:ios:16041afe5eb1d398e93166</string>
 </dict>
 </plist>
