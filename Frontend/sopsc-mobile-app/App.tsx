@@ -27,7 +27,6 @@ import ReportDetails from './src/components/reports/ReportDetails';
 import Schedule from './src/components/schedule/Schedule';
 import Profile from './src/components/profile/Profile'; // TODO: Make Profile component logic
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SocketProvider } from './src/hooks/SocketContext';
 import Posts from './src/components/posts/Post';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
 
@@ -68,7 +67,6 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SocketProvider user={user}>
         <NavigationContainer theme={AppTheme}>
           <StatusBar style="light" translucent={false} />
           <ImageBackground source={backgroundImage} style={styles.background} imageStyle={{ resizeMode: 'cover' }}>
@@ -128,7 +126,6 @@ export default function App() {
             </Stack.Navigator>
           </ImageBackground>
         </NavigationContainer>
-      </SocketProvider>
     </SafeAreaProvider>
   );
 }

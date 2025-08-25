@@ -42,10 +42,12 @@ export default ({ config }) => ({
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
+    googleServicesFile: "./firebase/GoogleService-Info.plist",
   },
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
+    googleServicesFile: "./firebase/google-services.json",
   },
   extra: {
     // Originally You Didn't Have This //
