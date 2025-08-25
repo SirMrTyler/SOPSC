@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { UserResult } from '../../types/user';
 import ScreenContainer from '../navigation/ScreenContainer';
 import { getApp } from '@react-native-firebase/app';
-import { getFirestore, collection, query as fsQuery, where, getDocs, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import { getFirestore, collection, query as fsQuery, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@react-native-firebase/firestore';
 
 const db = getFirestore(getApp());
 
@@ -75,12 +75,13 @@ const UserList: React.FC = () => {
                     mostRecentMessage: '',
                     sentTimestamp: serverTimestamp(),
                 });
+                await updateDoc(docRef, { chatId: docRef.id });
                 chatId = docRef.id;
             }
             navigation.navigate('Conversation', {
                 conversation: {
-                    messageId: 0,
-                    chatId: chatId as any,
+                    messageId: '',
+                    chatId: chatId,
                     otherUserId: u.userId,
                     otherUserName: `${u.firstName} ${u.lastName}`,
                     otherUserProfilePicturePath: u.profilePicturePath || '',
