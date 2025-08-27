@@ -20,7 +20,7 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
         <View style={styles.content}>
           <View style={styles.row}>
             <Text style={styles.name}>{conversation.otherUserName}</Text>
-            <Text style={styles.time}>{formatTimestamp(conversation.sentTimestamp)}</Text>
+            <Text style={styles.time}>{formatTimestamp(String(conversation.sentTimestamp))}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.message} numberOfLines={1}>

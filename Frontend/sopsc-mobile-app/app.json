@@ -20,7 +20,7 @@
       },
       "APP_VARIANT": "production",
       "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "191358823571-lu4grtd5hqslue3h04m2hjof1jsb3j4d.apps.googleusercontent.com",
-      "EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/",
+      "EXPO_PUBLIC_API_URL": "https://sopsc-api-e3c7fmfvcagyh0d0.westus-01.azurewebsites.net/api/"
     },
     "ios": {
       "bundleIdentifier": "com.sirmrtyler.sopscmobileapp",

@@ -52,7 +52,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         <View style={incoming ? styles.messageLeft : styles.messageRight}>
           <Text>{item.messageContent}</Text>
           <View style={styles.meta}>
-            <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
+            <Text style={styles.time}>{formatTimestamp(String(item.sentTimestamp))}</Text>
             <Text style={styles.readStatus}>{isRead ? 'Read' : 'Unread'}</Text>
           </View>
         </View>
