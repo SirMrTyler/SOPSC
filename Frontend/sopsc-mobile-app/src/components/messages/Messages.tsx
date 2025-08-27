@@ -13,52 +13,32 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
 import ConversationItem from './ConversationItem';
-import { MessageConversation } from '../../types/messages';
 import { useAuth } from '../../hooks/useAuth';
-import {getApp} from '@react-native-firebase/app';
-import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where} from '@react-native-firebase/firestore';
+import { listenToMyConversations, FsConversation } from '../../services/fsMessages';
 import ScreenContainer from '../navigation/ScreenContainer';
 
 const PREVIEW_LENGTH = 50;
 
-const db = getFirestore(getApp());
-
 const Messages: React.FC = () => {
     const { user } = useAuth();
-    const [messages, setMessages] = useState<MessageConversation[]>([]);
-    const [filteredMessages, setFilteredMessages] = useState<MessageConversation[]>([]);
+    const [messages, setMessages] = useState<FsConversation[]>([]);
+    const [filteredMessages, setFilteredMessages] = useState<FsConversation[]>([]);
     const [loading, setLoading] = useState(true);
     const [queryString, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     useEffect(() => {
         if (!user) return;
-        const q = query(
-            collection(db, 'conversations'),
-            where(`participants.${user.userId}`, '==', true)
-        );
-        const unsubscribe = onSnapshot(q, snapshot => {
-            const list: MessageConversation[] = snapshot.docs.map(doc => {
-                const data = doc.data() as any;
-                const mostRecent = data.mostRecentMessage || '';
-                return {
-                    messageId: data.lastMessageId || '',
-                    chatId: doc.id,
-                    otherUserId: data.otherUserId,
-                    otherUserName: data.otherUserName,
-                    otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',
-                    mostRecentMessage:
-                        mostRecent.length > PREVIEW_LENGTH
-                            ? mostRecent.slice(0, PREVIEW_LENGTH) + '...'
-                            : mostRecent,
-                    isRead: data.isRead,
-                    sentTimestamp: data.sentTimestamp,
-                    numMessages: data.numMessages || 0,
-                    isLastMessageFromUser: data.isLastMessageFromUser || false,
-                };
-            });
-            setMessages(list);
-            setFilteredMessages(list);
+        const unsubscribe = listenToMyConversations(user.userId, list => {
+            const trimmed = list.map(c => ({
+                ...c,
+                mostRecentMessage:
+                    c.mostRecentMessage.length > PREVIEW_LENGTH
+                        ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + '...'
+                        : c.mostRecentMessage,
+            }));
+            setMessages(trimmed);
+            setFilteredMessages(trimmed);
             setLoading(false);
         });
         return () => unsubscribe();
