@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import type { RootStackParamList } from '../../../App';
+import type { RootStackParamList } from '../../../../App';
 import { getAll } from '../../services/groupChatService';
-import { GroupChatSummary } from '../../types/groupChat';
-import ScreenContainer from '../navigation/ScreenContainer';
+import { GroupChatSummary } from '../../../types/groupChat';
+import ScreenContainer from '../../navigation/ScreenContainer';
 
 const GroupChats: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

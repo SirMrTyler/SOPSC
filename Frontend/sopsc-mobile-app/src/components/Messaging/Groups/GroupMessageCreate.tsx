@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../App';
+import type { RootStackParamList } from '../../../../App';
 import { create } from '../../services/groupChatService';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../../navigation/ScreenContainer';
 
 const CreateGroupChat: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

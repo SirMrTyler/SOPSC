@@ -1,14 +1,14 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../App';
-import { GroupChatMessage } from '../../types/groupChat';
-import { useMessages } from '../../hooks/useMessages';
-import { useAuth } from '../../hooks/useAuth';
+import type { RootStackParamList } from '../../../../App';
+import { GroupChatMessage } from '../../../types/groupChat';
+import { useMessages } from '../../../hooks/useMessages';
+import { useAuth } from '../../../hooks/useAuth';
 import {getApp} from '@react-native-firebase/app';
 import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp} from '@react-native-firebase/firestore';
-import ScreenContainer from '../navigation/ScreenContainer';
-import { formatTimestamp } from '../../utils/date';
+import ScreenContainer from '../../navigation/ScreenContainer';
+import { formatTimestamp } from '../../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'> {}
 

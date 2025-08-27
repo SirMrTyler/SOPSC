@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Button, Image } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../App';
-import { useMessages } from '../../hooks/useMessages';
-import { useAuth } from '../../hooks/useAuth';
-import ScreenContainer from '../navigation/ScreenContainer';
-import { FsMessage, sendMessage, markConversationRead } from '../../types/fsMessages';
-import { formatTimestamp } from '../../utils/date';
+import type { RootStackParamList } from '../../../../App';
+import { useMessages } from '../../../hooks/useMessages';
+import { useAuth } from '../../../hooks/useAuth';
+import ScreenContainer from '../../navigation/ScreenContainer';
+import { FsMessage, sendMessage, markConversationRead } from '../../../types/fsMessages';
+import { formatTimestamp } from '../../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
 

@@ -16,7 +16,7 @@ Front End - Variables:
   - camelCase/dromedaryCase: 'camelCasingWillBeUsedFor'
     - variables used only in local scope
     - helper functions
-    - service functions
+    - services files
     -
 
 * ---
