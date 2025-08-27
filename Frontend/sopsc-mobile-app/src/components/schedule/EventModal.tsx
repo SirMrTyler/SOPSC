@@ -14,8 +14,8 @@ import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { Picker } from '@react-native-picker/picker';
-import * as categoryService from '../../services/scheduleCategoriesService';
-import TagModal from './TagModal';
+import * as categoryService from '../Schedule/services/scheduleCategoriesService';
+import TagModal from '../Schedule/TagModal';
 
 interface Props {
   visible: boolean;

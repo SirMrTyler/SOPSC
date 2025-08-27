@@ -17,13 +17,13 @@ import {
   PlusIcon,
 } from 'react-native-heroicons/outline';
 import { BlurView } from 'expo-blur';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../Navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
 import EventModal, { EventData } from './EventModal';
 import DayViewModal from './DayViewModal';
 import EventDetailsModal from './EventDetailsModal';
 import FilterMenu from './FilterMenu';
-import * as calendarService from '../../services/calendarService';
+import * as calendarService from './services/calendarService';
 import { Picker } from '@react-native-picker/picker';
 interface DayCell {
   date: Date;

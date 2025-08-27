@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../services/userService.js';
+import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../components/User/services/userService.js';
 
 export interface AuthUser {
   userId: number;

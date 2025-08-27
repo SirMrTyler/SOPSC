@@ -6,7 +6,7 @@ import type { RootStackParamList } from '../../../App';
 import { getAll } from '../User/services/userService';
 import { useAuth } from '../../hooks/useAuth';
 import { UserResult } from '../../types/user';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../Navigation/ScreenContainer';
 import { getApp } from '@react-native-firebase/app';
 import { getFirestore, collection, query as fsQuery, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@react-native-firebase/firestore';
 

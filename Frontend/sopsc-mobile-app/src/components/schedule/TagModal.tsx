@@ -7,7 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import * as categoryService from '../../services/scheduleCategoriesService';
+import * as categoryService from './services/scheduleCategoriesService';
 
 interface Props {
   visible: boolean;

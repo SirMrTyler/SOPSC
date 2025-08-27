@@ -7,7 +7,7 @@ import { useMessages } from '../../../hooks/useMessages';
 import { useAuth } from '../../../hooks/useAuth';
 import {getApp} from '@react-native-firebase/app';
 import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp} from '@react-native-firebase/firestore';
-import ScreenContainer from '../../navigation/ScreenContainer';
+import ScreenContainer from '../../Navigation/ScreenContainer';
 import { formatTimestamp } from '../../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'> {}

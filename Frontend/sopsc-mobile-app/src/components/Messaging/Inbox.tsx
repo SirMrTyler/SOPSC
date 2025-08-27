@@ -12,10 +12,10 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
-import ConversationItem from './Messages/RenderMessageItem';
+import RenderMessageItem from './Messages/RenderMessageItem';
 import { useAuth } from '../../hooks/useAuth';
 import { listenToMyConversations, FsConversation } from '../../types/fsMessages';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../Navigation/ScreenContainer';
 
 const PREVIEW_LENGTH = 50;
 
@@ -101,7 +101,7 @@ const Messages: React.FC = () => {
                         data={filteredMessages}
                         keyExtractor={(item) => item.chatId.toString()}
                         renderItem={({ item }) => (
-                            <ConversationItem
+                            <RenderMessageItem
                                 conversation={item}
                                 onPress={() =>
                                     navigation.navigate('Conversation', { conversation: item })

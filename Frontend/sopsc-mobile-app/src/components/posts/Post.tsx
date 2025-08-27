@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../Navigation/ScreenContainer';
 
 const postName = 'Prayer Requests';
 

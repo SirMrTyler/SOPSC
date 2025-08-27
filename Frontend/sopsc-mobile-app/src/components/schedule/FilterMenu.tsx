@@ -9,7 +9,7 @@ import {
   FlatList
 } from 'react-native';
 import TagModal from './TagModal';
-import * as categoryService from '../../services/scheduleCategoriesService';
+import * as categoryService from './services/scheduleCategoriesService';
 
 interface Props {
   visible: boolean;

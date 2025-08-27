@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import ScreenContainer from '../navigation/ScreenContainer';
-import * as reportService from '../../services/reportService';
+import ScreenContainer from '../Navigation/ScreenContainer';
+import * as reportService from './services/reportService';
 import type { Report } from '../../types/report';
 import { useAuth } from '../../hooks/useAuth';
 

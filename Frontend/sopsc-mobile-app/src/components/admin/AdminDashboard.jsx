@@ -1,5 +1,5 @@
 import { View, Text} from 'react-native';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../Navigation/ScreenContainer';
 
 const AdminDashboard = () => {
     return (

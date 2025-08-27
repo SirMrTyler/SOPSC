@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import ScreenContainer from '../navigation/ScreenContainer';
+import ScreenContainer from '../Navigation/ScreenContainer';
 import { useAuth } from '../../hooks/useAuth';
-import { update as updateUser } from '../../services/userService.js';
+import { update as updateUser } from '../User/services/userService.js';
 
 const Profile: React.FC = () => {
   const { user, refresh } = useAuth();

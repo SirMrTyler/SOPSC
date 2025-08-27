@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Button } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../App';
-import { getAll } from '../../services/userService';
-import { addMembers } from '../../services/groupChatService';
+import { getAll } from '../../User/services/userService';
+import { addMembers } from '../services/groupChatService';
 import { UserResult } from '../../../types/user';
-import ScreenContainer from '../../navigation/ScreenContainer';
+import ScreenContainer from '../../Navigation/ScreenContainer';
 
 const roleNames: Record<number, string> = {
   1: 'Developer',

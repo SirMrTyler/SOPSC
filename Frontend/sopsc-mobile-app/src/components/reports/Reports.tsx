@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
-import ScreenContainer from '../navigation/ScreenContainer';
-import * as reportService from '../../services/reportService';
+import ScreenContainer from '../Navigation/ScreenContainer';
+import * as reportService from './services/reportService';
 import { Report } from '../../types/report';
 import firestore from '@react-native-firebase/firestore';
 import ReportForm from './ReportForm';
