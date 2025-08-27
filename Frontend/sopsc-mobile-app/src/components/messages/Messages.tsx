@@ -14,7 +14,7 @@ import { UsersIcon, PencilSquareIcon } from 'react-native-heroicons/outline';
 import type { RootStackParamList } from '../../../App';
 import ConversationItem from './ConversationItem';
 import { useAuth } from '../../hooks/useAuth';
-import { listenToMyConversations, FsConversation } from '../../services/fsMessages';
+import { listenToMyConversations, FsConversation } from '../../types/fsMessages';
 import ScreenContainer from '../navigation/ScreenContainer';
 
 const PREVIEW_LENGTH = 50;

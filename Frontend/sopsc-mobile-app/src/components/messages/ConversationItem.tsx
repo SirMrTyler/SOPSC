@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { FsConversation } from '../../services/fsMessages';
+import { FsConversation } from '../../types/fsMessages';
 import { formatTimestamp } from '../../utils/date';
 import defaultAvatar from '../../../assets/images/default-avatar.png';
 interface Props {

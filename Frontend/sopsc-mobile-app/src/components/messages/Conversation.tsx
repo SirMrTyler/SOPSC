@@ -5,7 +5,7 @@ import type { RootStackParamList } from '../../../App';
 import { useMessages } from '../../hooks/useMessages';
 import { useAuth } from '../../hooks/useAuth';
 import ScreenContainer from '../navigation/ScreenContainer';
-import { FsMessage, sendMessage, markConversationRead } from '../../services/fsMessages';
+import { FsMessage, sendMessage, markConversationRead } from '../../types/fsMessages';
 import { formatTimestamp } from '../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
