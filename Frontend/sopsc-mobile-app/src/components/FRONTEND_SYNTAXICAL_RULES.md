@@ -14,11 +14,16 @@ Front End - Variables:
     - export(ed) functions.
     - types (file names, and actual types)
   - camelCase/dromedaryCase: 'camelCasingWillBeUsedFor'
+    - variables used only in local scope
+    - helper functions
+    - service functions
     -
 
 * ---
 
 ## General Layout:
+
+to work plan: grouping similar folders (i.e. Messages.tsx, GroupChats.tsx, ConversationItem.tsx)
 
 - Component Name: <A>.tsx:
   - Variables:
