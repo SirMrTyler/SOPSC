@@ -1,3 +1,8 @@
+/**
+ * File: RenderMessage.tsx
+ * Purpose: Displays a direct conversation thread and allows sending new messages.
+ * Notes: Marks messages as read when viewed and scrolls to the latest on send.
+ */
 import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Button, Image } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,6 +15,10 @@ import { formatTimestamp } from '../../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
 
+/**
+ * Conversation
+ * Renders an individual chat and handles read receipts and message sending.
+ */
 const Conversation: React.FC<Props> = ({ route }) => {
   const { conversation } = route.params;
   const { user } = useAuth();
@@ -17,11 +26,15 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList<FsMessage>>(null);
 
+  // Mark messages as read whenever new ones arrive
   useEffect(() => {
     if (!user) return;
     markConversationRead(conversation.chatId, user.userId, messages);
   }, [messages, user, conversation.chatId]);
 
+  /**
+   * Sends a message through the Firestore helper and resets the input.
+   */
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
@@ -34,6 +47,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
+  /**
+   * Renders each message bubble with timestamp and read status.
+   */
   const renderItem = ({ item }: { item: FsMessage }) => {
     const incoming = item.senderId === conversation.otherUserId;
     const isRead = item.readBy

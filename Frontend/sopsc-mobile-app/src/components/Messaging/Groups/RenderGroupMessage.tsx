@@ -1,3 +1,8 @@
+/**
+ * File: RenderGroupMessage.tsx
+ * Purpose: Renders a group chat conversation and provides input to send messages.
+ * Notes: Subscribes to Firestore collection for real-time updates.
+ */
 import React, { useRef, useState } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -5,8 +10,8 @@ import type { RootStackParamList } from '../../../../App';
 import { GroupChatMessage } from '../../../types/groupChat';
 import { useMessages } from '../../../hooks/useMessages';
 import { useAuth } from '../../../hooks/useAuth';
-import {getApp} from '@react-native-firebase/app';
-import {getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp} from '@react-native-firebase/firestore';
+import { getApp } from '@react-native-firebase/app';
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from '@react-native-firebase/firestore';
 import ScreenContainer from '../../Navigation/ScreenContainer';
 import { formatTimestamp } from '../../../utils/date';
 
@@ -14,6 +19,10 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatCon
 
 const db = getFirestore(getApp());
 
+/**
+ * GroupChatConversation
+ * Displays messages for the specified group chat and handles sending new messages.
+ */
 const GroupChatConversation: React.FC<Props> = ({ route }) => {
   const { chatId, name } = route.params;
   const { user } = useAuth();
@@ -21,6 +30,9 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList<GroupChatMessage>>(null);
 
+  /**
+   * Persists a new message document and scrolls the list to the latest entry.
+   */
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     await addDoc(collection(db, `groupChats/${chatId}/messages`), {
@@ -35,6 +47,9 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
+  /**
+   * Renders a message bubble with timestamp and sender name.
+   */
   const renderItem = ({ item }: { item: GroupChatMessage }) => {
     const outgoing = item.senderId === user?.userId;
     return (

@@ -1,3 +1,8 @@
+/**
+ * File: GroupMessageCreate.tsx
+ * Purpose: Form for creating a new group chat and navigating back to the inbox.
+ * Notes: Minimal validation and uses group chat service for creation.
+ */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -6,11 +11,18 @@ import type { RootStackParamList } from '../../../../App';
 import { create } from '../services/groupChatService';
 import ScreenContainer from '../../Navigation/ScreenContainer';
 
+/**
+ * CreateGroupChat
+ * Collects a name from the user and creates a group chat via the service layer.
+ */
 const CreateGroupChat: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
 
+    /**
+     * Sends the new group name to the API and navigates back on success.
+     */
     const handleCreate = async () => {
         if (!name.trim()) return;
         setSaving(true);

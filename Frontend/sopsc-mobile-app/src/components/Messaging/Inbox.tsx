@@ -1,3 +1,8 @@
+/**
+ * File: Inbox.tsx
+ * Purpose: Shows the user's recent conversations with search and navigation shortcuts.
+ * Notes: Subscribes to conversation updates and truncates message previews.
+ */
 import React, { useEffect, useState } from 'react';
 import {
     View,
@@ -19,6 +24,10 @@ import ScreenContainer from '../Navigation/ScreenContainer';
 
 const PREVIEW_LENGTH = 50;
 
+/**
+ * Messages
+ * Displays all user conversations and provides search and creation entry points.
+ */
 const Messages: React.FC = () => {
     const { user } = useAuth();
     const [messages, setMessages] = useState<FsConversation[]>([]);
@@ -27,6 +36,7 @@ const Messages: React.FC = () => {
     const [queryString, setQuery] = useState('');
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+    // Subscribe to Firestore for real-time conversation updates
     useEffect(() => {
         if (!user) return;
         const unsubscribe = listenToMyConversations(user.userId, list => {
@@ -44,6 +54,7 @@ const Messages: React.FC = () => {
         return () => unsubscribe();
     }, [user]);
 
+    // Refilter messages when search input changes
     useEffect(() => {
         const q = queryString.trim().toLowerCase();
         if (!q) {

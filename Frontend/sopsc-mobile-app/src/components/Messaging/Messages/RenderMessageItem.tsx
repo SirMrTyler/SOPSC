@@ -1,3 +1,8 @@
+/**
+ * File: RenderMessageItem.tsx
+ * Purpose: Renders a preview row for a conversation in the inbox list.
+ * Notes: Shows read status and timestamp for the latest message.
+ */
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { FsConversation } from '../../../types/fsMessages';
@@ -9,6 +14,10 @@ interface Props {
   onLongPress?: () => void;
 }
 
+/**
+ * ConversationItem
+ * Displays conversation metadata including read status and timestamp.
+ */
 const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress }) => {
   return (
     <View style={styles.messageBox}>
@@ -26,8 +35,8 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
             <Text style={styles.message} numberOfLines={1}>
               {conversation.mostRecentMessage}
             </Text>
-            {/** I need this piece of information to display the read status in real time */}
-              {conversation.isLastMessageFromUser && (
+            {/* Display read status only for messages the user sent */}
+            {conversation.isLastMessageFromUser && (
               <Text style={styles.status}>
                 {conversation.isRead ? 'Read' : 'Unread'}
               </Text>

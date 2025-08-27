@@ -1,3 +1,8 @@
+/**
+ * File: GroupInbox.tsx
+ * Purpose: Displays a list of group chats and provides navigation to conversations or creation.
+ * Notes: Fetches group chat summaries on mount.
+ */
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,11 +12,16 @@ import { getAll } from '../services/groupChatService';
 import { GroupChatSummary } from '../../../types/groupChat';
 import ScreenContainer from '../../Navigation/ScreenContainer';
 
+/**
+ * GroupChats
+ * Lists all group chat conversations for the current user.
+ */
 const GroupChats: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [chats, setChats] = useState<GroupChatSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Retrieve group chat summaries when the component mounts
   useEffect(() => {
     const load = async () => {
       try {

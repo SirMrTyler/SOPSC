@@ -1,3 +1,8 @@
+/**
+ * File: UserList.tsx
+ * Purpose: Presents a searchable list of users and navigates to a conversation with the selected user.
+ * Notes: Creates a new conversation document if one does not already exist.
+ */
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -12,6 +17,10 @@ import { getFirestore, collection, query as fsQuery, where, getDocs, addDoc, upd
 
 const db = getFirestore(getApp());
 
+/**
+ * UserList
+ * Enables searching for other users and starting or resuming conversations.
+ */
 const UserList: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { user } = useAuth();
@@ -54,6 +63,10 @@ const UserList: React.FC = () => {
         return () => clearTimeout(timeout);
     }, [query, users]);
 
+    /**
+     * Navigates to an existing conversation or creates one if none is found.
+     * @param u User selected from the list
+     */
     const handleUserPress = async (u: UserResult) => {
         if (!user) return;
         try {

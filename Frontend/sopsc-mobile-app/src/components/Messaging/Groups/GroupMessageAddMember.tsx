@@ -1,3 +1,8 @@
+/**
+ * File: GroupMessageAddMember.tsx
+ * Purpose: Screen for searching users and selecting them to join a group chat.
+ * Notes: Uses group chat service to append members to an existing chat.
+ */
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Button } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -16,6 +21,10 @@ const roleNames: Record<number, string> = {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddGroupChatMembers'>;
 
+/**
+ * AddGroupChatMembers
+ * Allows the current user to search for members and add them to a group chat.
+ */
 const AddGroupChatMembers: React.FC<Props> = ({ route, navigation }) => {
   const { chatId } = route.params;
   const [query, setQuery] = useState('');
@@ -24,6 +33,7 @@ const AddGroupChatMembers: React.FC<Props> = ({ route, navigation }) => {
   const [results, setResults] = useState<UserResult[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
 
+  // Load all users on mount so the search operates locally
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -42,6 +52,7 @@ const AddGroupChatMembers: React.FC<Props> = ({ route, navigation }) => {
     load();
   }, []);
 
+  // Filter the results whenever the query changes
   useEffect(() => {
     const q = query.trim().toLowerCase();
     if (!q) {
@@ -51,10 +62,17 @@ const AddGroupChatMembers: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [query, users]);
 
+  /**
+   * Toggles a user's selection state in the local selection array.
+   * @param id User identifier to add or remove
+   */
   const toggleSelect = (id: number) => {
     setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
+  /**
+   * Submits the selected user ids to the service and returns to the previous screen.
+   */
   const handleAdd = async () => {
     if (selected.length === 0) return;
     try {
