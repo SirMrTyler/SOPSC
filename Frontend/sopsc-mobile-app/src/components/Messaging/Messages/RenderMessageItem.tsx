@@ -8,6 +8,8 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { FsConversation } from '../../../types/fsMessages';
 import { formatTimestamp } from '../../../utils/date';
 import defaultAvatar from '../../../../assets/images/default-avatar.png';
+import { useAuth } from '../../../hooks/useAuth';
+import { useUnreadCount } from '../../../hooks/useUnreadCount';
 interface Props {
   conversation: FsConversation;
   onPress: () => void;
@@ -19,6 +21,8 @@ interface Props {
  * Displays conversation metadata including read status and timestamp.
  */
 const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress }) => {
+  const { user } = useAuth();
+  const unread = useUnreadCount(conversation.chatId, user?.userId);
   return (
     <View style={styles.messageBox}>
       <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
@@ -43,9 +47,9 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
             )}
           </View>
         </View>
-        {conversation.numMessages > 0 && (
+        {(unread > 0 || (!conversation.isRead && !conversation.isLastMessageFromUser)) && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{conversation.numMessages}</Text>
+            <Text style={styles.badgeText}>{unread > 0 ? unread : 1}</Text>
           </View>
         )}
       </TouchableOpacity>

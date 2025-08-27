@@ -12,6 +12,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import ScreenContainer from '../../Navigation/ScreenContainer';
 import { FsMessage, sendMessage, markConversationRead } from '../../../types/fsMessages';
 import { formatTimestamp } from '../../../utils/date';
+import { useConversationMeta } from '../../../hooks/useConversationMeta';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
 
@@ -22,6 +23,7 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation
 const Conversation: React.FC<Props> = ({ route }) => {
   const { conversation } = route.params;
   const { user } = useAuth();
+  const meta = useConversationMeta(conversation.chatId);
   const messages = useMessages<FsMessage>(`conversations/${conversation.chatId}/messages`);
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList<FsMessage>>(null);
@@ -61,7 +63,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
       <View style={incoming ? styles.messageRowLeft : styles.messageRowRight}>
         {incoming && (
           <Image
-            source={{ uri: conversation.otherUserProfilePicturePath }}
+            // Use live-updating avatar; fall back to initial prop
+            source={{ uri: meta.otherUserProfilePicturePath || conversation.otherUserProfilePicturePath }}
+            key={(meta.otherUserProfilePicturePath || conversation.otherUserProfilePicturePath) ?? 'avatar'}
             style={styles.avatar}
           />
         )}
@@ -77,7 +81,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
   };
 
   return (
-    <ScreenContainer showBottomBar={false} showBack title={conversation.otherUserName}>
+    <ScreenContainer showBottomBar={false} showBack title={meta.otherUserName || conversation.otherUserName}>
       <View style={styles.container}>
         <FlatList
           ref={flatListRef}
