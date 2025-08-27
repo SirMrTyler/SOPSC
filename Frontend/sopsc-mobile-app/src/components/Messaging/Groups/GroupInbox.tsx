@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator }
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../../App';
-import { getAll } from '../../services/groupChatService';
+import { getAll } from '../services/groupChatService';
 import { GroupChatSummary } from '../../../types/groupChat';
 import ScreenContainer from '../../navigation/ScreenContainer';
 

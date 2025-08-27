@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as helper from './serviceHelpers';
+import * as helper from '../../serviceHelpers';
 
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}reports`;
 

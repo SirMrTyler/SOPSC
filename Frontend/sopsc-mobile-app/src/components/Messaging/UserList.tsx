@@ -3,7 +3,7 @@ import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Activity
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
-import { getAll } from '../../services/userService';
+import { getAll } from '../User/services/userService';
 import { useAuth } from '../../hooks/useAuth';
 import { UserResult } from '../../types/user';
 import ScreenContainer from '../navigation/ScreenContainer';
