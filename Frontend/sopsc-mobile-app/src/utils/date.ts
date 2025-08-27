@@ -1,6 +1,8 @@
 import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 
-type TimestampInput =
+export type TimestampLike =
+// Accept either a Firestore timestamp, a native Date, or an ISO string
+// so callers can pass in whatever representation they have available.
   | FirebaseFirestoreTypes.Timestamp
   | Date
   | string;
@@ -12,7 +14,7 @@ interface FormatOptions {
 }
 
 export const formatTimestamp = (
-  timestamp?: TimestampInput | null,
+  timestamp?: TimestampLike | null,
   options: FormatOptions = { includeDate: true, includeDay: true, includeTime: true },
 ): string => {
   if (!timestamp) return '';
