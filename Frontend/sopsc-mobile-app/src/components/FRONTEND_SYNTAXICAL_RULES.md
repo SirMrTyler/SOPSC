@@ -34,12 +34,11 @@ This file is to be refered to during ANY programming alterations.
 - File Structure:
 
   1. Files should be grouped if they are tied to one another, example: 'Messaging/Groups' or 'Messaging/Messages'
-  2.
 
-- Component Name: <A>.tsx:
-  - Variables:
-  - Functions:
-
-Definitions:
-
--
+- Components:
+  1. Getters: Any piece of data pulled from another component/source needs to defined as a structure and pulled from a helper/services file.
+     - For bigger pieces of data import them as an object
+  2. Setters: Any piece of data being set that will be sent elsewhere needs to be defined as a type.
+     - Example: User.ts, fsMessages.ts, groupChat.ts, messages.ts, report.ts, etc
+  3. Components of similar type need to be grouped in a folder
+  4. foregin data received from another source will use 'whispering_snake_case'. Except for functions, those are standard 'camelCase'
