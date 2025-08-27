@@ -9,25 +9,25 @@ import { ImageBackground, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 // Components
-import Login from './src/components/user/Login';
-import Register from './src/components/user/Register';
-import LandingPage from './src/components/landing/LandingPage';
-import Messages from './src/components/messages/Messages';
-import UserList from './src/components/messages/UserList';
-import CreateGroupChat from './src/components/messages/CreateGroupChat';
-import GroupChats from './src/components/messages/GroupChats';
-import GroupChatConversation from './src/components/messages/GroupChatConversation';
-import AddGroupChatMembers from './src/components/messages/AddGroupChatMembers';
-import Conversation from './src/components/messages/Conversation';
-import { FsConversation } from './src/services/fsMessages';
-import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
-import PrayerRequests from './src/components/posts/Post'; // TODO: Make Prayer Requests component logic
-import Reports from './src/components/reports/Reports'; // TODO: Make Reports component logic
-import ReportDetails from './src/components/reports/ReportDetails';
-import Schedule from './src/components/schedule/Schedule';
-import Profile from './src/components/profile/Profile'; // TODO: Make Profile component logic
+import Login from './src/components/User/Login';
+import Register from './src/components/User/Register';
+import LandingPage from './src/components/Landing/LandingPage';
+import Messages from './src/components/Messaging/Inbox';
+import UserList from './src/components/Messaging/UserList';
+import CreateGroupMessage from './src/components/Messaging/Groups/GroupMessageCreate';
+import GroupInbox from './src/components/Messaging/Groups/GroupInbox';
+import RenderGroupMessage from './src/components/Messaging/Groups/RenderGroupMessage';
+import AddGroupChatMembers from './src/components/Messaging/Groups/GroupMessageCreate';
+import Conversation from './src/components/Messaging/Messages/RenderMessage';
+import { FsConversation } from './src/types/fsMessages';
+import AdminDashboard from './src/components/Admin/AdminDashboard'; // TODO: Make AdminDashboard Component
+import PrayerRequests from './src/components/Posts/Post'; // TODO: Make Prayer Requests component logic
+import Reports from './src/components/Reports/Reports'; // TODO: Make Reports component logic
+import ReportDetails from './src/components/Reports/ReportDetails';
+import Schedule from './src/components/Schedule/Schedule';
+import Profile from './src/components/Profile/Profile'; // TODO: Make Profile component logic
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Posts from './src/components/posts/Post';
+import Posts from './src/components/Posts/Post';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
 
 export type RootStackParamList = {
@@ -90,9 +90,9 @@ export default function App() {
                   
                   <Stack.Screen name="Messages" component={Messages} />
                   <Stack.Screen name="UserList" component={UserList} />
-                  <Stack.Screen name="GroupChats" component={GroupChats} />
-                  <Stack.Screen name="CreateGroupChat" component={CreateGroupChat} />
-                  <Stack.Screen name="GroupChatConversation" component={GroupChatConversation} />
+                  <Stack.Screen name="GroupChats" component={GroupInbox} />
+                  <Stack.Screen name="CreateGroupChat" component={CreateGroupMessage} />
+                  <Stack.Screen name="GroupChatConversation" component={RenderGroupMessage} />
                   <Stack.Screen name="AddGroupChatMembers" component={AddGroupChatMembers} />
                   <Stack.Screen name="Conversation" component={Conversation} />
                   <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
