@@ -88,7 +88,7 @@ const UserList: React.FC = () => {
                     otherUserProfilePicturePath: u.profilePicturePath || '',
                     mostRecentMessage: '',
                     isRead: true,
-                    sentTimestamp: '',
+                    sentTimestamp: null,
                     numMessages: 0,
                     isLastMessageFromUser: false,
                 },

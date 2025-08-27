@@ -23,7 +23,7 @@ export interface FsConversation {
   otherUserProfilePicturePath: string;
   mostRecentMessage: string;
   isRead: boolean;
-  sentTimestamp: FirebaseFirestoreTypes.Timestamp | null | string;
+  sentTimestamp: Date | null;
   numMessages: number;
   isLastMessageFromUser: boolean;
 }
@@ -35,8 +35,8 @@ export interface FsMessage {
   senderId: number;
   senderName: string;
   messageContent: string;
-  sentTimestamp: FirebaseFirestoreTypes.Timestamp | null | string;
-  readTimestamp?: string | null;
+  sentTimestamp: Date | null;
+  readTimestamp?: Date | null;
   isRead: boolean;
   readBy?: Record<string, boolean>;
 }
@@ -58,7 +58,7 @@ export const getFsConversation = async (
     otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',
     mostRecentMessage: data.mostRecentMessage || '',
     isRead: data.isRead,
-    sentTimestamp: data.sentTimestamp ?? null,
+    sentTimestamp: data.sentTimestamp?.toDate() ?? null,
     numMessages: data.numMessages || 0,
     isLastMessageFromUser: data.isLastMessageFromUser || false,
   };
@@ -84,7 +84,7 @@ export const listenToMyConversations = (
         otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',
         mostRecentMessage: data.mostRecentMessage || '',
         isRead: data.isRead,
-        sentTimestamp: data.sentTimestamp ?? null,
+        sentTimestamp: data.sentTimestamp?.toDate() ?? null,
         numMessages: data.numMessages || 0,
         isLastMessageFromUser: data.isLastMessageFromUser || false,
       };
@@ -107,6 +107,8 @@ export const listenToConversationMessages = (
       const data = d.data() as FirebaseFirestoreTypes.DocumentData;
       return {
         ...(data as any),
+        sentTimestamp: data.sentTimestamp?.toDate() ?? null,
+        readTimestamp: data.readTimestamp?.toDate() ?? null,
         messageId: d.id,
         chatId,
       } as FsMessage;
