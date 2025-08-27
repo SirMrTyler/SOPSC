@@ -2,66 +2,39 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Button, Image } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
-import { Message } from '../../types/messages';
 import { useMessages } from '../../hooks/useMessages';
 import { useAuth } from '../../hooks/useAuth';
-import { getApp } from '@react-native-firebase/app';
-import { getFirestore, collection, addDoc, doc, updateDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import ScreenContainer from '../navigation/ScreenContainer';
+import { FsMessage, sendMessage, markConversationRead } from '../../services/fsMessages';
 import { formatTimestamp } from '../../utils/date';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
 
-const db = getFirestore(getApp());
-
 const Conversation: React.FC<Props> = ({ route }) => {
   const { conversation } = route.params;
   const { user } = useAuth();
-  const messages = useMessages<Message>(`conversations/${conversation.chatId}/messages`);
+  const messages = useMessages<FsMessage>(`conversations/${conversation.chatId}/messages`);
   const [newMessage, setNewMessage] = useState('');
-  const flatListRef = useRef<FlatList<Message>>(null);
+  const flatListRef = useRef<FlatList<FsMessage>>(null);
 
   useEffect(() => {
     if (!user) return;
-    const markRead = async () => {
-      await updateDoc(doc(db, 'conversations', conversation.chatId), {
-        [`readBy.${user.userId}`]: true,
-        isRead: true,
-      });
-      messages.forEach(msg => {
-        if (!msg.readBy || !msg.readBy[user.userId]) {
-          updateDoc(doc(db, `conversations/${conversation.chatId}/messages`, msg.messageId), {
-            [`readBy.${user.userId}`]: true,
-            isRead: true,
-          });
-        }
-      });
-    };
-    markRead();
+    markConversationRead(conversation.chatId, user.userId, messages);
   }, [messages, user, conversation.chatId]);
 
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
-    const msgRef = await addDoc(collection(db, `conversations/${conversation.chatId}/messages`), {
-      senderId: user.userId,
-      senderName: `${user.firstName} ${user.lastName}`,
-      messageContent: content,
-      sentTimestamp: serverTimestamp(),
-      readBy: { [user.userId]: true },
-    });
-    await updateDoc(doc(db, 'conversations', conversation.chatId), {
-      mostRecentMessage: content,
-      lastMessageId: msgRef.id,
-      sentTimestamp: serverTimestamp(),
-      isLastMessageFromUser: true,
-      isRead: false,
-    });
+    await sendMessage(conversation.chatId, {
+      userId: user.userId,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    }, content);
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
-  const renderItem = ({ item }: { item: Message }) => {
+  const renderItem = ({ item }: { item: FsMessage }) => {
     const incoming = item.senderId === conversation.otherUserId;
     const isRead = item.readBy
       ? incoming

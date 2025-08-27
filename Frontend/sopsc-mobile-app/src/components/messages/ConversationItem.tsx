@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { MessageConversation } from '../../types/messages';
+import { FsConversation } from '../../services/fsMessages';
 import { formatTimestamp } from '../../utils/date';
 import defaultAvatar from '../../../assets/images/default-avatar.png';
 interface Props {
-  conversation: MessageConversation;
+  conversation: FsConversation;
   onPress: () => void;
   onLongPress?: () => void;
 }

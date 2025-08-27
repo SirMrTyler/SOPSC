@@ -19,7 +19,7 @@ import GroupChats from './src/components/messages/GroupChats';
 import GroupChatConversation from './src/components/messages/GroupChatConversation';
 import AddGroupChatMembers from './src/components/messages/AddGroupChatMembers';
 import Conversation from './src/components/messages/Conversation';
-import { MessageConversation } from './src/types/messages';
+import { FsConversation } from './src/services/fsMessages';
 import AdminDashboard from './src/components/admin/AdminDashboard'; // TODO: Make AdminDashboard Component
 import PrayerRequests from './src/components/posts/Post'; // TODO: Make Prayer Requests component logic
 import Reports from './src/components/reports/Reports'; // TODO: Make Reports component logic
@@ -40,7 +40,7 @@ export type RootStackParamList = {
   GroupChats: undefined;
   GroupChatConversation: { chatId: number; name: string };
   AddGroupChatMembers: { chatId: number };
-  Conversation: { conversation: MessageConversation };
+  Conversation: { conversation: FsConversation };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
   Reports: undefined;
