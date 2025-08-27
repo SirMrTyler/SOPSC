@@ -5,7 +5,7 @@ import { Platform } from "react-native";
 import axios from "axios";
 import {getApp} from '@react-native-firebase/app';
 import {getMessaging, getToken as getFcmToken} from '@react-native-firebase/messaging';
-import { getToken, getDeviceId } from "../services/serviceHelpers";
+import { getToken, getDeviceId } from "../components/serviceHelpers";
 
 const messagingInst = getMessaging(getApp());
 
