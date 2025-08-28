@@ -157,7 +157,7 @@ public class UsersController : BaseApiController
 
     [AllowAnonymous]
     [HttpPost("google")]
-    public ActionResult<ItemResponse<object>> GoogleSignIn(GoogleSignInRequest model)
+    public ActionResult<ItemResponse<object>> GoogleSignIn([FromBody] GoogleSignInRequest model)
     {
         int iCode = 200;
         BaseResponse response = null;
