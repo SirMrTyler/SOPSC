@@ -39,7 +39,9 @@ const Messages: React.FC = () => {
     // Subscribe to Firestore for real-time conversation updates
     useEffect(() => {
         if (!user) return;
-        const unsubscribe = listenToMyConversations(user.userId, list => {
+        const unsubscribe = listenToMyConversations(
+            { userId: user.userId, firebaseUid: user.firebaseUid },
+            list => {
             const trimmed = list.map(c => ({
                 ...c,
                 mostRecentMessage:
@@ -50,7 +52,8 @@ const Messages: React.FC = () => {
             setMessages(trimmed);
             setFilteredMessages(trimmed);
             setLoading(false);
-        });
+        }
+        );
         return () => unsubscribe();
     }, [user]);
 

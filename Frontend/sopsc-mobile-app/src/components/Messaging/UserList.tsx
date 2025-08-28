@@ -73,8 +73,8 @@ const UserList: React.FC = () => {
             const convRef = collection(db, 'conversations');
             const q = fsQuery(
                 convRef,
-                where(`participants.${user.userId}`, '==', true),
-                where(`participants.${u.userId}`, '==', true)
+                where(`participants.${user.firebaseUid}.userId`, '==', user.userId),
+                where(`participants.${u.firebaseUid}.userId`, '==', u.userId)
             );
             const snapshot = await getDocs(q);
             let chatId: string;
@@ -82,7 +82,10 @@ const UserList: React.FC = () => {
                 chatId = snapshot.docs[0].id;
             } else {
                 const docRef = await addDoc(convRef, {
-                    participants: { [user.userId]: true, [u.userId]: true },
+                    participants: {
+                        [user.firebaseUid]: { userId: user.userId },
+                        [u.firebaseUid]: { userId: u.userId },
+                    },
                     memberProfiles: {
                         [user.userId]: {
                             firstName: user.firstName,
@@ -110,7 +113,10 @@ const UserList: React.FC = () => {
                     mostRecentMessage: '',
                     sentTimestamp: null,
                     numMessages: 0,
-                    participants: { [user.userId]: true, [u.userId]: true },
+                    participants: {
+                        [user.firebaseUid]: { userId: user.userId },
+                        [u.firebaseUid]: { userId: u.userId },
+                    },
                     memberProfiles: {
                         [user.userId]: {
                             firstName: user.firstName,

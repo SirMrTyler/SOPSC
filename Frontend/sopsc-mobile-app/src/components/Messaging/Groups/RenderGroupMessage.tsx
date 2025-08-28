@@ -41,7 +41,7 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
       senderName: `${user.firstName} ${user.lastName}`,
       messageContent: newMessage.trim(),
       sentTimestamp: serverTimestamp(),
-      readBy: { [user.userId]: true },
+      readBy: { [user.firebaseUid]: true },
     });
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });

@@ -28,7 +28,8 @@ export interface FsConversation {
   mostRecentMessage: string;
   sentTimestamp: Date | null;
   numMessages: number;
-  participants: Record<string, boolean>;
+  /** keyed by firebaseUid */
+  participants: Record<string, { userId: number }>;
   memberProfiles: Record<string, MemberProfile>;
   unreadCount: Record<string, number>;
   type: 'direct' | 'group';
@@ -47,7 +48,9 @@ export interface FsMessage {
   messageContent: string;
   sentTimestamp: Date | null;
   readTimestamp?: Date | null;
+  /** keyed by firebaseUid */
   readBy?: Record<string, boolean>;
+  /** keyed by firebaseUid */
   recipients: Record<string, boolean>;
   type: 'direct' | 'group';
 }
@@ -93,12 +96,12 @@ export const getFsConversation = async (
 
 /** Subscribe to the current user's conversations */
 export const listenToMyConversations = (
-  userId: number,
+  user: { userId: number; firebaseUid: string },
   cb: (convos: FsConversation[]) => void
 ) => {
   const q = query(
     collection(db, 'conversations'),
-    where(`participants.${userId}`, '==', true)
+    where(`participants.${user.firebaseUid}.userId`, '==', user.userId)
   );
   return onSnapshot(q, (snapshot) => {
     const list: FsConversation[] = snapshot.docs.map((d) => {
@@ -109,7 +112,9 @@ export const listenToMyConversations = (
       let otherUserProfilePicturePath = '';
       if (data.type === 'direct') {
         otherUserId = Number(
-          Object.keys(memberProfiles).find((id) => Number(id) !== userId)
+          Object.keys(memberProfiles).find(
+            (id) => Number(id) !== user.userId
+          )
         );
         const prof = memberProfiles[String(otherUserId)];
         if (prof) {
@@ -166,23 +171,24 @@ export const sendMessage = async (
   chatId: string,
   sender: {
     userId: number;
+    firebaseUid: string;
     firstName: string;
     lastName: string;
     profilePicturePath?: string;
   },
   content: string,
   type: 'direct' | 'group',
-  recipientIds: number[]
+  recipients: { userId: number; firebaseUid: string }[]
 ): Promise<void> => {
   const recipientMap: Record<string, boolean> = {};
   const unreadUpdates: Record<string, any> = {};
-  recipientIds.forEach((id) => {
-    recipientMap[String(id)] = true;
-    if (id !== sender.userId) {
-      unreadUpdates[`unreadCount.${id}`] = increment(1);
+  recipients.forEach(({ userId, firebaseUid }) => {
+    recipientMap[firebaseUid] = true;
+    if (userId !== sender.userId) {
+      unreadUpdates[`unreadCount.${userId}`] = increment(1);
     }
   });
-  const msgRef = await addDoc(
+  await addDoc(
     collection(db, `conversations/${chatId}/messages`),
     {
       senderId: sender.userId,
@@ -190,7 +196,7 @@ export const sendMessage = async (
       senderProfilePicturePath: sender.profilePicturePath || '',
       messageContent: content,
       sentTimestamp: serverTimestamp(),
-      readBy: { [String(sender.userId)]: true },
+      readBy: { [sender.firebaseUid]: true },
       recipients: recipientMap,
       type,
     }
@@ -210,17 +216,17 @@ export const sendMessage = async (
 /** Mark conversation and messages read for the user */
 export const markConversationRead = async (
   chatId: string,
-  userId: number,
+  user: { userId: number; firebaseUid: string },
   messages: FsMessage[]
 ): Promise<void> => {
   await updateDoc(doc(db, 'conversations', chatId), {
-    [`unreadCount.${userId}`]: 0,
+    [`unreadCount.${user.userId}`]: 0,
   });
   await Promise.all(
     messages.map((m) => {
-      if (!m.readBy || !m.readBy[String(userId)]) {
+      if (!m.readBy || !m.readBy[user.firebaseUid]) {
         return updateDoc(doc(db, `conversations/${chatId}/messages`, m.messageId), {
-          [`readBy.${userId}`]: true,
+          [`readBy.${user.firebaseUid}`]: true,
         });
       }
       return Promise.resolve();

@@ -32,7 +32,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
   // Mark messages as read whenever new ones arrive
   useEffect(() => {
     if (!user) return;
-    markConversationRead(conversation.chatId, user.userId, messages);
+    markConversationRead(
+      conversation.chatId,
+      { userId: user.userId, firebaseUid: user.firebaseUid },
+      messages
+    );
   }, [messages, user, conversation.chatId]);
 
   /**
@@ -41,19 +45,23 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
-    const profiles = meta.memberProfiles || conversation.memberProfiles || {};
-    const participantIds = Object.keys(conversation.participants || profiles).map((id) => Number(id));
+    const participantEntries = Object.entries(conversation.participants || {});
+    const recipients = participantEntries.map(([uid, { userId }]) => ({
+      firebaseUid: uid,
+      userId,
+    }));
     await sendMessage(
       conversation.chatId,
       {
         userId: user.userId,
+        firebaseUid: user.firebaseUid,
         firstName: user.firstName,
         lastName: user.lastName,
         profilePicturePath: user.profilePicturePath,
       },
       content,
       meta.type || conversation.type,
-      participantIds
+      recipients
     );
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -72,10 +80,13 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   const renderItem = ({ item }: { item: FsMessage }) => {
     const incoming = item.senderId !== user?.userId;
-    const otherParticipantIds = participantIds.filter((id) => id !== item.senderId);
+    const participantUids = Object.keys(conversation.participants || {});
+    const otherParticipantUids = participantUids.filter(
+      (uid) => conversation.participants[uid].userId !== item.senderId
+    );
     const isRead = incoming
-      ? !!item.readBy?.[String(user?.userId)]
-      : otherParticipantIds.every((id) => item.readBy?.[String(id)]);
+      ? !!item.readBy?.[user?.firebaseUid || '']
+      : otherParticipantUids.every((uid) => item.readBy?.[uid]);
     return (
       <View style={incoming ? styles.messageRowLeft : styles.messageRowRight}>
         {incoming && (

@@ -15,11 +15,14 @@ const db = getFirestore(getApp());
  * Subscribes to a conversation's messages and computes the unread count
  * for the provided user. Limits to the most recent 100 to reduce cost.
  */
-export const useUnreadCount = (chatId: string, userId?: number | null) => {
+export const useUnreadCount = (
+  chatId: string,
+  user?: { userId: number; firebaseUid: string } | null
+) => {
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    if (!chatId || !userId) {
+    if (!chatId || !user) {
       setCount(0);
       return;
     }
@@ -33,15 +36,15 @@ export const useUnreadCount = (chatId: string, userId?: number | null) => {
       snap.docs.forEach((d) => {
         const data = d.data() as any;
         // Count only messages not sent by current user and not marked read by them
-        if (data.senderId !== userId) {
+        if (data.senderId !== user.userId) {
           const readBy = data.readBy || {};
-          if (readBy[String(userId)] !== true) c += 1;
+          if (readBy[user.firebaseUid] !== true) c += 1;
         }
       });
       setCount(c);
     });
     return () => unsub();
-  }, [chatId, userId]);
+  }, [chatId, user]);
 
   return count;
 };
