@@ -83,27 +83,51 @@ const UserList: React.FC = () => {
             } else {
                 const docRef = await addDoc(convRef, {
                     participants: { [user.userId]: true, [u.userId]: true },
-                    otherUserId: u.userId,
-                    otherUserName: `${u.firstName} ${u.lastName}`,
-                    otherUserProfilePicturePath: u.profilePicturePath || '',
+                    memberProfiles: {
+                        [user.userId]: {
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            profilePicturePath: user.profilePicturePath || '',
+                        },
+                        [u.userId]: {
+                            firstName: u.firstName,
+                            lastName: u.lastName,
+                            profilePicturePath: u.profilePicturePath || '',
+                        },
+                    },
+                    unreadCount: { [user.userId]: 0, [u.userId]: 0 },
                     mostRecentMessage: '',
+                    numMessages: 0,
                     sentTimestamp: serverTimestamp(),
+                    type: 'direct',
                 });
                 await updateDoc(docRef, { chatId: docRef.id });
                 chatId = docRef.id;
             }
             navigation.navigate('Conversation', {
                 conversation: {
-                    messageId: '',
                     chatId: chatId,
+                    mostRecentMessage: '',
+                    sentTimestamp: null,
+                    numMessages: 0,
+                    participants: { [user.userId]: true, [u.userId]: true },
+                    memberProfiles: {
+                        [user.userId]: {
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            profilePicturePath: user.profilePicturePath || '',
+                        },
+                        [u.userId]: {
+                            firstName: u.firstName,
+                            lastName: u.lastName,
+                            profilePicturePath: u.profilePicturePath || '',
+                        },
+                    },
+                    unreadCount: { [user.userId]: 0, [u.userId]: 0 },
+                    type: 'direct',
                     otherUserId: u.userId,
                     otherUserName: `${u.firstName} ${u.lastName}`,
                     otherUserProfilePicturePath: u.profilePicturePath || '',
-                    mostRecentMessage: '',
-                    isRead: true,
-                    sentTimestamp: null,
-                    numMessages: 0,
-                    isLastMessageFromUser: false,
                 },
             });
         } catch (err) {

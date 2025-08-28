@@ -5,8 +5,13 @@ import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore'
 const db = getFirestore(getApp());
 
 export interface ConversationMeta {
-  otherUserName?: string;
-  otherUserProfilePicturePath?: string;
+  memberProfiles?: Record<string, {
+    firstName: string;
+    lastName: string;
+    profilePicturePath?: string;
+  }>;
+  type?: 'direct' | 'group';
+  unreadCount?: Record<string, number>;
 }
 
 /**
@@ -23,8 +28,9 @@ export const useConversationMeta = (chatId?: string | null) => {
       if (!snap.exists) return;
       const data = snap.data() as any;
       setMeta({
-        otherUserName: data.otherUserName,
-        otherUserProfilePicturePath: data.otherUserProfilePicturePath,
+        memberProfiles: data.memberProfiles || {},
+        type: data.type,
+        unreadCount: data.unreadCount || {},
       });
     });
     return () => unsub();

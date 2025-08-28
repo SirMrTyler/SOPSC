@@ -13,6 +13,7 @@ import ScreenContainer from '../../Navigation/ScreenContainer';
 import { FsMessage, sendMessage, markConversationRead } from '../../../types/fsMessages';
 import { formatTimestamp } from '../../../utils/date';
 import { useConversationMeta } from '../../../hooks/useConversationMeta';
+import defaultAvatar from '../../../../assets/images/default-avatar.png';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
 
@@ -40,11 +41,20 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
-    await sendMessage(conversation.chatId, {
-      userId: user.userId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    }, content);
+    const profiles = meta.memberProfiles || conversation.memberProfiles || {};
+    const participantIds = Object.keys(conversation.participants || profiles).map((id) => Number(id));
+    await sendMessage(
+      conversation.chatId,
+      {
+        userId: user.userId,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePicturePath: user.profilePicturePath,
+      },
+      content,
+      meta.type || conversation.type,
+      participantIds
+    );
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });
   };
@@ -52,20 +62,29 @@ const Conversation: React.FC<Props> = ({ route }) => {
   /**
    * Renders each message bubble with timestamp and read status.
    */
+  const profiles = meta.memberProfiles || conversation.memberProfiles || {};
+  const participantIds = Object.keys(profiles).map((id) => Number(id));
+  const otherIds = participantIds.filter((id) => id !== user?.userId);
+  const conversationName =
+    (meta.type || conversation.type) === 'group'
+      ? 'Group Chat'
+      : `${profiles[String(otherIds[0])]?.firstName ?? ''} ${profiles[String(otherIds[0])]?.lastName ?? ''}`.trim();
+
   const renderItem = ({ item }: { item: FsMessage }) => {
-    const incoming = item.senderId === conversation.otherUserId;
-    const isRead = item.readBy
-      ? incoming
-        ? !!item.readBy[String(user?.userId ?? '')]
-        : !!item.readBy[String(conversation.otherUserId)]
-      : item.isRead;
+    const incoming = item.senderId !== user?.userId;
+    const otherParticipantIds = participantIds.filter((id) => id !== item.senderId);
+    const isRead = incoming
+      ? !!item.readBy?.[String(user?.userId)]
+      : otherParticipantIds.every((id) => item.readBy?.[String(id)]);
     return (
       <View style={incoming ? styles.messageRowLeft : styles.messageRowRight}>
         {incoming && (
           <Image
-            // Use live-updating avatar; fall back to initial prop
-            source={{ uri: meta.otherUserProfilePicturePath || conversation.otherUserProfilePicturePath }}
-            key={(meta.otherUserProfilePicturePath || conversation.otherUserProfilePicturePath) ?? 'avatar'}
+            source={
+              profiles[String(item.senderId)]?.profilePicturePath
+                ? { uri: profiles[String(item.senderId)].profilePicturePath }
+                : defaultAvatar
+            }
             style={styles.avatar}
           />
         )}
@@ -81,7 +100,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
   };
 
   return (
-    <ScreenContainer showBottomBar={false} showBack title={meta.otherUserName || conversation.otherUserName}>
+    <ScreenContainer showBottomBar={false} showBack title={conversationName}>
       <View style={styles.container}>
         <FlatList
           ref={flatListRef}

@@ -9,7 +9,6 @@ import { FsConversation } from '../../../types/fsMessages';
 import { formatTimestamp } from '../../../utils/date';
 import defaultAvatar from '../../../../assets/images/default-avatar.png';
 import { useAuth } from '../../../hooks/useAuth';
-import { useUnreadCount } from '../../../hooks/useUnreadCount';
 interface Props {
   conversation: FsConversation;
   onPress: () => void;
@@ -22,7 +21,19 @@ interface Props {
  */
 const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress }) => {
   const { user } = useAuth();
-  const unread = useUnreadCount(conversation.chatId, user?.userId);
+  const profiles = conversation.memberProfiles || {};
+  const others = Object.entries(profiles).filter(
+    ([id]) => Number(id) !== user?.userId
+  );
+  const displayName =
+    conversation.type === 'group'
+      ? 'Group Chat'
+      : `${others[0]?.[1]?.firstName ?? ''} ${others[0]?.[1]?.lastName ?? ''}`.trim();
+  const avatarPath =
+    conversation.type === 'group'
+      ? undefined
+      : others[0]?.[1]?.profilePicturePath;
+  const unread = conversation.unreadCount?.[String(user?.userId)] || 0;
   const time = formatTimestamp(conversation.sentTimestamp, {
     includeDay: false,
     includeDate: false,
@@ -32,29 +43,23 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
     <View style={styles.messageBox}>
       <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
         <Image
-          source={conversation.otherUserProfilePicturePath ? { uri: conversation.otherUserProfilePicturePath } : defaultAvatar}
+          source={avatarPath ? { uri: avatarPath } : defaultAvatar}
           style={styles.avatar}
         />
         <View style={styles.content}>
           <View style={styles.row}>
-            <Text style={styles.name}>{conversation.otherUserName}</Text>
+            <Text style={styles.name}>{displayName}</Text>
             <Text style={styles.time}>{time}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.message} numberOfLines={1} ellipsizeMode="tail">
               {conversation.mostRecentMessage}
             </Text>
-            {/* Display read status only for messages the user sent */}
-            {conversation.isLastMessageFromUser && (
-              <Text style={styles.status}>
-                {conversation.isRead ? 'Read' : 'Unread'}
-              </Text>
-            )}
           </View>
         </View>
-        {(unread > 0 || (!conversation.isRead && !conversation.isLastMessageFromUser)) && (
+        {unread > 0 && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{unread > 0 ? unread : 1}</Text>
+            <Text style={styles.badgeText}>{unread}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -97,10 +102,6 @@ const styles = StyleSheet.create({
     color: '#DED3C4',
   },
   time: {
-    color: '#DED3C4',
-    fontSize: 12,
-  },
-  status: {
     color: '#DED3C4',
     fontSize: 12,
   },

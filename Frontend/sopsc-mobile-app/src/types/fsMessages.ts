@@ -11,21 +11,30 @@ import {
   where,
   orderBy,
   getDoc,
+  increment,
 } from '@react-native-firebase/firestore';
 import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 
+/** Participant profile information */
+export interface MemberProfile {
+  firstName: string;
+  lastName: string;
+  profilePicturePath?: string;
+}
+
 /** Firestore conversation type */
 export interface FsConversation {
-  messageId: string;
   chatId: string;
-  otherUserId: number;
-  otherUserName: string;
-  otherUserProfilePicturePath: string;
   mostRecentMessage: string;
-  isRead: boolean;
   sentTimestamp: Date | null;
   numMessages: number;
-  isLastMessageFromUser: boolean;
+  participants: Record<string, boolean>;
+  memberProfiles: Record<string, MemberProfile>;
+  unreadCount: Record<string, number>;
+  type: 'direct' | 'group';
+  otherUserId?: number;
+  otherUserName?: string;
+  otherUserProfilePicturePath?: string;
 }
 
 /** Firestore message type */
@@ -34,33 +43,51 @@ export interface FsMessage {
   chatId: string;
   senderId: number;
   senderName: string;
+  senderProfilePicturePath?: string;
   messageContent: string;
   sentTimestamp: Date | null;
   readTimestamp?: Date | null;
-  isRead: boolean;
   readBy?: Record<string, boolean>;
+  recipients: Record<string, boolean>;
+  type: 'direct' | 'group';
 }
 
 const db = getFirestore(getApp());
 
 /** Retrieve a conversation by id */
 export const getFsConversation = async (
-  chatId: string
+  chatId: string,
+  currentUserId: number
 ): Promise<FsConversation | null> => {
   const snap = await getDoc(doc(db, 'conversations', chatId));
   if (!snap.exists) return null;
   const data = snap.data() as FirebaseFirestoreTypes.DocumentData;
+  const memberProfiles = data.memberProfiles || {};
+  let otherUserId: number | undefined;
+  let otherUserName = '';
+  let otherUserProfilePicturePath = '';
+  if (data.type === 'direct') {
+    otherUserId = Number(
+      Object.keys(memberProfiles).find((id) => Number(id) !== currentUserId)
+    );
+    const prof = memberProfiles[String(otherUserId)];
+    if (prof) {
+      otherUserName = `${prof.firstName} ${prof.lastName}`.trim();
+      otherUserProfilePicturePath = prof.profilePicturePath || '';
+    }
+  }
   return {
-    messageId: data.lastMessageId || '',
     chatId: snap.id,
-    otherUserId: data.otherUserId,
-    otherUserName: data.otherUserName,
-    otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',
     mostRecentMessage: data.mostRecentMessage || '',
-    isRead: data.isRead,
     sentTimestamp: data.sentTimestamp?.toDate() ?? null,
     numMessages: data.numMessages || 0,
-    isLastMessageFromUser: data.isLastMessageFromUser || false,
+    participants: data.participants || {},
+    memberProfiles,
+    unreadCount: data.unreadCount || {},
+    type: data.type || 'direct',
+    otherUserId,
+    otherUserName,
+    otherUserProfilePicturePath,
   };
 };
 
@@ -76,17 +103,34 @@ export const listenToMyConversations = (
   return onSnapshot(q, (snapshot) => {
     const list: FsConversation[] = snapshot.docs.map((d) => {
       const data = d.data() as FirebaseFirestoreTypes.DocumentData;
+      const memberProfiles = data.memberProfiles || {};
+      let otherUserId: number | undefined;
+      let otherUserName = '';
+      let otherUserProfilePicturePath = '';
+      if (data.type === 'direct') {
+        otherUserId = Number(
+          Object.keys(memberProfiles).find((id) => Number(id) !== userId)
+        );
+        const prof = memberProfiles[String(otherUserId)];
+        if (prof) {
+          otherUserName = `${prof.firstName} ${prof.lastName}`.trim();
+          otherUserProfilePicturePath = prof.profilePicturePath || '';
+        }
+      } else {
+        otherUserName = data.name || 'Group Chat';
+      }
       return {
-        messageId: data.lastMessageId || '',
         chatId: d.id,
-        otherUserId: data.otherUserId,
-        otherUserName: data.otherUserName,
-        otherUserProfilePicturePath: data.otherUserProfilePicturePath || '',
         mostRecentMessage: data.mostRecentMessage || '',
-        isRead: data.isRead,
         sentTimestamp: data.sentTimestamp?.toDate() ?? null,
         numMessages: data.numMessages || 0,
-        isLastMessageFromUser: data.isLastMessageFromUser || false,
+        participants: data.participants || {},
+        memberProfiles,
+        unreadCount: data.unreadCount || {},
+        type: data.type || 'direct',
+        otherUserId,
+        otherUserName,
+        otherUserProfilePicturePath,
       };
     });
     cb(list);
@@ -120,26 +164,46 @@ export const listenToConversationMessages = (
 /** Send a message to a conversation */
 export const sendMessage = async (
   chatId: string,
-  sender: { userId: number; firstName: string; lastName: string },
-  content: string
+  sender: {
+    userId: number;
+    firstName: string;
+    lastName: string;
+    profilePicturePath?: string;
+  },
+  content: string,
+  type: 'direct' | 'group',
+  recipientIds: number[]
 ): Promise<void> => {
+  const recipientMap: Record<string, boolean> = {};
+  const unreadUpdates: Record<string, any> = {};
+  recipientIds.forEach((id) => {
+    recipientMap[String(id)] = true;
+    if (id !== sender.userId) {
+      unreadUpdates[`unreadCount.${id}`] = increment(1);
+    }
+  });
   const msgRef = await addDoc(
     collection(db, `conversations/${chatId}/messages`),
     {
       senderId: sender.userId,
       senderName: `${sender.firstName} ${sender.lastName}`,
+      senderProfilePicturePath: sender.profilePicturePath || '',
       messageContent: content,
       sentTimestamp: serverTimestamp(),
-      readBy: { [sender.userId]: true },
-      isRead: false,
+      readBy: { [String(sender.userId)]: true },
+      recipients: recipientMap,
+      type,
     }
   );
   await updateDoc(doc(db, 'conversations', chatId), {
+    lastSenderId: sender.userId,
+    lastSenderName: `${sender.firstName} ${sender.lastName}`,
+    lastSenderPicturePath: sender.profilePicturePath || '',
     mostRecentMessage: content,
-    lastMessageId: msgRef.id,
+    numMessages: increment(1),
     sentTimestamp: serverTimestamp(),
-    isLastMessageFromUser: true,
-    isRead: false,
+    type,
+    ...unreadUpdates,
   });
 };
 
@@ -150,19 +214,14 @@ export const markConversationRead = async (
   messages: FsMessage[]
 ): Promise<void> => {
   await updateDoc(doc(db, 'conversations', chatId), {
-    [`readBy.${userId}`]: true,
-    isRead: true,
+    [`unreadCount.${userId}`]: 0,
   });
   await Promise.all(
     messages.map((m) => {
-      if (!m.readBy || !m.readBy[userId]) {
-        return updateDoc(
-          doc(db, `conversations/${chatId}/messages`, m.messageId),
-          {
-            [`readBy.${userId}`]: true,
-            isRead: true,
-          }
-        );
+      if (!m.readBy || !m.readBy[String(userId)]) {
+        return updateDoc(doc(db, `conversations/${chatId}/messages`, m.messageId), {
+          [`readBy.${userId}`]: true,
+        });
       }
       return Promise.resolve();
     })
