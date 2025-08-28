@@ -255,7 +255,8 @@ namespace SOPSC.Api.Services
                         paramCollection.AddWithValue("@Phone", model.Phone ?? (object)DBNull.Value);
                         paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
                         paramCollection.AddWithValue("@IsGoogleUser", true);
-                        paramCollection.AddWithValue("@FirebaseUid", model.FirebaseUid);
+                        paramCollection.AddWithValue("@Phone", model.Phone ?? (object)DBNull.Value);
+                        paramCollection.AddWithValue("@FirebaseUid", (object?)model.FirebaseUid ?? DBNull.Value);
                         SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
                         idOut.Direction = ParameterDirection.Output;
                         paramCollection.Add(idOut);
@@ -276,7 +277,7 @@ namespace SOPSC.Api.Services
                         paramCollection.AddWithValue("@LastName", lastName);
                         paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
                         paramCollection.AddWithValue("@IsGoogleUser", true);
-                        paramCollection.AddWithValue("@FirebaseUid", model.FirebaseUid);
+                        paramCollection.AddWithValue("@FirebaseUid", (object?)model.FirebaseUid ?? DBNull.Value);
                     });
                 }
 
