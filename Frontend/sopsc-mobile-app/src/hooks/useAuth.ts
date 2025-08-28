@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
 import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../components/User/services/userService.js';
-import auth from '@react-native-firebase/auth';
+import auth, { signInWithCredential, GoogleAuthProvider } from '@react-native-firebase/auth';
 
 export interface AuthUser {
   userId: number;
@@ -100,10 +100,10 @@ export const useAuth = () => {
   };
 
   const signInGoogle = async (idToken: string) => {
-    const credential = auth.GoogleAuthProvider.credential(idToken);
-    const fbUser = await auth().signInWithCredential(credential);
+    const credential = GoogleAuthProvider.credential(idToken);
+    const fbUser = await signInWithCredential(auth(), credential);
     const firebaseUid = fbUser.user.uid;
-    const data = await googleLogin(idToken);
+    const data = await googleLogin(idToken, firebaseUid);
     const token = String(data.item.token);
     const deviceId = String(data.item.deviceId);
 

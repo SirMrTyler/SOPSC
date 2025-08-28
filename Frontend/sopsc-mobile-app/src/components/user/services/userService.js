@@ -23,11 +23,16 @@ const login = (email, password, deviceId, firebaseUid) => {
 };
 
 // Google Sign-In login
-const googleLogin = (idToken) => {
+const googleLogin = (idToken, firebaseUid, phone) => {
+  const payload = { idToken, firebaseUid };
+  if (phone) {
+    payload.phone = phone;
+  }
+
   const config = {
     method: 'POST',
     url: `${endpoint}/google`,
-    data: { idToken },
+    data: payload,
     headers: { 'Content-Type': 'application/json' },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
