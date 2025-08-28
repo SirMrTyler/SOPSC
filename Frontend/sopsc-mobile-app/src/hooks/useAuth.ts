@@ -75,7 +75,16 @@ export const useAuth = () => {
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
     try {
-      const fbUser = await auth().signInWithEmailAndPassword(email, password);
+      let fbUser;
+      try {
+        fbUser = await auth().signInWithEmailAndPassword(email, password);
+      } catch (err: any) {
+        if (err.code === 'auth/user-not-found') {
+          fbUser = await auth().createUserWithEmailAndPassword(email, password);
+        } else {
+          throw err;
+        }
+      }
       const firebaseUid = fbUser.user.uid;
       const data = await emailLogin(email, password, deviceId, firebaseUid);
       const token = String(data.item.token);
