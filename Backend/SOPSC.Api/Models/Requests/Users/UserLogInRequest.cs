@@ -11,5 +11,10 @@ namespace SOPSC.Api.Models.Requests.Users
         [Required]
         [StringLength(100, ErrorMessage = "Password cannot exceed 100 characters.")]
         public string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Firebase UID associated with the user.
+        /// </summary>
+        public string? FirebaseUid { get; set; }
     }
 }

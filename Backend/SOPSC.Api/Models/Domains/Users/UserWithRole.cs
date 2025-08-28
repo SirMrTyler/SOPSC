@@ -8,6 +8,9 @@
         // Gets or sets the role identifier associated with the user.
         public int RoleId { get; set; }
 
+        // Gets or sets the Firebase UID associated with the user.
+        public string FirebaseUid { get; set; }
+
         // Gets or sets the date and time when the user was created.
         public DateTime DateCreated { get; set; }
 

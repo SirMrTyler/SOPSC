@@ -44,6 +44,11 @@ namespace SOPSC.Api.Models.Requests.Users
         public int? AgencyId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Firebase UID associated with the user.
+        /// </summary>
+        public string? FirebaseUid { get; set; }
+
+        /// <summary>
         /// The Password field for user registration.
         /// </summary>
         /// <remarks>

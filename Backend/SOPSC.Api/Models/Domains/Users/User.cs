@@ -13,6 +13,9 @@
 
         public bool IsActive { get; set; }
 
+        // Gets or sets the Firebase UID associated with the user.
+        public string FirebaseUid { get; set; }
+
         // Gets or sets the phone number of the user.
         public new string Phone { get; set; }
 
