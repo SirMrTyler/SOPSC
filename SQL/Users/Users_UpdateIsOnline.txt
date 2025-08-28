@@ -1,0 +1,29 @@
+ALTER PROCEDURE [dbo].[Users_UpdateIsOnline]
+        @UserId int
+
+AS
+
+/*-- TESTING EXECUTION BLOCK
+        DECLARE @UserId INT = 2
+
+        EXEC dbo.Users_UpdateIsOnline
+                @UserId
+
+        SELECT FirstName
+                        ,Lastname
+                        ,IsOnline
+        FROM dbo.Users
+        WHERE UserId = @UserId
+*/
+
+BEGIN
+        UPDATE  dbo.Users
+        SET
+        IsOnline = CASE
+                        WHEN IsOnline = 1 THEN 0
+                        ELSE 1
+                    END
+        WHERE   UserId = @UserId
+
+END
+GO
