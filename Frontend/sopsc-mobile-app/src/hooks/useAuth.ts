@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
-import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../components/User/services/userService.js';
+import {
+  autoLogin,
+  login as emailLogin,
+  getCurrent,
+  googleLogin,
+  logout,
+  upsertFirebaseUid,
+} from '../components/User/services/userService.js';
 import auth, { signInWithCredential, GoogleAuthProvider } from '@react-native-firebase/auth';
 
 export interface AuthUser {
@@ -94,10 +101,13 @@ export const useAuth = () => {
       await SecureStore.setItemAsync('firebaseUid', firebaseUid);
 
       const currentUser = await getCurrent(token, String(data.item.deviceId));
-      if (currentUser.item?.firebaseUid) {
-        await SecureStore.setItemAsync('firebaseUid', currentUser.item.firebaseUid);
+      let uid = currentUser.item?.firebaseUid;
+      if (!uid) {
+        await upsertFirebaseUid(firebaseUid);
+        uid = firebaseUid;
       }
-      setUser(mapUser(currentUser.item));
+      await SecureStore.setItemAsync('firebaseUid', uid);
+      setUser(mapUser({ ...currentUser.item, firebaseUid: uid }));
     } catch (error: any) {
       console.error('Email login error:', error);
       const message =
@@ -122,10 +132,13 @@ export const useAuth = () => {
     await SecureStore.setItemAsync('firebaseUid', firebaseUid);
 
     const currentUser = await getCurrent(token, deviceId);
-    if (currentUser.item?.firebaseUid) {
-      await SecureStore.setItemAsync('firebaseUid', currentUser.item.firebaseUid);
+    let uid = currentUser.item?.firebaseUid;
+    if (!uid) {
+      await upsertFirebaseUid(firebaseUid);
+      uid = firebaseUid;
     }
-    setUser(mapUser(currentUser.item));
+    await SecureStore.setItemAsync('firebaseUid', uid);
+    setUser(mapUser({ ...currentUser.item, firebaseUid: uid }));
   };
 
   const signOut = async () => {
@@ -151,12 +164,18 @@ export const useAuth = () => {
   const refresh = async () => {
     const token = await SecureStore.getItemAsync('token');
     const deviceId = await SecureStore.getItemAsync('deviceId');
+    const firebaseUid = await SecureStore.getItemAsync('firebaseUid');
     if (token && deviceId) {
       const currentUser = await getCurrent(token, deviceId);
-      if (currentUser.item?.firebaseUid) {
-        await SecureStore.setItemAsync('firebaseUid', currentUser.item.firebaseUid);
+      let uid = currentUser.item?.firebaseUid;
+      if (!uid && firebaseUid) {
+        await upsertFirebaseUid(firebaseUid);
+        uid = firebaseUid;
       }
-      setUser(mapUser(currentUser.item));
+      if (uid) {
+        await SecureStore.setItemAsync('firebaseUid', uid);
+      }
+      setUser(mapUser({ ...currentUser.item, firebaseUid: uid ?? '' }));
     }
   };
 

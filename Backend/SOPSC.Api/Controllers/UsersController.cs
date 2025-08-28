@@ -494,6 +494,27 @@ public class UsersController : BaseApiController
         }
         return StatusCode(code, response);
     }
+
+    [Authorize]
+    [HttpPut("firebase")]
+    public ActionResult<SuccessResponse> UpsertFirebaseUid(FirebaseUidRequest model)
+    {
+        int code = 200;
+        BaseResponse response;
+        try
+        {
+            int userId = _authenticationService.GetCurrentUserId();
+            _userService.UpsertFirebaseUid(userId, model.FirebaseUid);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+        return StatusCode(code, response);
+    }
     #endregion
 
     #region DELETE

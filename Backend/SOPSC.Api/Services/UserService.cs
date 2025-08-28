@@ -582,13 +582,24 @@ namespace SOPSC.Api.Services
             }, null);
         }
 
-#endregion
+        public void UpsertFirebaseUid(int userId, string firebaseUid)
+        {
+            _dataProvider.ExecuteNonQuery("[dbo].[Users_FirebaseUidUpsert]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@UserId", userId);
+                    paramCollection.AddWithValue("@FirebaseUid", firebaseUid);
+                });
+        }
 
-#region DELETE
 
-#endregion
+        #endregion
 
-#region Private Methods
+        #region DELETE
+
+        #endregion
+
+        #region Private Methods
         public void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl)
         {
             string guid = Guid.NewGuid().ToString();
@@ -608,16 +619,6 @@ namespace SOPSC.Api.Services
             string confirmationUrl = $"{requestUrl}confirm?token={guid}";
 
             _emailService.NewUserEmail(firstEmail, confirmationUrl);
-        }
-
-        private void UpsertFirebaseUid(int userId, string firebaseUid)
-        {
-            _dataProvider.ExecuteNonQuery("[dbo].[Users_FirebaseUidUpsert]",
-                inputParamMapper: delegate (SqlParameterCollection paramCollection)
-                {
-                    paramCollection.AddWithValue("@UserId", userId);
-                    paramCollection.AddWithValue("@FirebaseUid", firebaseUid);
-                });
         }
 
         /// <summary>

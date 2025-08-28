@@ -63,6 +63,8 @@ namespace SOPSC.Api.Models.Interfaces.Users
 
         UserWithRole GetUserWithRoleById(int userId);
 
+        void UpsertFirebaseUid(int userId, string firebaseUid);
+
         /// <summary>
         /// Checks whether a user account is configured for Google sign in only.
         /// </summary>

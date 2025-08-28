@@ -102,6 +102,22 @@ const update = async (payload) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+const upsertFirebaseUid = async (firebaseUid) => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'PUT',
+    url: `${endpoint}/firebase`,
+    data: { firebaseUid },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 // Search users by name
 const search = async (query, pageIndex = 0, pageSize = 20) => {
   const token = await helper.getToken();
@@ -142,6 +158,7 @@ export {
   logout,
   getCurrent,
   update,
+  upsertFirebaseUid,
   getAll,
   search,
 };
