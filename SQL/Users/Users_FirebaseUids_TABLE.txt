@@ -1,0 +1,22 @@
+/****** Object:  Table [dbo].[Users_FirebaseUids]    Script Date: 8/28/2025 9:48:07 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Users_FirebaseUids](
+	[UserId] [int] NOT NULL,
+	[FirebaseUid] [nvarchar](128) NOT NULL,
+UNIQUE NONCLUSTERED 
+(
+	[FirebaseUid] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Users_FirebaseUids]  WITH CHECK ADD FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+
+
