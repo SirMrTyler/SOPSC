@@ -23,6 +23,11 @@ interface Props {
 const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress }) => {
   const { user } = useAuth();
   const unread = useUnreadCount(conversation.chatId, user?.userId);
+  const time = formatTimestamp(conversation.sentTimestamp, {
+    includeDay: false,
+    includeDate: false,
+    includeTime: true,
+  });
   return (
     <View style={styles.messageBox}>
       <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
@@ -33,10 +38,10 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
         <View style={styles.content}>
           <View style={styles.row}>
             <Text style={styles.name}>{conversation.otherUserName}</Text>
-            <Text style={styles.time}>{formatTimestamp(conversation.sentTimestamp)}</Text>
+            <Text style={styles.time}>{time}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.message} numberOfLines={1}>
+            <Text style={styles.message} numberOfLines={1} ellipsizeMode="tail">
               {conversation.mostRecentMessage}
             </Text>
             {/* Display read status only for messages the user sent */}
