@@ -54,7 +54,7 @@ namespace SOPSC.Api.Services
         }
 
 #region CREATE
-        public async Task<string> LogInAsync(string email, string password, string? deviceId)
+        public async Task<string> LogInAsync(string email, string password, string? deviceId, string? firebaseUid)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -104,6 +104,11 @@ namespace SOPSC.Api.Services
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
             {
                 return null; // Invalid credentials
+            }
+
+            if (!string.IsNullOrEmpty(firebaseUid))
+            {
+                UpsertFirebaseUid(user.UserId, firebaseUid);
             }
 
             // Map RoleId -> RoleName
@@ -162,6 +167,12 @@ namespace SOPSC.Api.Services
                 object oId = returnCollection["@UserId"].Value;
                 int.TryParse(oId.ToString(), out userId);
             });
+
+            if (!string.IsNullOrEmpty(userModel.FirebaseUid))
+            {
+                UpsertFirebaseUid(userId, userModel.FirebaseUid);
+            }
+
             return userId;
         }
 
@@ -384,12 +395,13 @@ namespace SOPSC.Api.Services
                     Email = reader.GetSafeString(startingIndex++),
                     Phone = reader.GetSafeString(startingIndex++),
                     ProfilePicturePath = reader.GetSafeString(startingIndex++),
-                    IsActive = reader.GetSafeBool(startingIndex++),
-                    RoleId = reader.GetSafeInt32(startingIndex++),
-                    HoursServed = reader.GetSafeDecimalNullable(startingIndex++),
                     DateCreated = reader.GetSafeDateTime(startingIndex++),
                     LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
                     IsConfirmed = reader.GetSafeBool(startingIndex++),
+                    IsActive = reader.GetSafeBool(startingIndex++),
+                    HoursServed = reader.GetSafeDecimalNullable(startingIndex++),
+                    FirebaseUid = reader.GetSafeString(startingIndex++),
+                    RoleId = reader.GetSafeInt32(startingIndex++),
                     RoleName = reader.GetSafeString(startingIndex++)
                 };
             });
@@ -461,7 +473,9 @@ namespace SOPSC.Api.Services
                         ProfilePicturePath = reader.GetSafeString(startingIndex++),
                         DateCreated = reader.GetSafeDateTime(startingIndex++),
                         LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
+                        IsConfirmed = reader.GetSafeBool(startingIndex++),
                         IsActive = reader.GetSafeBool(startingIndex++),
+                        FirebaseUid = reader.GetSafeString(startingIndex++),
                         RoleId = reader.GetSafeInt32(startingIndex++)
                     };
                     totalCount = reader.GetSafeInt32(startingIndex++);
@@ -581,6 +595,16 @@ namespace SOPSC.Api.Services
             _emailService.NewUserEmail(firstEmail, confirmationUrl);
         }
 
+        private void UpsertFirebaseUid(int userId, string firebaseUid)
+        {
+            _dataProvider.ExecuteNonQuery("[dbo].[Users_FirebaseUidUpsert]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@UserId", userId);
+                    paramCollection.AddWithValue("@FirebaseUid", firebaseUid);
+                });
+        }
+
         /// <summary>
         /// Maps a data reader to a <see cref="User"/> object.
         /// </summary>
@@ -596,8 +620,10 @@ namespace SOPSC.Api.Services
                 DateCreated = reader.GetSafeDateTime(startingIndex++),
                 LastLoginDate = reader.GetSafeDateTimeNullable(startingIndex++),
                 ProfilePicturePath = reader.GetSafeString(startingIndex++),
+                IsConfirmed = reader.GetSafeBool(startingIndex++),
                 IsActive = reader.GetSafeBool(startingIndex++),
                 HoursServed = reader.GetSafeDecimal(startingIndex++),
+                FirebaseUid = reader.GetSafeString(startingIndex++),
                 RoleId = reader.GetSafeInt32(startingIndex++)
             };
 

@@ -83,7 +83,7 @@ public class UsersController : BaseApiController
             }
 
             // If no valid token is found, attempt to log in the user
-            var token = await _userService.LogInAsync(tryUser.Email, tryUser.Password, deviceId);
+            var token = await _userService.LogInAsync(tryUser.Email, tryUser.Password, deviceId, tryUser.FirebaseUid);
             if (string.IsNullOrEmpty(token))
             {
                 iCode = 401;
@@ -121,15 +121,17 @@ public class UsersController : BaseApiController
     /// <returns>An HTTP 200 OK response if successful and an error code otherwise.</returns>
     [AllowAnonymous]
     [HttpPost("register")]
-    public ActionResult<ItemResponse<int>> Create(UserAddRequest model)
+    public ActionResult<ItemResponse<object>> Create(UserAddRequest model)
     {
         ObjectResult result = null;
 
         try
         {
             int id = _userService.Create(model);
-            ItemResponse<int> response = new ItemResponse<int>();
-            response.Item = id;
+            ItemResponse<object> response = new ItemResponse<object>
+            {
+                Item = new { id, firebaseUid = model.FirebaseUid }
+            };
 
             var requestUrl = HttpContext.Request.Headers["Referer"].ToString();
             _userService.UserAccountValidation(id, model, requestUrl);
@@ -463,7 +465,7 @@ public class UsersController : BaseApiController
     /// <param name="model">The user data to update.</param>
     [Authorize]
     [HttpPut]
-    public ActionResult<BaseResponse> Update(UserUpdateRequest model)
+    public ActionResult<ItemResponse<UserWithRole>> Update(UserUpdateRequest model)
     {
         if (!ModelState.IsValid)
         {
@@ -476,7 +478,8 @@ public class UsersController : BaseApiController
         try
         {
             _userService.Update(model);
-            response = new SuccessResponse();
+            UserWithRole updated = _userService.GetUserWithRoleById(model.UserId);
+            response = new ItemResponse<UserWithRole> { Item = updated };
         }
         catch (Exception ex)
         {

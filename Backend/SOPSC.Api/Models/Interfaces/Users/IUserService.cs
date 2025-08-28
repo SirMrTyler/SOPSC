@@ -56,7 +56,7 @@ namespace SOPSC.Api.Models.Interfaces.Users
         /// <returns>List of user ids matching that role.</returns>
         List<int> GetUserIdsByRole(int roleId);
         int GoogleSignIn(GoogleSignInRequest model, out string token, out string deviceId);
-        Task<string> LogInAsync(string email, string password, string? deviceId);
+        Task<string> LogInAsync(string email, string password, string? deviceId, string? firebaseUid);
         Task LogOutAsync(UserLogOutRequest request);
         void ConfirmUser(int userId);
         void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl);
