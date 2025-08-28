@@ -9,5 +9,9 @@ namespace SOPSC.Api.Models.Requests.Users
 
         // Optional: if app wants to pass deviceId (else we will generate one)
         public string? DeviceId { get; set; }
+
+        public string? Phone { get; set; }
+
+        public string? FirebaseUid { get; set; }
     }
 }

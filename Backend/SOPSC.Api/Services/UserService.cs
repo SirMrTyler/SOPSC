@@ -252,8 +252,10 @@ namespace SOPSC.Api.Services
                         paramCollection.AddWithValue("@FirstName", firstName);
                         paramCollection.AddWithValue("@LastName", lastName);
                         paramCollection.AddWithValue("@Email", email);
+                        paramCollection.AddWithValue("@Phone", model.Phone ?? (object)DBNull.Value);
                         paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
                         paramCollection.AddWithValue("@IsGoogleUser", true);
+                        paramCollection.AddWithValue("@FirebaseUid", model.FirebaseUid);
                         SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
                         idOut.Direction = ParameterDirection.Output;
                         paramCollection.Add(idOut);
@@ -274,8 +276,15 @@ namespace SOPSC.Api.Services
                         paramCollection.AddWithValue("@LastName", lastName);
                         paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
                         paramCollection.AddWithValue("@IsGoogleUser", true);
+                        paramCollection.AddWithValue("@FirebaseUid", model.FirebaseUid);
                     });
                 }
+
+                if (!string.IsNullOrEmpty(model.FirebaseUid))
+                {
+                    UpsertFirebaseUid(userId, model.FirebaseUid);
+                }
+
                 // Determine the user's role from the database to ensure the
                 // JWT reflects the current permissions. Default to "Guest" if
                 // no role is found or an error occurs.
