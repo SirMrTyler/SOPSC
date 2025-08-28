@@ -10,4 +10,5 @@ export interface UserResult {
   isActive: boolean;
   roleId: number;
   divisionId?: number;
+  firebaseUid: string;
 }

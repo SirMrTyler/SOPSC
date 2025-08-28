@@ -4,7 +4,7 @@ import * as helper from '../../serviceHelpers';
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}users`;
 
 // User login with email/password
-const login = (email, password, deviceId) => {
+const login = (email, password, deviceId, firebaseUid) => {
   const headers = {
     'Content-Type': 'application/json',
   }
@@ -16,7 +16,7 @@ const login = (email, password, deviceId) => {
   const config = {
     method: 'POST',
     url: `${endpoint}/login`,
-    data: { email, password },
+    data: { email, password, firebaseUid },
     headers,
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
@@ -34,11 +34,11 @@ const googleLogin = (idToken) => {
 };
 
 // Register user with email/password
-const register = async ({ firstName, lastName, phone, email, password, passwordConfirm }) => {
+const register = async ({ firstName, lastName, phone, email, password, passwordConfirm, firebaseUid }) => {
   const config = {
     method: 'POST',
     url: `${endpoint}/register`,
-    data: { firstName, lastName, phone, email, password, passwordConfirm },
+    data: { firstName, lastName, phone, email, password, passwordConfirm, firebaseUid },
     headers: { 'Content-Type': 'application/json' },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);

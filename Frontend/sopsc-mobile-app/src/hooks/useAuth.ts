@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
 import { autoLogin, login as emailLogin, getCurrent, googleLogin, logout } from '../components/User/services/userService.js';
+import auth from '@react-native-firebase/auth';
 
 export interface AuthUser {
   userId: number;
@@ -17,6 +18,7 @@ export interface AuthUser {
   isConfirmed: boolean;
   isActive: boolean;
   divisionId?: number;
+  firebaseUid: string;
 }
 
 const mapUser = (u: any): AuthUser => ({
@@ -39,6 +41,7 @@ const mapUser = (u: any): AuthUser => ({
   isConfirmed: u.isConfirmed,
   isActive: u.isActive,
   divisionId: u.divisionId,
+  firebaseUid: u.firebaseUid ?? u.FirebaseUid ?? '',
 });
 
 export const useAuth = () => {
@@ -52,6 +55,9 @@ export const useAuth = () => {
         try {
           const data = await autoLogin(deviceId);
           await SecureStore.setItemAsync('token', String(data.item.token));
+          if (data.item.user?.firebaseUid) {
+            await SecureStore.setItemAsync('firebaseUid', String(data.item.user.firebaseUid));
+          }
           setUser(mapUser(data.item.user));
         } catch {
           await SecureStore.deleteItemAsync('token');
@@ -69,33 +75,47 @@ export const useAuth = () => {
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
     try {
-      const data = await emailLogin(email, password, deviceId);
+      const fbUser = await auth().signInWithEmailAndPassword(email, password);
+      const firebaseUid = fbUser.user.uid;
+      const data = await emailLogin(email, password, deviceId, firebaseUid);
       const token = String(data.item.token);
 
       await SecureStore.setItemAsync('token', token);
       await SecureStore.setItemAsync('deviceId', String(data.item.deviceId));
+      await SecureStore.setItemAsync('firebaseUid', firebaseUid);
 
       const currentUser = await getCurrent(token, String(data.item.deviceId));
+      if (currentUser.item?.firebaseUid) {
+        await SecureStore.setItemAsync('firebaseUid', currentUser.item.firebaseUid);
+      }
       setUser(mapUser(currentUser.item));
     } catch (error: any) {
       console.error('Email login error:', error);
       const message =
         error?.response?.data?.errors?.[0] ?? 'Email login failed. Please try again.';
       Alert.alert('Login failed', message);
+      await auth().signOut();
       return error;
     }
   };
 
   const signInGoogle = async (idToken: string) => {
+    const credential = auth.GoogleAuthProvider.credential(idToken);
+    const fbUser = await auth().signInWithCredential(credential);
+    const firebaseUid = fbUser.user.uid;
     const data = await googleLogin(idToken);
     const token = String(data.item.token);
     const deviceId = String(data.item.deviceId);
 
-    // Store the token and deviceId securely
+    // Store the token, deviceId, and firebaseUid securely
     await SecureStore.setItemAsync('token', token);
     await SecureStore.setItemAsync('deviceId', deviceId);
+    await SecureStore.setItemAsync('firebaseUid', firebaseUid);
 
     const currentUser = await getCurrent(token, deviceId);
+    if (currentUser.item?.firebaseUid) {
+      await SecureStore.setItemAsync('firebaseUid', currentUser.item.firebaseUid);
+    }
     setUser(mapUser(currentUser.item));
   };
 
@@ -111,8 +131,10 @@ export const useAuth = () => {
         }
       }
     } finally {
+      await auth().signOut();
       await SecureStore.deleteItemAsync('token');
       await SecureStore.deleteItemAsync('deviceId');
+      await SecureStore.deleteItemAsync('firebaseUid');
       setUser(null);
     }
   };
@@ -122,6 +144,9 @@ export const useAuth = () => {
     const deviceId = await SecureStore.getItemAsync('deviceId');
     if (token && deviceId) {
       const currentUser = await getCurrent(token, deviceId);
+      if (currentUser.item?.firebaseUid) {
+        await SecureStore.setItemAsync('firebaseUid', currentUser.item.firebaseUid);
+      }
       setUser(mapUser(currentUser.item));
     }
   };
