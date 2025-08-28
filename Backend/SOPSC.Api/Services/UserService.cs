@@ -553,6 +553,11 @@ namespace SOPSC.Api.Services
                 paramCollection.AddWithValue("@RoleId", model.RoleId);
                 paramCollection.AddWithValue("@AgencyId", (object?)model.AgencyId ?? DBNull.Value);
             }, null);
+
+            if (!string.IsNullOrEmpty(model.FirebaseUid))
+            {
+                UpsertFirebaseUid(model.UserId, model.FirebaseUid);
+            }
         }
 
         public void ConfirmUser(int userId)

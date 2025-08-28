@@ -479,6 +479,11 @@ public class UsersController : BaseApiController
         {
             _userService.Update(model);
             UserWithRole updated = _userService.GetUserWithRoleById(model.UserId);
+
+            if (!string.IsNullOrEmpty(model.FirebaseUid))
+            {
+                updated.FirebaseUid = model.FirebaseUid;
+            }
             response = new ItemResponse<UserWithRole> { Item = updated };
         }
         catch (Exception ex)

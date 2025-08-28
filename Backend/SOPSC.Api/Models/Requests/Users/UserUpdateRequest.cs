@@ -32,5 +32,7 @@ namespace SOPSC.Api.Models.Requests.Users
         public int RoleId { get; set; }
 
         public int? AgencyId { get; set; }
+        
+        public string? FirebaseUid { get; set; }
     }
 }
