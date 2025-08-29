@@ -8,8 +8,9 @@ import { View, Text, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../App';
-import { create } from '../services/groupChatService';
 import ScreenContainer from '../../Navigation/ScreenContainer';
+import { createGroup } from '../services/groupChatFs';
+import { useAuth } from '../../../hooks/useAuth';
 
 /**
  * CreateGroupChat
@@ -17,6 +18,7 @@ import ScreenContainer from '../../Navigation/ScreenContainer';
  */
 const CreateGroupChat: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { user } = useAuth();
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -24,10 +26,16 @@ const CreateGroupChat: React.FC = () => {
      * Sends the new group name to the API and navigates back on success.
      */
     const handleCreate = async () => {
-        if (!name.trim()) return;
+        if (!user || !name.trim()) return;
         setSaving(true);
         try {
-            await create(name.trim(), []);
+            await createGroup(name.trim(), {
+                userId: user.userId,
+                firebaseUid: user.firebaseUid,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                profilePicturePath: user.profilePicturePath,
+            });
             navigation.goBack();
         } catch (err) {
             console.error('[CreateGroupChat] Error:', err);

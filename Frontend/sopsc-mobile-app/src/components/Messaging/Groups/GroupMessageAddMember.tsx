@@ -8,7 +8,7 @@ import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Activity
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../App';
 import { getAll } from '../../User/services/userService';
-import { addMembers } from '../services/groupChatService';
+import { addMembers } from '../services/groupChatFs';
 import { UserResult } from '../../../types/user';
 import ScreenContainer from '../../Navigation/ScreenContainer';
 
@@ -75,8 +75,9 @@ const AddGroupChatMembers: React.FC<Props> = ({ route, navigation }) => {
    */
   const handleAdd = async () => {
     if (selected.length === 0) return;
+    const members = users.filter((u) => selected.includes(u.userId));
     try {
-      await addMembers(chatId, selected);
+      await addMembers(chatId, members);
       navigation.goBack();
     } catch (err) {
       console.error('[AddGroupChatMembers] Error adding members:', err);
