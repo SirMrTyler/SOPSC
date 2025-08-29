@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../hooks/useAuth';
-import * as reportServices from './services/reportService';
+import * as reportService from './services/reportService';
 import { Report } from '../../types/report';
 
 interface Props {
@@ -137,9 +137,9 @@ const ReportForm: React.FC<Props> = ({
 
     try {
       if (initialValues.reportId) {
-        await reportServices.update(initialValues.reportId, payload);
+        await reportService.update(initialValues.reportId, payload);
       } else {
-        await reportServices.add(payload);
+        await reportService.add(payload);
       }
       onSuccess();
       onClose();
