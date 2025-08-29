@@ -78,7 +78,7 @@ const Messages: React.FC = () => {
     }
 
     return (
-        <ScreenContainer>
+        <ScreenContainer showBack title="Home">
             <View style={styles.container}>
                 <View style={styles.headerRow}>
                     <Text style={styles.header}>Messages</Text>
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
         justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.15)',
     },
     headerRow: {
         flexDirection: 'row',

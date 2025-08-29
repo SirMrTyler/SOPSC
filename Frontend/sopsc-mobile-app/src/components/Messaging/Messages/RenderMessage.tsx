@@ -124,7 +124,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
           <TextInput
             style={styles.input}
             placeholder="Type a message"
-            placeholderTextColor={'#999'}
+            placeholderTextColor={'#ccc'}
             value={newMessage}
             onChangeText={setNewMessage}
           />
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    color: 'white',
   },
 });
 

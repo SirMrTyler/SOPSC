@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
   },
   searchRow: {
     flexDirection: 'row',
