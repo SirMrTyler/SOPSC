@@ -33,7 +33,7 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
     conversation.type === 'group'
       ? undefined
       : others[0]?.[1]?.profilePicturePath;
-  const unread = conversation.unreadCount?.[user?.userId || ''] || 0;
+  const unread = conversation.unreadCount?.[user?.firebaseUid || ''] || 0;
   const time = formatTimestamp(conversation.sentTimestamp, {
     includeDay: false,
     includeDate: false,
