@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
+    position: 'relative',
   },
   avatar: {
     width: 40,
@@ -124,6 +125,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
+    position: 'absolute',
+    bottom: 8,
+    right: 13,
   },
   badgeText: {
     color: 'white',
