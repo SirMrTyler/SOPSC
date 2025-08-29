@@ -17,7 +17,7 @@ import UserList from './src/components/Messaging/UserList';
 import CreateGroupMessage from './src/components/Messaging/Groups/GroupMessageCreate';
 import GroupInbox from './src/components/Messaging/Groups/GroupInbox';
 import RenderGroupMessage from './src/components/Messaging/Groups/RenderGroupMessage';
-import AddGroupChatMembers from './src/components/Messaging/Groups/GroupMessageCreate';
+import AddGroupChatMembers from './src/components/Messaging/Groups/GroupMessageAddMember';
 import Conversation from './src/components/Messaging/Messages/RenderMessage';
 import { FsConversation } from './src/types/fsMessages';
 import AdminDashboard from './src/components/Admin/AdminDashboard'; // TODO: Make AdminDashboard Component
@@ -38,8 +38,8 @@ export type RootStackParamList = {
   UserList: undefined;
   CreateGroupChat: undefined;
   GroupChats: undefined;
-  GroupChatConversation: { chatId: number; name: string };
-  AddGroupChatMembers: { chatId: number };
+  GroupChatConversation: { chatId: string; name: string };
+  AddGroupChatMembers: { chatId: string };
   Conversation: { conversation: FsConversation };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;

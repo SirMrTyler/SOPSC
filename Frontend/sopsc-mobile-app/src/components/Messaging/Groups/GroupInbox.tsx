@@ -8,9 +8,10 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator }
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../../App';
-import { getAll } from '../services/groupChatService';
-import { GroupChatSummary } from '../../../types/groupChat';
 import ScreenContainer from '../../Navigation/ScreenContainer';
+import { listenToGroupChats } from '../services/groupChatFs';
+import { FsConversation } from '../../../types/fsMessages';
+import { useAuth } from '../../../hooks/useAuth';
 
 /**
  * GroupChats
@@ -18,32 +19,36 @@ import ScreenContainer from '../../Navigation/ScreenContainer';
  */
 const GroupChats: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [chats, setChats] = useState<GroupChatSummary[]>([]);
+  const { user } = useAuth();
+  const [chats, setChats] = useState<FsConversation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Retrieve group chat summaries when the component mounts
+  // Subscribe to group chat summaries
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getAll();
-        if (Array.isArray(data?.items)) {
-          setChats(data.items);
-        } else if (Array.isArray(data)) {
-          setChats(data);
-        }
-      } catch (err) {
-        console.error('[GroupChats] Error loading group chats:', err);
-      } finally {
+    if (!user) return;
+    setLoading(true);
+    const unsub = listenToGroupChats(
+      { userId: user.userId, firebaseUid: user.firebaseUid },
+      (list) => {
+        setChats(list);
         setLoading(false);
-      }
-    };
-    load();
-  }, []);
+      },
+    );
+    return () => unsub();
+  }, [user]);
 
-  const renderItem = ({ item }: { item: GroupChatSummary }) => (
-    <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('GroupChatConversation', { chatId: item.groupChatId, name: item.name })}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.last}>{item.lastMessage}</Text>
+  const renderItem = ({ item }: { item: FsConversation }) => (
+    <TouchableOpacity
+      style={styles.item}
+      onPress={() =>
+        navigation.navigate('GroupChatConversation', {
+          chatId: item.chatId,
+          name: item.otherUserName || 'Group Chat',
+        })
+      }
+    >
+      <Text style={styles.name}>{item.otherUserName || 'Group Chat'}</Text>
+      <Text style={styles.last}>{item.mostRecentMessage}</Text>
     </TouchableOpacity>
   );
 
@@ -59,7 +64,7 @@ const GroupChats: React.FC = () => {
         {loading ? (
           <ActivityIndicator />
         ) : (
-          <FlatList data={chats} keyExtractor={(item) => item.groupChatId.toString()} renderItem={renderItem} />
+          <FlatList data={chats} keyExtractor={(item) => item.chatId} renderItem={renderItem} />
         )}
       </View>
     </ScreenContainer>

@@ -3,21 +3,22 @@
  * Purpose: Renders a group chat conversation and provides input to send messages.
  * Notes: Subscribes to Firestore collection for real-time updates.
  */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../App';
-import { GroupChatMessage } from '../../../types/groupChat';
-import { useMessages } from '../../../hooks/useMessages';
 import { useAuth } from '../../../hooks/useAuth';
-import { getApp } from '@react-native-firebase/app';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from '@react-native-firebase/firestore';
 import ScreenContainer from '../../Navigation/ScreenContainer';
 import { formatTimestamp } from '../../../utils/date';
+import {
+  FsMessage,
+  FsConversation,
+  listenToConversationMessages,
+  getFsConversation,
+} from '../../../types/fsMessages';
+import { sendMessage } from '../services/groupChatFs';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'> {}
-
-const db = getFirestore(getApp());
 
 /**
  * GroupChatConversation
@@ -26,23 +27,37 @@ const db = getFirestore(getApp());
 const GroupChatConversation: React.FC<Props> = ({ route }) => {
   const { chatId, name } = route.params;
   const { user } = useAuth();
-  const messages = useMessages<GroupChatMessage>(`groupChats/${chatId}/messages`);
+  const [messages, setMessages] = useState<FsMessage[]>([]);
+  const [conversation, setConversation] = useState<FsConversation | null>(null);
   const [newMessage, setNewMessage] = useState('');
-  const flatListRef = useRef<FlatList<GroupChatMessage>>(null);
+  const flatListRef = useRef<FlatList<FsMessage>>(null);
+
+  useEffect(() => {
+    getFsConversation(chatId, user?.userId ?? 0).then(setConversation);
+    const unsub = listenToConversationMessages(chatId, setMessages);
+    return () => unsub();
+  }, [chatId, user?.userId]);
 
   /**
    * Persists a new message document and scrolls the list to the latest entry.
    */
   const handleSend = async () => {
-    if (!user || !newMessage.trim()) return;
-    await addDoc(collection(db, `groupChats/${chatId}/messages`), {
-      groupChatId: chatId,
-      senderId: user.userId,
-      senderName: `${user.firstName} ${user.lastName}`,
-      messageContent: newMessage.trim(),
-      sentTimestamp: serverTimestamp(),
-      readBy: { [user.firebaseUid]: true },
-    });
+    if (!user || !newMessage.trim() || !conversation) return;
+    const recipients = Object.entries(conversation.participants || {})
+      .filter(([_, info]) => info.userId !== user.userId)
+      .map(([firebaseUid, info]) => ({ firebaseUid, userId: info.userId }));
+    await sendMessage(
+      chatId,
+      {
+        userId: user.userId,
+        firebaseUid: user.firebaseUid,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePicturePath: user.profilePicturePath,
+      },
+      newMessage.trim(),
+      recipients,
+    );
     setNewMessage('');
     flatListRef.current?.scrollToEnd({ animated: true });
   };
@@ -50,7 +65,7 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
   /**
    * Renders a message bubble with timestamp and sender name.
    */
-  const renderItem = ({ item }: { item: GroupChatMessage }) => {
+  const renderItem = ({ item }: { item: FsMessage }) => {
     const outgoing = item.senderId === user?.userId;
     return (
       <View style={[styles.msgBox, outgoing ? styles.msgRight : styles.msgLeft]}>
@@ -70,7 +85,7 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
-          keyExtractor={item => item.messageId.toString()}
+          keyExtractor={(item) => item.messageId}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
         />
         <View style={styles.inputContainer}>
