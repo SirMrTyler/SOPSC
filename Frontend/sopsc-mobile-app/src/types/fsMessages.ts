@@ -3,6 +3,7 @@ import {
   getFirestore,
   collection,
   addDoc,
+  setDoc,
   updateDoc,
   doc,
   serverTimestamp,
@@ -61,6 +62,33 @@ export interface FsMessage {
 }
 
 const db = getFirestore(getApp());
+
+/** Ensure a conversation doc exists with its participants map */
+export const ensureConversationDoc = async (
+  chatId: string,
+  participants: { userId: number; firebaseUid: string }[],
+  type: 'direct' | 'group',
+): Promise<void> => {
+  const ref = doc(db, 'conversations', chatId);
+  const snap = await getDoc(ref);
+  if (!snap.exists) {
+    const partMap: Record<string, { userId: number }> = {};
+    const unread: Record<string, number> = {};
+    participants.forEach((p) => {
+      partMap[p.firebaseUid] = { userId: p.userId };
+      unread[p.firebaseUid] = 0;
+    });
+    await setDoc(ref, {
+      participants: partMap,
+      unreadCount: unread,
+      memberProfiles: {},
+      numMessages: 0,
+      mostRecentMessage: '',
+      sentTimestamp: serverTimestamp(),
+      type,
+    });
+  }
+};
 
 /** Retrieve a conversation by id */
 export const getFsConversation = async (
@@ -189,13 +217,19 @@ export const sendMessage = async (
   type: 'direct' | 'group',
   recipients: { userId: number; firebaseUid: string }[]
 ): Promise<void> => {
+  const allParticipants = [...recipients, sender];
+  await ensureConversationDoc(chatId, allParticipants, type);
+
   const recipientMap: Record<string, boolean> = {};
+  const participantUpdates: Record<string, any> = {};
   const unreadUpdates: Record<string, any> = {};
-  recipients.forEach(({ userId, firebaseUid }) => {
+  allParticipants.forEach(({ userId, firebaseUid }) => {
+    participantUpdates[`participants.${firebaseUid}`] = { userId };
+    unreadUpdates[`unreadCount.${firebaseUid}`] = increment(0);
+  });
+  recipients.forEach(({ firebaseUid }) => {
     recipientMap[firebaseUid] = true;
-    if (userId !== sender.userId) {
-      unreadUpdates[`unreadCount.${firebaseUid}`] = increment(1);
-    }
+    unreadUpdates[`unreadCount.${firebaseUid}`] = increment(1);
   });
   await addDoc(
     collection(db, `conversations/${chatId}/messages`),
@@ -210,6 +244,7 @@ export const sendMessage = async (
       type,
     }
   );
+
   await updateDoc(doc(db, 'conversations', chatId), {
     lastSenderId: sender.userId,
     lastSenderName: `${sender.firstName} ${sender.lastName}`,
@@ -219,6 +254,7 @@ export const sendMessage = async (
     numMessages: increment(1),
     sentTimestamp: serverTimestamp(),
     type,
+    ...participantUpdates,
     ...unreadUpdates,
   });
 };
@@ -247,6 +283,7 @@ export const markConversationRead = async (
 
 export default {
   getFsConversation,
+  ensureConversationDoc,
   sendMessage,
   listenToMyConversations,
   listenToConversationMessages,

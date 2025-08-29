@@ -2,7 +2,7 @@
 
 ```text
 conversations/{conversationId}
-  participants: { [userId]: true }
+  participants: { [uid]: { userId } }
   memberProfiles: { [userId]: { firstName, lastName, profilePicturePath } }
   lastSenderId: number
   lastSenderName: string
@@ -10,7 +10,7 @@ conversations/{conversationId}
   mostRecentMessage: string
   numMessages: number
   sentTimestamp: Timestamp
-  unreadCount: { [userId]: number }
+  unreadCount: { [uid]: number }
   type: "direct" | "group"
   messages/{messageId}
     senderId: number
@@ -18,8 +18,8 @@ conversations/{conversationId}
     senderProfilePicturePath: string
     messageContent: string
     sentTimestamp: Timestamp
-    readBy: { [userId]: Timestamp | true }
-    recipients: { [userId]: true }
+    readBy: { [uid]: Timestamp | true }
+    recipients: { [uid]: true }
     type: "direct" | "group"
 ```
 
