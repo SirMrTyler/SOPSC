@@ -31,6 +31,7 @@ export interface FsConversation {
   /** keyed by firebaseUid */
   participants: Record<string, { userId: number }>;
   memberProfiles: Record<string, MemberProfile>;
+  /** keyed by firebaseUid */
   unreadCount: Record<string, number>;
   type: 'direct' | 'group';
   otherUserId?: number;
@@ -185,7 +186,7 @@ export const sendMessage = async (
   recipients.forEach(({ userId, firebaseUid }) => {
     recipientMap[firebaseUid] = true;
     if (userId !== sender.userId) {
-      unreadUpdates[`unreadCount.${userId}`] = increment(1);
+      unreadUpdates[`unreadCount.${firebaseUid}`] = increment(1);
     }
   });
   await addDoc(
@@ -220,7 +221,7 @@ export const markConversationRead = async (
   messages: FsMessage[]
 ): Promise<void> => {
   await updateDoc(doc(db, 'conversations', chatId), {
-    [`unreadCount.${user.userId}`]: 0,
+    [`unreadCount.${user.firebaseUid}`]: 0,
   });
   await Promise.all(
     messages.map((m) => {
