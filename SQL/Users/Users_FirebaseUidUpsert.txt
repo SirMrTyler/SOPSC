@@ -1,0 +1,16 @@
+ALTER PROC [dbo].[Users_FirebaseUidUpsert]
+    @UserId INT,
+    @FirebaseUid NVARCHAR(128)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    MERGE dbo.Users_FirebaseUids AS target
+    USING (SELECT @UserId AS UserId, @FirebaseUid AS FirebaseUid) AS source
+        ON target.UserId = source.UserId
+    WHEN MATCHED THEN
+        UPDATE SET FirebaseUid = source.FirebaseUid
+    WHEN NOT MATCHED THEN
+        INSERT (UserId, FirebaseUid)
+        VALUES (source.UserId, source.FirebaseUid);
+END;
