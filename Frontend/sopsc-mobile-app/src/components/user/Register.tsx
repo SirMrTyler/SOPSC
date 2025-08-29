@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from '@react-native-firebase/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { register as registerUser } from './services/userService.js';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,7 +41,9 @@ useEffect(() => {
   const handleRegister = async () => {
     let firebaseUid = '';
     try {
-      const { user: firebaseUser } = await auth().createUserWithEmailAndPassword(
+      const fbAuth = getAuth(getApp());
+      const { user: firebaseUser } = await createUserWithEmailAndPassword(
+        fbAuth,
         email,
         password,
       );

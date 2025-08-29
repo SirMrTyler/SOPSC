@@ -10,7 +10,15 @@ import {
   logout,
   upsertFirebaseUid,
 } from '../components/User/services/userService.js';
-import auth, { signInWithCredential, GoogleAuthProvider } from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import {
+  getAuth,
+  signInWithCredential,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as fbSignOut,
+} from '@react-native-firebase/auth';
 
 export interface AuthUser {
   userId: number;
@@ -81,13 +89,14 @@ export const useAuth = () => {
       deviceId = Crypto.randomUUID();
       await SecureStore.setItemAsync('deviceId', deviceId);
     }
+    const fbAuth = getAuth(getApp());
     try {
       let fbUser;
       try {
-        fbUser = await auth().signInWithEmailAndPassword(email, password);
+        fbUser = await signInWithEmailAndPassword(fbAuth, email, password);
       } catch (err: any) {
         if (err.code === 'auth/user-not-found') {
-          fbUser = await auth().createUserWithEmailAndPassword(email, password);
+          fbUser = await createUserWithEmailAndPassword(fbAuth, email, password);
         } else {
           throw err;
         }
@@ -113,14 +122,14 @@ export const useAuth = () => {
       const message =
         error?.response?.data?.errors?.[0] ?? 'Email login failed. Please try again.';
       Alert.alert('Login failed', message);
-      await auth().signOut();
+      await fbSignOut(fbAuth);
       return error;
     }
   };
 
   const signInGoogle = async (idToken: string) => {
     const credential = GoogleAuthProvider.credential(idToken);
-    const fbUser = await signInWithCredential(auth(), credential);
+    const fbUser = await signInWithCredential(getAuth(getApp()), credential);
     const firebaseUid = fbUser.user.uid;
     const data = await googleLogin(idToken, firebaseUid);
     const token = String(data.item.token);
@@ -153,7 +162,7 @@ export const useAuth = () => {
         }
       }
     } finally {
-      await auth().signOut();
+      await fbSignOut(getAuth(getApp()));
       await SecureStore.deleteItemAsync('token');
       await SecureStore.deleteItemAsync('deviceId');
       await SecureStore.deleteItemAsync('firebaseUid');
