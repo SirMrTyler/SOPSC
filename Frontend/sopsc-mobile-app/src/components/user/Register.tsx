@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TextInput } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { register as registerUser } from './services/userService.js';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -37,8 +38,29 @@ useEffect(() => {
   }, [user]);
 
   const handleRegister = async () => {
+    let firebaseUid = '';
     try {
-      await registerUser({firstName, lastName, phone, email, password, passwordConfirm});
+      const { user: firebaseUser } = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
+      firebaseUid = firebaseUser.uid;
+    } catch (firebaseError: any) {
+      console.error(firebaseError);
+      alert(firebaseError.message || 'Registration failed. Please try again.');
+      return;
+    }
+
+    try {
+      await registerUser({
+        firstName,
+        lastName,
+        phone,
+        email,
+        password,
+        passwordConfirm,
+        firebaseUid,
+      });
       alert('Registration successful! Please check your email to confirm.');
       navigation.goBack();
     } catch (error) {
