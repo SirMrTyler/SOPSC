@@ -4,7 +4,7 @@
  * Notes: Creates a new conversation document if one does not already exist.
  */
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
@@ -14,6 +14,7 @@ import { UserResult } from '../../types/user';
 import ScreenContainer from '../Navigation/ScreenContainer';
 import { getApp } from '@react-native-firebase/app';
 import { getFirestore, collection, query as fsQuery, where, getDocs, addDoc, updateDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import defaultAvatar from '../../../assets/images/default-avatar.png';
 
 const db = getFirestore(getApp());
 
@@ -29,14 +30,14 @@ const UserList: React.FC = () => {
     const [users, setUsers] = useState<UserResult[]>([]);
     const [results, setResults] = useState<UserResult[]>([]);
 
-    // Load all users once on mount
+    // Load all users, refetching when auth info changes
     useEffect(() => {
         const loadUsers = async () => {
             setLoading(true);
             try {
                 const data = await getAll(0, 200);
                 const fetched = data?.item?.pagedItems || [];
-                const filtered = user ? fetched.filter(u => u.userId !== user.userId) : fetched;
+                const filtered = fetched.filter(u => u.userId !== user?.userId);
                 setUsers(filtered);
                 setResults(filtered);
             } catch (err: any) {
@@ -49,7 +50,7 @@ const UserList: React.FC = () => {
             }
         };
         loadUsers();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -142,7 +143,7 @@ const UserList: React.FC = () => {
     };
 
     return (
-        <ScreenContainer>
+        <ScreenContainer showBack title="Messages">
             <View style={styles.container}>
                 <View style={styles.searchRow}>
                     <TextInput
@@ -161,6 +162,10 @@ const UserList: React.FC = () => {
                         keyExtractor={(item) => item.userId.toString()}
                         renderItem={({ item }) => (
                             <TouchableOpacity style={styles.item} onPress={() => handleUserPress(item)}>
+                                <Image
+                                    source={item.profilePicturePath ? { uri: item.profilePicturePath } : defaultAvatar}
+                                    style={styles.avatar}
+                                />
                                 <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
                             </TouchableOpacity>
                         )}
@@ -190,9 +195,17 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     item: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: 12,
         borderBottomWidth: StyleSheet.hairlineWidth,
         borderBottomColor: '#555',
+    },
+    avatar: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        marginRight: 8,
     },
     name: {
         color: 'white',

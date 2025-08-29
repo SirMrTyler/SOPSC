@@ -30,6 +30,10 @@ export interface FsConversation {
   numMessages: number;
   /** keyed by firebaseUid */
   participants: Record<string, { userId: number }>;
+  /** userId of the last message sender */
+  lastSenderId?: number;
+  /** UID-keyed map of who read the last message */
+  lastMessageReadBy?: Record<string, boolean>;
   memberProfiles: Record<string, MemberProfile>;
   /** keyed by firebaseUid */
   unreadCount: Record<string, number>;
@@ -88,6 +92,8 @@ export const getFsConversation = async (
     participants: data.participants || {},
     memberProfiles,
     unreadCount: data.unreadCount || {},
+    lastSenderId: data.lastSenderId,
+    lastMessageReadBy: data.lastMessageReadBy || {},
     type: data.type || 'direct',
     otherUserId,
     otherUserName,
@@ -133,6 +139,8 @@ export const listenToMyConversations = (
         participants: data.participants || {},
         memberProfiles,
         unreadCount: data.unreadCount || {},
+        lastSenderId: data.lastSenderId,
+        lastMessageReadBy: data.lastMessageReadBy || {},
         type: data.type || 'direct',
         otherUserId,
         otherUserName,
@@ -206,6 +214,7 @@ export const sendMessage = async (
     lastSenderId: sender.userId,
     lastSenderName: `${sender.firstName} ${sender.lastName}`,
     lastSenderPicturePath: sender.profilePicturePath || '',
+    lastMessageReadBy: { [sender.firebaseUid]: true },
     mostRecentMessage: content,
     numMessages: increment(1),
     sentTimestamp: serverTimestamp(),
@@ -222,6 +231,7 @@ export const markConversationRead = async (
 ): Promise<void> => {
   await updateDoc(doc(db, 'conversations', chatId), {
     [`unreadCount.${user.firebaseUid}`]: 0,
+    [`lastMessageReadBy.${user.firebaseUid}`]: true,
   });
   await Promise.all(
     messages.map((m) => {

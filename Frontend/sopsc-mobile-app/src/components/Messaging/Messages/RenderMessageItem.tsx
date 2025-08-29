@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { FsConversation } from '../../../types/fsMessages';
+import type { FsConversation } from '../../../types/fsMessages';
 import { formatTimestamp } from '../../../utils/date';
 import defaultAvatar from '../../../../assets/images/default-avatar.png';
 import { useAuth } from '../../../hooks/useAuth';
@@ -39,6 +39,15 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
     includeDate: false,
     includeTime: true,
   });
+  const isReadByAll = React.useMemo(() => {
+    if (!user) return false;
+    if (conversation.lastSenderId !== user.userId) return false;
+    const readBy = conversation.lastMessageReadBy || {};
+    const participantUids = Object.keys(conversation.participants || {});
+    return participantUids
+      .filter((uid) => uid !== user.firebaseUid)
+      .every((uid) => readBy[uid]);
+  }, [conversation, user]);
   return (
     <View style={styles.messageBox}>
       <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
@@ -55,6 +64,11 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
             <Text style={styles.message} numberOfLines={1} ellipsizeMode="tail">
               {conversation.mostRecentMessage}
             </Text>
+            {conversation.lastSenderId === user?.userId && (
+              <Text style={styles.readStatus}>
+                {isReadByAll ? 'Read' : 'Unread'}
+              </Text>
+            )}
           </View>
         </View>
         {unread > 0 && (
@@ -114,6 +128,11 @@ const styles = StyleSheet.create({
   badgeText: {
     color: 'white',
     fontSize: 12,
+  },
+  readStatus: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: '#DED3C4',
   },
 });
 

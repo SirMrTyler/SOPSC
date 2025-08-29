@@ -130,7 +130,7 @@ namespace SOPSC.Api.Services
             _tokenService.CreateToken(newToken, user.UserId, deviceId);
 
             // Update `IsActive` to true
-            SetActiveStatus(true, user.UserId, _dataProvider);
+            SetIsOnline(true, user.UserId, _dataProvider);
 
             return newToken;
         }
@@ -334,7 +334,7 @@ namespace SOPSC.Api.Services
             if (userToken != null)
             {
                 // Update "IsActive" to false
-                SetActiveStatus(false, userToken.UserId, _dataProvider);
+                UpdateIsOnline(userToken.UserId, _dataProvider);
 
                 // Delete the token from the database
                 _tokenService.DeleteTokenAndDeviceId(request.Token, request.DeviceId);
@@ -646,15 +646,25 @@ namespace SOPSC.Api.Services
             return user;
         }
 
-        private static void SetActiveStatus(bool isActive, int userId, IDataProvider dataProvider)
+        private static void SetIsOnline(bool IsOnline, int userId, IDataProvider dataProvider)
         {
-            dataProvider.ExecuteNonQuery("[dbo].[Users_SetIsActive]",
+            dataProvider.ExecuteNonQuery("[dbo].[Users_SetIsOnline]",
                 inputParamMapper: delegate (SqlParameterCollection paramCollection)
                 {
                     paramCollection.AddWithValue("@UserId", userId);
-                    paramCollection.AddWithValue("@IsActive", isActive);
+                    paramCollection.AddWithValue("@IsOnline", IsOnline);
                 });
         }
-#endregion
+
+        private static void UpdateIsOnline(int userId, IDataProvider dataProvider)
+        {
+            dataProvider.ExecuteNonQuery("[dbo].[Users_UpdateIsOnline]",
+                inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    paramCollection.AddWithValue("@UserId", userId);
+                    
+                });
+        }
+        #endregion
     }
 }
