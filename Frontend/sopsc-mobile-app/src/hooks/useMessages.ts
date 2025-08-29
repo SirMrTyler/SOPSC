@@ -15,16 +15,22 @@ export const useMessages = <T extends { messageId: any }>(collectionPath: string
   const [messages, setMessages] = useState<T[]>([]);
 
   useEffect(() => {
+    if (!collectionPath) {
+      setMessages([]);
+      return;
+    }
+
     const q = query(collection(db, collectionPath), orderBy('sentTimestamp'));
     const unsubscribe = onSnapshot(
       q,
       snapshot => {
+        // Firestore can return null on permission issues, so guard accordingly
         if (!snapshot) {
           setMessages([]);
           return;
         }
 
-        const data: T[] = snapshot.docs.map(doc => {
+        const data: T[] = (snapshot?.docs ?? []).map(doc => {
           const raw = doc.data() as any;
           return {
             ...raw,
