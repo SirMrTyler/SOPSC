@@ -3,10 +3,10 @@ import {
   getFirestore,
   doc,
   updateDoc,
+  setDoc,
   collection,
 } from '@react-native-firebase/firestore';
 import {
-  ensureConversationDoc,
   sendMessage as fsSendMessage,
   listenToMyConversations,
   type FsConversation,
@@ -31,20 +31,25 @@ export const createGroup = async (
 ): Promise<string> => {
   const ref = doc(collection(db, 'conversations'));
   const chatId = ref.id;
-  await ensureConversationDoc(chatId, [
-    { userId: creator.userId, firebaseUid: creator.firebaseUid },
-  ], 'group');
-  await updateDoc(ref, {
-    name,
-    type: 'group',
-    memberProfiles: {
-      [creator.userId]: {
-        firstName: creator.firstName,
-        lastName: creator.lastName,
-        profilePicturePath: creator.profilePicturePath || '',
+  const partMap = { [creator.firebaseUid]: { userId: creator.userId } }; 
+  const unread = { [creator.firebaseUid]: 0 }; 
+  await setDoc( 
+    ref,
+    { 
+      name, 
+      type: 'group', 
+      participants: partMap, 
+      unreadCount: unread, 
+      memberProfiles: { 
+        [creator.userId]: { 
+          firstName: creator.firstName, 
+          lastName: creator.lastName, 
+          profilePicturePath: creator.profilePicturePath || '', 
+        },
       },
     },
-  });
+    { merge: true }, 
+  );
   return chatId;
 };
 
