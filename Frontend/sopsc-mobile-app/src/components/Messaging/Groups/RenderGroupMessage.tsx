@@ -25,6 +25,7 @@ import {
   FsConversation,
   listenToConversationMessages,
   getFsConversation,
+  markConversationRead,
 } from "../../../types/fsMessages";
 import { sendMessage } from "../services/groupChatFs";
 import { UserPlusIcon } from "react-native-heroicons/outline";
@@ -50,6 +51,16 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     const unsub = listenToConversationMessages(chatId, setMessages);
     return () => unsub();
   }, [chatId, user?.userId]);
+
+  // Mark conversation as read whenever messages update
+  useEffect(() => {
+    if (!user) return;
+    markConversationRead(
+      chatId,
+      { userId: user.userId, firebaseUid: user.firebaseUid },
+      messages
+    );
+  }, [chatId, messages, user]);
 
   /**
    * Persists a new message document and scrolls the list to the latest entry.
@@ -80,18 +91,12 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
    */
   const renderItem = ({ item }: { item: FsMessage }) => {
     const outgoing = item.senderId === user?.userId;
-    const readByUids = Object.keys(item.readBy || {});
-    const senderUid = Object.entries(conversation?.participants || {}).find(
-      ([, info]) => info.userId === item.senderId
-    )?.[0];
-    const readers = readByUids
-      .filter((uid) => uid !== senderUid)
-      .map((uid) => {
-        const userId = conversation?.participants?.[uid]?.userId;
-        const prof = userId
-          ? conversation?.memberProfiles?.[userId]
-          : undefined;
-        return userId && prof ? { userId, ...prof } : null;
+    const readByIds = Object.keys(item.readBy || {});
+    const readers = readByIds
+      .filter((id) => Number(id) !== item.senderId)
+      .map((id) => {
+        const prof = conversation?.memberProfiles?.[id];
+        return prof ? { userId: Number(id), ...prof } : null;
       })
       .filter(Boolean) as {
       userId: number;
@@ -120,6 +125,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
             <View
               style={[
                 styles.readers,
+
                 { alignSelf: outgoing ? "flex-end" : "flex-start" },
               ]}
             >
