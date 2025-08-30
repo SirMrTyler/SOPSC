@@ -49,7 +49,7 @@ const ReportDetails: React.FC = () => {
   };
 
   return (
-    <ScreenContainer showBack title="SOPSC" showBottomBar={false}>
+    <ScreenContainer showBack title="Reports" showBottomBar={false}>
       <View style={styles.wrapper}>
         <Text style={styles.pageTitle}>Chaplain: {report.chaplain}</Text>
         <View style={styles.card}>

@@ -134,7 +134,7 @@ const Reports: React.FC = () => {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer showBack title="Home">
       <Text style={styles.title}>REPORTS</Text>
       <View style={styles.paginationRow}>
         <View style={styles.leftArrows}>

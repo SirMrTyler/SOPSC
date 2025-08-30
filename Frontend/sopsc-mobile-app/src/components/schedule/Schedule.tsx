@@ -283,7 +283,7 @@ const Schedule: React.FC = () => {
   const monthName = month.toLocaleString('default', { month: 'short' });
 
   return (
-    <ScreenContainer showBottomBar={true}>
+    <ScreenContainer showBottomBar={true} showBack title="Schedule">
       <View style={styles.container} {...panResponder.panHandlers}>
         <View style={styles.navRow}>
           <TouchableOpacity onPress={() => setMenuVisible(true)}>

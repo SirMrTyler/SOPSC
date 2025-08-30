@@ -53,7 +53,7 @@ const GroupChats: React.FC = () => {
   );
 
   return (
-    <ScreenContainer>
+    <ScreenContainer showBack title="Messages">
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <Text style={styles.header}>Group Chats</Text>

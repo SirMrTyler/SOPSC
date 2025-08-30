@@ -46,7 +46,7 @@ const CreateGroupChat: React.FC = () => {
     };
 
     return (
-        <ScreenContainer>
+        <ScreenContainer showBack title="Group Chats">
             <View style={styles.container}>
                 <TextInput
                     style={styles.input}
