@@ -12,6 +12,7 @@ import ScreenContainer from '../../Navigation/ScreenContainer';
 import { listenToGroupChats } from '../services/groupChatFs';
 import { FsConversation } from '../../../types/fsMessages';
 import { useAuth } from '../../../hooks/useAuth';
+import { formatTimestamp } from '../../../utils/date';
 
 /**
  * GroupChats
@@ -47,8 +48,17 @@ const GroupChats: React.FC = () => {
         })
       }
     >
-      <Text style={styles.name}>{item.otherUserName || 'Group Chat'}</Text>
-      <Text style={styles.last}>{item.mostRecentMessage}</Text>
+      <View style={styles.rowBetween}> 
+        <Text style={styles.name}>{item.otherUserName || 'Group Chat'}</Text> 
+        <Text style={styles.membersCount}> 
+          <Text style={styles.membersLabel}>Members: </Text> 
+          {Object.keys(item.participants).length} 
+        </Text> 
+      </View> 
+      <View style={styles.rowBetween}> 
+        <Text style={styles.last}>{item.mostRecentMessage}</Text> 
+        <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text> 
+      </View>
     </TouchableOpacity>
   );
 
@@ -103,11 +113,25 @@ const styles = StyleSheet.create({
     borderBottomColor: '#555',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
+  rowBetween: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+  },
   name: {
     color: 'white',
     fontWeight: 'bold',
   },
+  membersCount: { 
+    color: '#DED3C4', 
+  }, 
+  membersLabel: { 
+    fontWeight: 'bold', 
+  },
   last: {
+    color: '#DED3C4',
+  },
+  time: {
     color: '#DED3C4',
   },
 });
