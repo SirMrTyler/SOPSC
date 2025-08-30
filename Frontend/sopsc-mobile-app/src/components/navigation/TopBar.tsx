@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../App';
@@ -14,9 +14,15 @@ interface Props {
   showBack?: boolean;
   title?: string;
   hasUnreadMessages?: boolean;
+  rightComponent?: React.ReactNode;
 }
 
-const TopBar: React.FC<Props> = ({ showBack, title, hasUnreadMessages }) => {
+const TopBar: React.FC<Props> = ({
+  showBack,
+  title,
+  hasUnreadMessages,
+  rightComponent,
+}) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
@@ -33,23 +39,29 @@ const TopBar: React.FC<Props> = ({ showBack, title, hasUnreadMessages }) => {
           <Text style={styles.title}>SOPSC</Text>
         </TouchableOpacity>
       )}
-      {!showBack && (
-        <View style={styles.rightRow}>
-          <TouchableOpacity style={styles.icon}>
-            <BellIcon color="white" size={22} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.icon}
-            onPress={() => navigation.navigate('Messages')}
-          >
-            {hasUnreadMessages ? (
-              <EnvelopeIcon color="white" size={22} />
-            ) : (
-              <EnvelopeOpenIcon color="white" size={22} />
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.rightRow}>
+        {rightComponent ? (
+          rightComponent
+        ) : (
+          !showBack && (
+            <>
+              <TouchableOpacity style={styles.icon}>
+                <BellIcon color="white" size={22} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.icon}
+                onPress={() => navigation.navigate('Messages')}
+              >
+                {hasUnreadMessages ? (
+                  <EnvelopeIcon color="white" size={22} />
+                ) : (
+                  <EnvelopeOpenIcon color="white" size={22} />
+                )}
+              </TouchableOpacity>
+            </>
+          )
+        )}
+      </View>
     </View>
   );
 };

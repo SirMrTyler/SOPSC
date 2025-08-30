@@ -9,6 +9,7 @@ interface Props {
   showBack?: boolean;
   title?: string;
   hasUnreadMessages?: boolean;
+  rightComponent?: React.ReactNode;
 }
 
 const ScreenContainer: React.FC<Props> = ({
@@ -17,10 +18,16 @@ const ScreenContainer: React.FC<Props> = ({
   showBack = false,
   title,
   hasUnreadMessages,
+  rightComponent,
 }) => {
   return (
     <View style={styles.container}>
-      <TopBar showBack={showBack} title={title} hasUnreadMessages={hasUnreadMessages} />
+      <TopBar
+        showBack={showBack}
+        title={title}
+        hasUnreadMessages={hasUnreadMessages}
+        rightComponent={rightComponent}
+      />
       <View style={styles.content}>{children}</View>
       {showBottomBar && <BottomBar />}
     </View>

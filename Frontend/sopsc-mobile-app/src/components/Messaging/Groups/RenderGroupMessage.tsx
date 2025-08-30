@@ -4,7 +4,7 @@
  * Notes: Subscribes to Firestore collection for real-time updates.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../../App';
 import { useAuth } from '../../../hooks/useAuth';
@@ -17,6 +17,7 @@ import {
   getFsConversation,
 } from '../../../types/fsMessages';
 import { sendMessage } from '../services/groupChatFs';
+import { UserPlusIcon } from 'react-native-heroicons/outline';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatConversation'> {}
 
@@ -24,7 +25,7 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'GroupChatCon
  * GroupChatConversation
  * Displays messages for the specified group chat and handles sending new messages.
  */
-const GroupChatConversation: React.FC<Props> = ({ route }) => {
+const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const { chatId, name } = route.params;
   const { user } = useAuth();
   const [messages, setMessages] = useState<FsMessage[]>([]);
@@ -78,15 +79,40 @@ const GroupChatConversation: React.FC<Props> = ({ route }) => {
     );
   };
 
+  const memberNames = conversation
+    ? Object.values(conversation.memberProfiles)
+        .map((m) => `${m.firstName} ${m.lastName}`.trim())
+        .join(', ')
+    : '';
+
   return (
-    <ScreenContainer showBottomBar={false} showBack title={name}>
+    <ScreenContainer
+      showBottomBar={false}
+      showBack
+      title={name}
+      rightComponent={
+        <TouchableOpacity
+          onPress={() => navigation.navigate('AddGroupChatMembers', { chatId })}
+        >
+          <UserPlusIcon color="white" size={22} />
+        </TouchableOpacity>
+      }
+    >
       <View style={styles.container}>
+        {conversation && (
+          <Text style={styles.membersText}>
+            <Text style={styles.membersLabel}>Members: </Text>
+            {memberNames}
+          </Text>
+        )}
         <FlatList
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
           keyExtractor={(item) => item.messageId}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: false })
+          }
         />
         <View style={styles.inputContainer}>
           <TextInput
@@ -126,6 +152,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
+  membersText: { marginBottom: 8 },
+  membersLabel: { fontWeight: 'bold' },
 });
 
 export default GroupChatConversation;
