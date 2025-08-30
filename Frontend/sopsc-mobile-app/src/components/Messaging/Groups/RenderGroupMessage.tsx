@@ -45,6 +45,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
   const [conversation, setConversation] = useState<FsConversation | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const flatListRef = useRef<FlatList<FsMessage>>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     getFsConversation(chatId, user?.userId ?? 0).then(setConversation);
@@ -52,15 +53,11 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     return () => unsub();
   }, [chatId, user?.userId]);
 
-  // Mark conversation as read whenever messages update
   useEffect(() => {
-    if (!user) return;
-    markConversationRead(
-      chatId,
-      { userId: user.userId, firebaseUid: user.firebaseUid },
-      messages
-    );
-  }, [chatId, messages, user]);
+    if (messages.length) {
+      setExpanded(new Set([messages[messages.length - 1].messageId]));
+    }
+  }, [messages]);
 
   /**
    * Persists a new message document and scrolls the list to the latest entry.
@@ -86,6 +83,18 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
+  const toggleExpanded = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   /**
    * Renders a message bubble with timestamp and sender name.
    */
@@ -104,46 +113,47 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
       lastName: string;
       profilePicturePath?: string;
     }[];
-    const readerNames = readers.map((p) =>
-      `${p.firstName} ${p.lastName}`.trim()
-    );
+    const showReaders = expanded.has(item.messageId);
     return (
-      <View
-        style={[styles.msgBox, outgoing ? styles.msgRight : styles.msgLeft]}
+      <TouchableOpacity
+        onPress={() => toggleExpanded(item.messageId)}
+        activeOpacity={0.8}
       >
-        <Text style={styles.msgAuthor}>{item.senderName}</Text>
-        <Text>{item.messageContent}</Text>
-        <View style={styles.meta}>
-          <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
-        </View>
-        {readers.length > 0 && (
-          <TouchableOpacity
-            onPress={() =>
-              Alert.alert("Read by", readerNames.join(", ") || "No readers yet")
-            }
-          >
+        <View
+          style={[styles.msgBox, outgoing ? styles.msgRight : styles.msgLeft]}
+        >
+          <Text style={styles.msgAuthor}>{item.senderName}</Text>
+          <Text>{item.messageContent}</Text>
+          <View style={styles.meta}>
+            <Text style={styles.time}>
+              {formatTimestamp(item.sentTimestamp)}
+            </Text>
+          </View>
+          {readers.length > 0 && showReaders && (
             <View
               style={[
-                styles.readers,
-
+                styles.readReceiptRow,
                 { alignSelf: outgoing ? "flex-end" : "flex-start" },
               ]}
             >
-              {readers.map((p) => (
-                <Image
-                  key={p.userId}
-                  source={
-                    p.profilePicturePath
-                      ? { uri: p.profilePicturePath }
-                      : defaultAvatar
-                  }
-                  style={styles.readerAvatar}
-                />
-              ))}
+              <Text style={styles.readByLabel}>ReadBy:</Text>
+              <View style={styles.readers}>
+                {readers.map((p) => (
+                  <Image
+                    key={p.userId}
+                    source={
+                      p.profilePicturePath
+                        ? { uri: p.profilePicturePath }
+                        : defaultAvatar
+                    }
+                    style={styles.readerAvatar}
+                  />
+                ))}
+              </View>
             </View>
-          </TouchableOpacity>
-        )}
-      </View>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -219,9 +229,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   time: { fontSize: 12, color: "#666" },
+  readReceiptRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  readByLabel: { fontSize: 12, color: "#666", marginRight: 4 },
   readers: {
     flexDirection: "row",
-    marginTop: 2,
   },
   readerAvatar: {
     width: 16,
