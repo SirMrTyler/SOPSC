@@ -42,17 +42,18 @@ const Messages: React.FC = () => {
         const unsubscribe = listenToMyConversations(
             { userId: user.userId, firebaseUid: user.firebaseUid },
             list => {
-            const trimmed = list.map(c => ({
-                ...c,
-                mostRecentMessage:
-                    c.mostRecentMessage.length > PREVIEW_LENGTH
-                        ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + '...'
-                        : c.mostRecentMessage,
-            }));
-            setMessages(trimmed);
-            setFilteredMessages(trimmed);
-            setLoading(false);
-        }
+                const directConversations = list.filter(c => c.type === 'direct'); 
+                const trimmed = directConversations.map(c => ({ 
+                    ...c, 
+                    mostRecentMessage: 
+                        c.mostRecentMessage.length > PREVIEW_LENGTH 
+                            ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + '...' 
+                            : c.mostRecentMessage, 
+                })); 
+                setMessages(trimmed); 
+                setFilteredMessages(trimmed); 
+                setLoading(false); 
+            }
         );
         return () => unsubscribe();
     }, [user]);
