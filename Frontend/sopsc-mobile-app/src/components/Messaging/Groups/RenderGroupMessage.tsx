@@ -100,12 +100,13 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
    */
   const renderItem = ({ item }: { item: FsMessage }) => {
     const outgoing = item.senderId === user?.userId;
-    const readByIds = Object.keys(item.readBy || {});
-    const readers = readByIds
-      .filter((id) => Number(id) !== item.senderId)
-      .map((id) => {
-        const prof = conversation?.memberProfiles?.[id];
-        return prof ? { userId: Number(id), ...prof } : null;
+    const readByUids = Object.keys(item.readBy || {});
+    const readers = readByUids
+      .map((uid) => {
+        const userId = conversation?.participants?.[uid]?.userId;
+        if (!userId || userId === item.senderId) return null;
+        const prof = conversation?.memberProfiles?.[userId];
+        return prof ? { userId, ...prof } : null;
       })
       .filter(Boolean) as {
       userId: number;
