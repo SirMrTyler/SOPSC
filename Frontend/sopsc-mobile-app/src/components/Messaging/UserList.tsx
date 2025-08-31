@@ -20,6 +20,7 @@ import type { RootStackParamList } from "../../../App";
 import { getAll } from "../User/services/userService";
 import { useAuth } from "../../hooks/useAuth";
 import { UserResult } from "../../types/user";
+import { FsConversationNav } from "../../types/fsMessages";
 import ScreenContainer from "../Navigation/ScreenContainer";
 import { getApp } from "@react-native-firebase/app";
 import {
@@ -136,35 +137,34 @@ const UserList: React.FC = () => {
         await updateDoc(docRef, { chatId: docRef.id });
         chatId = docRef.id;
       }
-      navigation.navigate("Conversation", {
-        conversation: {
-          chatId: chatId,
-          mostRecentMessage: "",
-          sentTimestamp: sentTimestamp,
-          numMessages: 0,
-          participants: {
-            [user.firebaseUid]: { userId: user.userId },
-            [u.firebaseUid]: { userId: u.userId },
-          },
-          memberProfiles: {
-            [user.userId]: {
-              firstName: user.firstName,
-              lastName: user.lastName,
-              profilePicturePath: user.profilePicturePath || "",
-            },
-            [u.userId]: {
-              firstName: u.firstName,
-              lastName: u.lastName,
-              profilePicturePath: u.profilePicturePath || "",
-            },
-          },
-          unreadCount: { [user.firebaseUid]: 0, [u.firebaseUid]: 0 },
-          type: "direct",
-          otherUserId: u.userId,
-          otherUserName: `${u.firstName} ${u.lastName}`,
-          otherUserProfilePicturePath: u.profilePicturePath || "",
+      const conversation: FsConversationNav = {
+        chatId: chatId,
+        mostRecentMessage: "",
+        sentTimestamp: sentTimestamp,
+        numMessages: 0,
+        participants: {
+          [user.firebaseUid]: { userId: user.userId },
+          [u.firebaseUid]: { userId: u.userId },
         },
-      });
+        memberProfiles: {
+          [user.userId]: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicturePath: user.profilePicturePath || "",
+          },
+          [u.userId]: {
+            firstName: u.firstName,
+            lastName: u.lastName,
+            profilePicturePath: u.profilePicturePath || "",
+          },
+        },
+        unreadCount: { [user.firebaseUid]: 0, [u.firebaseUid]: 0 },
+        type: "direct",
+        otherUserId: u.userId,
+        otherUserName: `${u.firstName} ${u.lastName}`,
+        otherUserProfilePicturePath: u.profilePicturePath || "",
+      };
+      navigation.navigate("Conversation", { conversation });
     } catch (err) {
       console.log("[UserList] error navigating to conversation", err);
     }

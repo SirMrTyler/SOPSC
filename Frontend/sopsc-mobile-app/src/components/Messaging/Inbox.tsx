@@ -22,6 +22,7 @@ import { useAuth } from "../../hooks/useAuth";
 import {
   listenToMyConversations,
   FsConversation,
+  FsConversationNav,
 } from "../../types/fsMessages";
 import ScreenContainer from "../Navigation/ScreenContainer";
 
@@ -124,16 +125,15 @@ const Messages: React.FC = () => {
             renderItem={({ item }) => (
               <RenderMessageItem
                 conversation={item}
-                onPress={() =>
-                  navigation.navigate("Conversation", {
-                    conversation: {
-                      ...item,
-                      sentTimestamp: item.sentTimestamp
-                        ? item.sentTimestamp
-                        : null,
-                    } as any,
-                  })
-                }
+                onPress={() => {
+                  const convo: FsConversationNav = {
+                    ...item,
+                    sentTimestamp: item.sentTimestamp
+                      ? item.sentTimestamp
+                      : null,
+                  };
+                  navigation.navigate("Conversation", { conversation: convo });
+                }}
               />
             )}
           />

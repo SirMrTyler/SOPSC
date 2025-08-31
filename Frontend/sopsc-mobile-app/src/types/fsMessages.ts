@@ -44,6 +44,12 @@ export interface FsConversation {
   otherUserProfilePicturePath?: string;
 }
 
+/** Serializable variant of FsConversation for navigation params */
+export interface FsConversationNav
+  extends Omit<FsConversation, 'sentTimestamp'> {
+  sentTimestamp: string | null;
+}
+
 /** Firestore message type */
 export interface FsMessage {
   messageId: string;
