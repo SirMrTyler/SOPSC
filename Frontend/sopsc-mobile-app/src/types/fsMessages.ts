@@ -13,6 +13,7 @@ import {
   orderBy,
   getDoc,
   increment,
+  writeBatch,
 } from '@react-native-firebase/firestore';
 import type { FirebaseFirestoreTypes, Timestamp } from '@react-native-firebase/firestore';
 
@@ -76,24 +77,27 @@ export const ensureConversationDoc = async (
 ): Promise<void> => {
   const ref = doc(db, 'conversations', chatId);
   const snap = await getDoc(ref);
-  if (!snap.exists) {
-    const partMap: Record<string, { userId: number }> = {};
-    const unread: Record<string, number> = {};
-    participants.forEach((p) => {
-      partMap[p.firebaseUid] = { userId: p.userId };
-      unread[p.firebaseUid] = 0;
-    });
+  if (snap.exists) return; 
+
+  const participantsMap: Record<string, { userId: number }> = {};
+  const unreadMap: Record<string, number> = {};
+  participants.forEach((p) => {
+    participantsMap[p.firebaseUid] = { userId: p.userId };
+    unreadMap[p.firebaseUid] = 0;
+  });
     await setDoc(ref, {
-      participants: partMap,
-      unreadCount: unread,
-      memberProfiles: {},
-      numMessages: 0,
+      participants: participantsMap,
+      unreadCount: unreadMap,
       mostRecentMessage: '',
+      numMessages: 0,
       sentTimestamp: serverTimestamp(),
+      lastSenderId: null,
+      lastMessageReadBy: {},
+      memberProfiles: {},
       type,
     });
   }
-};
+
 
 /** Retrieve a conversation by id */
 export const getFsConversation = async (
@@ -146,39 +150,29 @@ export const listenToMyConversations = (
   return onSnapshot(q, (snapshot) => {
     const list: FsConversation[] = snapshot.docs.map((d) => {
       const data = d.data() as FirebaseFirestoreTypes.DocumentData;
-      const memberProfiles = data.memberProfiles || {};
+      // convenience derivations for direct chats
       let otherUserId: number | undefined;
-      let otherUserName = '';
-      let otherUserProfilePicturePath = '';
+      let otherUserName: string | undefined;
+      let otherUserProfilePicturePath: string | undefined;
       if (data.type === 'direct') {
-        otherUserId = Number(
-          Object.keys(memberProfiles).find(
-            (id) => Number(id) !== user.userId
-          )
-        );
-        const prof = memberProfiles[String(otherUserId)];
-        if (prof) {
-          otherUserName = `${prof.firstName} ${prof.lastName}`.trim();
-          otherUserProfilePicturePath = prof.profilePicturePath || '';
-        }
-      } else {
-        otherUserName = data.name || 'Group Chat';
+        const participantUids = Object.keys(data.participants || {});
+        const otherUid = participantUids.find((uid) => uid !== user.firebaseUid);
+        const other = otherUid ? data.participants?.[otherUid] : undefined;
+        const profiles = data.memberProfiles || {};
+        const profile = other?.userId != null ? profiles[String(other.userId)] : undefined;
+        otherUserId = other?.userId;
+        otherUserName = profile ? `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() : undefined;
+        otherUserProfilePicturePath = profile?.profilePicturePath;
       }
+
       return {
+        ...(data as any),
         chatId: d.id,
-        mostRecentMessage: data.mostRecentMessage || '',
-        sentTimestamp: data.sentTimestamp?.toDate() ?? null,
-        numMessages: data.numMessages || 0,
-        participants: data.participants || {},
-        memberProfiles,
-        unreadCount: data.unreadCount || {},
-        lastSenderId: data.lastSenderId,
-        lastMessageReadBy: data.lastMessageReadBy || {},
-        type: data.type || 'direct',
+        sentTimestamp: data.sentTimestamp?.toDate?.() ?? data.sentTimestamp ?? null,
         otherUserId,
         otherUserName,
         otherUserProfilePicturePath,
-      };
+      } as FsConversation;
     });
     cb(list);
   });
@@ -223,44 +217,55 @@ export const sendMessage = async (
   recipients: { userId: number; firebaseUid: string }[]
 ): Promise<void> => {
   const allParticipants = [...recipients, sender];
-  await ensureConversationDoc(chatId, allParticipants, type);
-
-  const recipientMap: Record<string, boolean> = {};
+  
+  // Keep participant + profile data on the conversation doc
   const participantUpdates: Record<string, any> = {};
-  const unreadUpdates: Record<string, any> = {};
-  allParticipants.forEach(({ userId, firebaseUid }) => {
-    participantUpdates[`participants.${firebaseUid}`] = { userId };
-    unreadUpdates[`unreadCount.${firebaseUid}`] = increment(0);
-  });
-  recipients.forEach(({ firebaseUid }) => {
-    recipientMap[firebaseUid] = true;
-    unreadUpdates[`unreadCount.${firebaseUid}`] = increment(1);
-  });
-  await addDoc(
-    collection(db, `conversations/${chatId}/messages`),
-    {
-      senderId: sender.userId,
-      senderName: `${sender.firstName} ${sender.lastName}`,
-      senderProfilePicturePath: sender.profilePicturePath || '',
-      messageContent: content,
-      sentTimestamp: serverTimestamp(),
-      readBy: { [sender.firebaseUid]: true },
-      recipients: recipientMap,
-      type,
+  const memberProfileUpdates: Record<string, any> = {};
+  allParticipants.forEach((p) => {
+    participantUpdates[`participants.${p.firebaseUid}.userId`] = p.userId;
+    memberProfileUpdates[`memberProfiles.${String(p.userId)}.firstName`] = (p as any).firstName ?? '';
+    memberProfileUpdates[`memberProfiles.${String(p.userId)}.lastName`] = (p as any).lastName ?? '';
+    if ((p as any).profilePicturePath) {
+      memberProfileUpdates[`memberProfiles.${String(p.userId)}.profilePicturePath`] = (p as any).profilePicturePath;
     }
-  );
+  });
 
+  // Per-user unread counters — clear for sender, increment for recipients
+  const unreadUpdates: Record<string, any> = {
+    [`unreadCount.${sender.firebaseUid}`]: 0,
+  };
+  for (const r of recipients) {
+    unreadUpdates[`unreadCount.${r.firebaseUid}`] = increment(1);
+  }
+
+  // 1) add the message to subcollection
+  const msgCol = collection(db, `conversations/${chatId}/messages`);
+  await addDoc(msgCol, {
+    messageContent: content,
+    senderId: sender.userId,
+    senderName: `${sender.firstName ?? ''} ${sender.lastName ?? ''}`.trim(),
+    sentTimestamp: serverTimestamp(),
+    readTimestamp: null,
+    isRead: false, // legacy flag if referenced elsewhere
+    readBy: { [sender.firebaseUid]: true }, // sender has read it
+    recipients: recipients.reduce<Record<string, boolean>>((acc, r) => {
+      acc[r.firebaseUid] = true;
+      return acc;
+    }, {}),
+    type,
+  });
+
+  // 2) update the parent conversation metadata
   await updateDoc(doc(db, 'conversations', chatId), {
+    ...participantUpdates,
+    ...memberProfileUpdates,
+    ...unreadUpdates,
+    type,
     lastSenderId: sender.userId,
-    lastSenderName: `${sender.firstName} ${sender.lastName}`,
-    lastSenderPicturePath: sender.profilePicturePath || '',
-    lastMessageReadBy: { [sender.firebaseUid]: true },
+    lastMessageReadBy: { [sender.firebaseUid]: true }, // who's read the latest
     mostRecentMessage: content,
     numMessages: increment(1),
     sentTimestamp: serverTimestamp(),
-    type,
-    ...participantUpdates,
-    ...unreadUpdates,
   });
 };
 
@@ -270,20 +275,30 @@ export const markConversationRead = async (
   user: { userId: number; firebaseUid: string },
   messages: FsMessage[]
 ): Promise<void> => {
-  await updateDoc(doc(db, 'conversations', chatId), {
+  // Clear THIS user's unread badge and set lastMessageReadBy if last msg is from others
+  const last = messages.length ? messages[messages.length - 1] : undefined;
+  const convPatch: Record<string, any> = {
     [`unreadCount.${user.firebaseUid}`]: 0,
-    [`lastMessageReadBy.${user.firebaseUid}`]: true,
-  });
-  await Promise.all(
-    messages.map((m) => {
-      if (!m.readBy || !m.readBy[user.firebaseUid]) {
-        return updateDoc(doc(db, `conversations/${chatId}/messages`, m.messageId), {
-          [`readBy.${user.firebaseUid}`]: true,
-        });
-      }
-      return Promise.resolve();
-    })
-  );
+  };
+  if (last && last.senderId !== user.userId) {
+    convPatch[`lastMessageReadBy.${user.firebaseUid}`] = true;
+  }
+
+  const batch = writeBatch(db);
+
+  // 1) update conversation doc
+  const convRef = doc(db, 'conversations', chatId);
+  batch.update(convRef, convPatch);
+
+  // 2) mark each message from others as read-by-me if not already
+  for (const m of messages) {
+    if (m.senderId === user.userId) continue;
+    if (m.readBy && m.readBy[user.firebaseUid]) continue;
+    const msgRef = doc(db, `conversations/${chatId}/messages`, m.messageId);
+    batch.update(msgRef, { [`readBy.${user.firebaseUid}`]: true });
+  }
+
+  await batch.commit();
 };
 
 export default {
