@@ -99,13 +99,13 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
    * Renders a message bubble with timestamp and sender name.
    */
   const renderItem = ({ item }: { item: FsMessage }) => {
+    if (!conversation) return null;
     const outgoing = item.senderId === user?.userId;
-    const readByUids = Object.keys(item.readBy || {});
-    const readers = readByUids
+    const readers = Object.keys(item.readBy || {})
       .map((uid) => {
-        const userId = conversation?.participants?.[uid]?.userId;
-        if (!userId || userId === item.senderId) return null;
-        const prof = conversation?.memberProfiles?.[userId];
+        const userId = conversation.participants[uid]?.userId;
+        if (userId === item.senderId) return null;
+        const prof = userId ? conversation.memberProfiles[userId] : undefined;
         return prof ? { userId, ...prof } : null;
       })
       .filter(Boolean) as {

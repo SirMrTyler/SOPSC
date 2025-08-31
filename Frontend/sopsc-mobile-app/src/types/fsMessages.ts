@@ -27,7 +27,7 @@ export interface MemberProfile {
 export interface FsConversation {
   chatId: string;
   mostRecentMessage: string;
-  sentTimestamp: Date | null;
+  sentTimestamp: string | null;
   numMessages: number;
   /** keyed by firebaseUid */
   participants: Record<string, { userId: number }>;
