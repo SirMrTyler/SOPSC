@@ -25,20 +25,20 @@ export interface MemberProfile {
 
 /** Firestore conversation type */
 export interface FsConversation {
-    chatId: string;
-    mostRecentMessage: string;
-    sentTimestamp: Timestamp | string;
-    numMessages: number;
+  chatId: string;
+  mostRecentMessage: string;
+  sentTimestamp: Timestamp | string | null;
+  numMessages: number;
   /** keyed by firebaseUid */
-    participants: Record<string, any>;
+  participants: Record<string, any>;
   /** userId of the last message sender */
   lastSenderId?: number;
   /** UID-keyed map of who read the last message */
   lastMessageReadBy?: Record<string, boolean>;
-    memberProfiles: Record<string, MemberProfile>;
+  memberProfiles: Record<string, MemberProfile>;
   /** keyed by firebaseUid */
-    unreadCount: Record<string, number>;
-    type: 'direct' | 'group';
+  unreadCount: Record<string, number>;
+  type: 'direct' | 'group';
   otherUserId?: number;
   otherUserName?: string;
   otherUserProfilePicturePath?: string;
