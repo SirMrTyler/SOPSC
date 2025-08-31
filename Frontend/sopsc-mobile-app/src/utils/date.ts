@@ -13,35 +13,43 @@ interface FormatOptions {
   includeTime?: boolean;
 }
 
+export const toIso = (
+    v:
+      | string
+      | number
+      | Date
+      | FirebaseFirestoreTypes.Timestamp
+      | null
+      | undefined
+  ): string => {
+    if (v == null) return ""; // or new Date().toISOString()
+    if (typeof v === "string") return v;
+    if (typeof v === "number") return new Date(v).toISOString();
+    // Firestore Timestamp from RN Firebase has .toDate()
+    const d = (v as any)?.toDate?.() ?? (v instanceof Date ? v : null);
+    return (d ?? new Date()).toISOString();
+};
+
+type FormatOpts = {
+  includeDay?: boolean;
+  includeDate?: boolean;
+  includeTime?: boolean;
+};
+
 export const formatTimestamp = (
-  timestamp?: TimestampLike | null,
-  options: FormatOptions = { includeDate: true, includeDay: true, includeTime: true },
+  v: string | number | Date | FirebaseFirestoreTypes.Timestamp | null | undefined,
+  opts: FormatOpts = { includeDay: false, includeDate: true, includeTime: true }
 ): string => {
-  if (!timestamp) return '';
-  let date: Date;
-  if (timestamp instanceof Date) {
-    date = timestamp;
-  } else if (typeof timestamp === 'string') {
-    date = new Date(timestamp);
-  } else {
-    date = timestamp.toDate();
-  }
+  const iso = toIso(v);
+  if (!iso) return '';
+  const d = new Date(iso);
 
-  const formatOptions: Intl.DateTimeFormatOptions = {};
-  if (options.includeDay) {
-    formatOptions.weekday = 'short';
-  }
-  if (options.includeDate) {
-    formatOptions.month = 'short';
-    formatOptions.day = 'numeric';
-  }
-  if (options.includeTime) {
-    formatOptions.hour = 'numeric';
-    formatOptions.minute = '2-digit';
-    formatOptions.hour12 = true;
-  }
-
-  return date.toLocaleString('en-US', formatOptions);
+  // tweak to your taste:
+  const parts: string[] = [];
+  if (opts.includeDay) parts.push(d.toLocaleDateString(undefined, { weekday: 'short' }));
+  if (opts.includeDate) parts.push(d.toLocaleDateString());
+  if (opts.includeTime) parts.push(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  return parts.join(' ');
 };
 
 export type { FormatOptions };

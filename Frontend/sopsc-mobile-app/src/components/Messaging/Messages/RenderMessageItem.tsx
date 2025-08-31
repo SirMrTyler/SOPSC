@@ -3,12 +3,12 @@
  * Purpose: Renders a preview row for a conversation in the inbox list.
  * Notes: Shows read status and timestamp for the latest message.
  */
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import type { FsConversation } from '../../../types/fsMessages';
-import { formatTimestamp } from '../../../utils/date';
-import defaultAvatar from '../../../../assets/images/default-avatar.png';
-import { useAuth } from '../../../hooks/useAuth';
+import React from "react";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import type { FsConversation } from "../../../types/fsMessages";
+import { formatTimestamp } from "../../../utils/date";
+import defaultAvatar from "../../../../assets/images/default-avatar.png";
+import { useAuth } from "../../../hooks/useAuth";
 interface Props {
   conversation: FsConversation;
   onPress: () => void;
@@ -19,24 +19,30 @@ interface Props {
  * ConversationItem
  * Displays conversation metadata including read status and timestamp.
  */
-const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress }) => {
+const ConversationItem: React.FC<Props> = ({
+  conversation,
+  onPress,
+  onLongPress,
+}) => {
   const { user } = useAuth();
   const profiles = conversation.memberProfiles || {};
   const others = Object.entries(profiles).filter(
     ([id]) => Number(id) !== user?.userId
   );
   const displayName =
-    conversation.type === 'group'
-      ? 'Group Chat'
-      : `${others[0]?.[1]?.firstName ?? ''} ${others[0]?.[1]?.lastName ?? ''}`.trim();
+    conversation.type === "group"
+      ? "Group Chat"
+      : `${others[0]?.[1]?.firstName ?? ""} ${
+          others[0]?.[1]?.lastName ?? ""
+        }`.trim();
   const avatarPath =
-    conversation.type === 'group'
+    conversation.type === "group"
       ? undefined
       : others[0]?.[1]?.profilePicturePath;
-  const unread = conversation.unreadCount?.[user?.firebaseUid || ''] || 0;
+  const unread = conversation.unreadCount?.[user?.firebaseUid || ""] || 0;
   const time = formatTimestamp(conversation.sentTimestamp, {
-    includeDay: false,
-    includeDate: false,
+    includeDay: true,
+    includeDate: true,
     includeTime: true,
   });
   const isReadByAll = React.useMemo(() => {
@@ -50,7 +56,11 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
   }, [conversation, user]);
   return (
     <View style={styles.messageBox}>
-      <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
         <Image
           source={avatarPath ? { uri: avatarPath } : defaultAvatar}
           style={styles.avatar}
@@ -66,7 +76,7 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
             </Text>
             {conversation.lastSenderId === user?.userId && (
               <Text style={styles.readStatus}>
-                {isReadByAll ? 'Read' : 'Unread'}
+                {isReadByAll ? "Read" : "Unread"}
               </Text>
             )}
           </View>
@@ -83,18 +93,18 @@ const ConversationItem: React.FC<Props> = ({ conversation, onPress, onLongPress 
 
 const styles = StyleSheet.create({
   messageBox: {
-    backgroundColor: 'rgba(255, 255, 255, .05)',
+    backgroundColor: "rgba(255, 255, 255, .05)",
     borderRadius: 12,
     padding: 6,
     marginVertical: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, .07)',
+    borderColor: "rgba(255, 255, 255, .07)",
   },
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
-    position: 'relative',
+    position: "relative",
   },
   avatar: {
     width: 40,
@@ -106,37 +116,37 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   name: {
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   message: {
-    color: '#DED3C4',
+    color: "#DED3C4",
   },
   time: {
-    color: '#DED3C4',
+    color: "#DED3C4",
     fontSize: 12,
   },
   badge: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    position: 'absolute',
+    position: "absolute",
     bottom: 8,
     right: 13,
   },
   badgeText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   readStatus: {
     marginLeft: 6,
     fontSize: 12,
-    color: '#DED3C4',
+    color: "#DED3C4",
   },
 });
 

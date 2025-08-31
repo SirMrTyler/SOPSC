@@ -29,6 +29,7 @@ import {
   FirebaseFirestoreTypes,
   Timestamp,
 } from "@react-native-firebase/firestore";
+import { toIso } from "../../utils/date";
 
 const PREVIEW_LENGTH = 50;
 
@@ -88,22 +89,6 @@ const Messages: React.FC = () => {
       </View>
     );
   }
-  const toIso = (
-    v:
-      | string
-      | number
-      | Date
-      | FirebaseFirestoreTypes.Timestamp
-      | null
-      | undefined
-  ): string => {
-    if (v == null) return ""; // or new Date().toISOString()
-    if (typeof v === "string") return v;
-    if (typeof v === "number") return new Date(v).toISOString();
-    // Firestore Timestamp from RN Firebase has .toDate()
-    const d = (v as any)?.toDate?.() ?? (v instanceof Date ? v : null);
-    return (d ?? new Date()).toISOString();
-  };
 
   const handleUserPress = (item: FsConversationNav) => {
     const convo: FsConversationNav = {
