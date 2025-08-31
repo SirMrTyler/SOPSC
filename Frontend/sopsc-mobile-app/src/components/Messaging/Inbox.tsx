@@ -25,6 +25,7 @@ import {
   FsConversationNav,
 } from "../../types/fsMessages";
 import ScreenContainer from "../Navigation/ScreenContainer";
+import { Timestamp } from "@react-native-firebase/firestore";
 
 const PREVIEW_LENGTH = 50;
 
@@ -85,6 +86,18 @@ const Messages: React.FC = () => {
     );
   }
 
+  const handleUserPress = (item: FsConversationNav) => {
+    const ts =
+      typeof item.sentTimestamp === "string"
+        ? item.sentTimestamp
+        : (item.sentTimestamp as Timestamp).toDate().toISOString();
+    const convo: FsConversationNav = {
+      ...item,
+      sentTimestamp: ts,
+    };
+    navigation.navigate("Conversation", { conversation: convo });
+  };
+
   return (
     <ScreenContainer showBack title="Home">
       <View style={styles.container}>
@@ -125,15 +138,7 @@ const Messages: React.FC = () => {
             renderItem={({ item }) => (
               <RenderMessageItem
                 conversation={item}
-                onPress={() => {
-                  const convo: FsConversationNav = {
-                    ...item,
-                    sentTimestamp: item.sentTimestamp
-                      ? item.sentTimestamp.toISOString()
-                      : null,
-                  };
-                  navigation.navigate("Conversation", { conversation: convo });
-                }}
+                onPress={() => handleUserPress(item as FsConversationNav)}
               />
             )}
           />

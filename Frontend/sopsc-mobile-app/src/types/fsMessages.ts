@@ -14,7 +14,7 @@ import {
   getDoc,
   increment,
 } from '@react-native-firebase/firestore';
-import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import type { FirebaseFirestoreTypes, Timestamp } from '@react-native-firebase/firestore';
 
 /** Participant profile information */
 export interface MemberProfile {
@@ -25,29 +25,28 @@ export interface MemberProfile {
 
 /** Firestore conversation type */
 export interface FsConversation {
-  chatId: string;
-  mostRecentMessage: string;
-  sentTimestamp: string | null;
-  numMessages: number;
+    chatId: string;
+    mostRecentMessage: string;
+    sentTimestamp: Timestamp | string;
+    numMessages: number;
   /** keyed by firebaseUid */
-  participants: Record<string, { userId: number }>;
+    participants: Record<string, any>;
   /** userId of the last message sender */
   lastSenderId?: number;
   /** UID-keyed map of who read the last message */
   lastMessageReadBy?: Record<string, boolean>;
-  memberProfiles: Record<string, MemberProfile>;
+    memberProfiles: Record<string, MemberProfile>;
   /** keyed by firebaseUid */
-  unreadCount: Record<string, number>;
-  type: 'direct' | 'group';
+    unreadCount: Record<string, number>;
+    type: 'direct' | 'group';
   otherUserId?: number;
   otherUserName?: string;
   otherUserProfilePicturePath?: string;
 }
 
 /** Serializable variant of FsConversation for navigation params */
-export interface FsConversationNav
-  extends Omit<FsConversation, 'sentTimestamp'> {
-  sentTimestamp: string | null;
+export interface FsConversationNav extends FsConversation {
+  sentTimestamp: string;
 }
 
 /** Firestore message type */
