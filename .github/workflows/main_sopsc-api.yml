@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  NODE_ENV: production
+
 jobs:
   build:
     runs-on: windows-latest
