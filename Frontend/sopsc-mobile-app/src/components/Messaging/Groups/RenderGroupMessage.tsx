@@ -30,6 +30,8 @@ import {
 import { sendMessage } from "../services/groupChatFs";
 import { UserPlusIcon } from "react-native-heroicons/outline";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 interface Props
   extends NativeStackScreenProps<RootStackParamList, "GroupChatConversation"> {}
@@ -58,6 +60,28 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
       setExpanded(new Set([messages[messages.length - 1].messageId]));
     }
   }, [messages]);
+
+  // Mark as read whenever messages change (live read receipts + badge clear)
+  useEffect(() => {
+    if (!user || messages.length === 0) return;
+    markConversationRead(
+      chatId,
+      { userId: user.userId, firebaseUid: user.firebaseUid },
+      messages
+    ).catch(() => {});
+  }, [chatId, user, messages]);
+
+  //Also mark as read right when the screen regains focus (covers quick back/forward nav)
+  useFocusEffect(
+    useCallback(() => {
+      if (!user || messages.length === 0) return;
+      markConversationRead(
+        chatId,
+        { userId: user.userId, firebaseUid: user.firebaseUid },
+        messages
+      ).catch(() => {});
+    }, [chatId, user, messages])
+  );
 
   /**
    * Persists a new message document and scrolls the list to the latest entry.
