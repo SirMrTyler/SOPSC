@@ -129,7 +129,7 @@ const Messages: React.FC = () => {
                   const convo: FsConversationNav = {
                     ...item,
                     sentTimestamp: item.sentTimestamp
-                      ? item.sentTimestamp
+                      ? item.sentTimestamp.toISOString()
                       : null,
                   };
                   navigation.navigate("Conversation", { conversation: convo });
