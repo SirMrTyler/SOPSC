@@ -1,10 +1,11 @@
 import { useEffect, useRef } from "react";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 import axios from "axios";
-import {getApp} from '@react-native-firebase/app';
-import {getMessaging, getToken as getFcmToken} from '@react-native-firebase/messaging';
+import { getApp } from '@react-native-firebase/app';
+import { getMessaging, getToken as getFcmToken } from '@react-native-firebase/messaging';
 import { getToken, getDeviceId } from "../components/serviceHelpers";
 
 const messagingInst = getMessaging(getApp());
@@ -83,9 +84,17 @@ export const usePushNotifications = (user: any) => {
       }
       if (finalStatus !== "granted") return;
 
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
+      if (!projectId) {
+        console.error("Project ID is not defined for push notifications");
+        return;
+      }
+      
       const expoToken = (
         await Notifications.getExpoPushTokenAsync({
-          projectId: "a905a038-d584-4e7e-a7f9-cd2091702dc1",
+          projectId,
         })
       ).data;
       console.log("Expo token:", expoToken);
