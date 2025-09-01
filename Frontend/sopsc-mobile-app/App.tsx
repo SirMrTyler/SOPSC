@@ -7,6 +7,7 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ImageBackground, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import * as Notifications from "expo-notifications";
 
 // Components
 import Login from "./src/components/User/Login";
@@ -29,6 +30,15 @@ import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile co
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/Post";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 export type RootStackParamList = {
   Login: undefined;
