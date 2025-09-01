@@ -22,7 +22,26 @@ Notifications.setNotificationHandler({
 
 export const usePushNotifications = (user: any) => {
   const lastTokens = useRef<{ expoPushToken?: string; deviceToken?: string }>({});
+const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
 
+  useEffect(() => {
+    notificationListener.current = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log("Notification received:", notification);
+      }
+    );
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("Notification response:", response);
+      });
+
+    return () => {
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
+    };
+  }, []);
   useEffect(() => {
     if (!user) return;
 
