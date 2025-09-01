@@ -147,10 +147,29 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
         <View
           style={[styles.msgBox, outgoing ? styles.msgRight : styles.msgLeft]}
         >
-          <Text style={styles.msgAuthor}>{item.senderName}</Text>
-          <Text>{item.messageContent}</Text>
+          <Text
+            style={[
+              styles.msgAuthor,
+              outgoing ? styles.msgAuthorRight : styles.msgAuthorLeft,
+            ]}
+          >
+            {item.senderName}
+          </Text>
+          <Text
+            style={[
+              styles.msgText,
+              outgoing ? styles.msgTextRight : styles.msgTextLeft,
+            ]}
+          >
+            {item.messageContent}
+          </Text>
           <View style={styles.meta}>
-            <Text style={styles.time}>
+            <Text
+              style={[
+                styles.time,
+                outgoing ? styles.timeRight : styles.timeLeft,
+              ]}
+            >
               {formatTimestamp(item.sentTimestamp)}
             </Text>
           </View>
@@ -161,7 +180,14 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
                 { alignSelf: outgoing ? "flex-end" : "flex-start" },
               ]}
             >
-              <Text style={styles.readByLabel}>ReadBy:</Text>
+              <Text
+                style={[
+                  styles.readByLabel,
+                  outgoing ? styles.timeRight : styles.timeLeft,
+                ]}
+              >
+                ReadBy:
+              </Text>
               <View style={styles.readers}>
                 {readers.map((p) => (
                   <Image
@@ -238,28 +264,57 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  msgBox: { marginVertical: 4, padding: 8, borderRadius: 4 },
+  msgBox: {
+    marginVertical: 6,
+    padding: 10,
+    borderRadius: 12,
+    maxWidth: "82%",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
   msgLeft: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.07)",
+    backgroundColor: "rgba(18, 32, 47, 0.92)",
+    borderColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
   },
-  msgRight: { alignSelf: "flex-end", backgroundColor: "#cfe9ff" },
+  msgRight: {
+    alignSelf: "flex-end",
+    backgroundColor: "#cfe9ff",
+    borderColor: "rgba(0,0,0,0.06)",
+    borderWidth: 1,
+  },
+  msgText: {
+    fontSize: 16,
+    lineHeight: 21,
+  },
+  msgTextLeft: {
+    color: "#fff",
+  },
+  msgTextRight: {
+    color: "#0b2138", // NEW: deep navy for readability on light bubble
+  },
   msgAuthor: { fontWeight: "bold" },
+  msgAuthorLeft: { color: "rgba(255,255,255,0.9)" },
+  msgAuthorRight: { color: "#0b2138" },
   meta: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
-    marginTop: 2,
+    marginTop: 4,
   },
   time: { fontSize: 12, color: "#666" },
+  timeLeft: { color: "rgba(255,255,255,0.75)" },
+  timeRight: { color: "rgba(11,33,56,0.7)" },
   readReceiptRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 2,
+    marginTop: 4,
   },
-  readByLabel: { fontSize: 12, color: "#666", marginRight: 4 },
+  readByLabel: { fontSize: 12, marginRight: 6 },
   readers: {
     flexDirection: "row",
   },
@@ -268,6 +323,8 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     marginRight: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.6)",
   },
   inputContainer: { flexDirection: "row", alignItems: "center", marginTop: 8 },
   input: {
@@ -278,6 +335,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    backgroundColor: "rgba(255,255,255,0.95)",
   },
   membersText: { marginBottom: 8 },
   membersLabel: { fontWeight: "bold" },
