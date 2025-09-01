@@ -1,0 +1,16 @@
+ALTER PROC [dbo].[NotificationTokens_SelectByUserIds]
+    @UserIds NVARCHAR(MAX)
+AS
+/* TEST
+    EXEC [dbo].[NotificationTokens_SelectByUserIds] @UserIds='1,2';
+*/
+BEGIN
+    DECLARE @Ids TABLE (UserId INT);
+    INSERT INTO @Ids (UserId)
+    SELECT VALUE FROM STRING_SPLIT(@UserIds, ',');
+
+    SELECT nt.ExpoPushToken
+    FROM dbo.NotificationTokens nt
+    WHERE nt.UserId IN (SELECT UserId FROM @Ids) AND nt.ExpoPushToken IS NOT NULL;
+END
+GO

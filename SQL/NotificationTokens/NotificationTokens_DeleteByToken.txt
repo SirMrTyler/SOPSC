@@ -1,0 +1,10 @@
+ALTER PROC [dbo].[NotificationTokens_DeleteByToken]
+    @ExpoPushToken NVARCHAR(255)
+AS
+/* TEST
+    EXEC [dbo].[NotificationTokens_DeleteByToken] @ExpoPushToken='ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]';
+*/
+BEGIN
+    DELETE FROM dbo.NotificationTokens WHERE ExpoPushToken = @ExpoPushToken;
+END
+GO

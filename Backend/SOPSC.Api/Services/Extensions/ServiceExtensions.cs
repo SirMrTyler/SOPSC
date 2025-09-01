@@ -68,6 +68,9 @@ namespace SOPSC.Api.Services.Extensions
             services.AddScoped<IScheduleCategoriesService, ScheduleCategoriesService>();
             services.AddScoped<IReportsService, ReportsService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddHttpClient<ExpoPushService>();
+            services.AddScoped<IExpoPushService>(sp =>
+                sp.GetRequiredService<ExpoPushService>());
             
             // Firestore and FCM
             FirestoreDb firestore = null;
