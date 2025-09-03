@@ -30,6 +30,7 @@ import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile co
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/Post";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
+import ErrorBoundary from "./src/components/ErrorBoundary";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -77,82 +78,84 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={AppTheme}>
-        <StatusBar style="light" translucent={false} />
-        <ImageBackground
-          source={backgroundImage}
-          style={styles.background}
-          imageStyle={{ resizeMode: "cover" }}
-        >
-          <Stack.Navigator
-            id={undefined}
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: "transparent" },
-            }}
+      <ErrorBoundary>
+        <NavigationContainer theme={AppTheme}>
+          <StatusBar style="light" translucent={false} />
+          <ImageBackground
+            source={backgroundImage}
+            style={styles.background}
+            imageStyle={{ resizeMode: "cover" }}
           >
-            {user ? (
-              <>
-                <Stack.Screen name="Landing">
-                  {(props) => (
-                    <LandingPage
-                      {...props}
-                      onLogout={() => setUser(null)}
-                      user={user}
-                    />
-                  )}
-                </Stack.Screen>
+            <Stack.Navigator
+              id={undefined}
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "transparent" },
+              }}
+            >
+              {user ? (
+                <>
+                  <Stack.Screen name="Landing">
+                    {(props) => (
+                      <LandingPage
+                        {...props}
+                        onLogout={() => setUser(null)}
+                        user={user}
+                      />
+                    )}
+                  </Stack.Screen>
 
-                <Stack.Screen name="Messages" component={Messages} />
-                <Stack.Screen name="UserList" component={UserList} />
-                <Stack.Screen name="GroupChats" component={GroupInbox} />
-                <Stack.Screen
-                  name="CreateGroupChat"
-                  component={CreateGroupMessage}
-                />
-                <Stack.Screen
-                  name="GroupChatConversation"
-                  component={RenderGroupMessage}
-                />
-                <Stack.Screen
-                  name="AddGroupChatMembers"
-                  component={AddGroupChatMembers}
-                />
-                <Stack.Screen name="Conversation" component={Conversation} />
-                <Stack.Screen
-                  name="AdminDashboard"
-                  component={AdminDashboard}
-                />
-                <Stack.Screen name="Posts" component={Posts} />
-                <Stack.Screen name="Reports" component={Reports} />
-                <Stack.Screen name="ReportDetails" component={ReportDetails} />
-                <Stack.Screen name="Schedule" component={Schedule} />
-                <Stack.Screen name="Profile" component={Profile} />
-                {/* Add other screens here as needed */}
-              </>
-            ) : (
-              <>
-                <Stack.Screen name="Login">
-                  {(props) => (
-                    <Login
-                      {...props}
-                      onLoginSuccess={(userData: any) => setUser(userData)}
-                    />
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="Register">
-                  {(props) => (
-                    <Register
-                      {...props}
-                      onRegisterSuccess={(userData: any) => setUser(userData)}
-                    />
-                  )}
-                </Stack.Screen>
-              </>
-            )}
-          </Stack.Navigator>
-        </ImageBackground>
-      </NavigationContainer>
+                  <Stack.Screen name="Messages" component={Messages} />
+                  <Stack.Screen name="UserList" component={UserList} />
+                  <Stack.Screen name="GroupChats" component={GroupInbox} />
+                  <Stack.Screen
+                    name="CreateGroupChat"
+                    component={CreateGroupMessage}
+                  />
+                  <Stack.Screen
+                    name="GroupChatConversation"
+                    component={RenderGroupMessage}
+                  />
+                  <Stack.Screen
+                    name="AddGroupChatMembers"
+                    component={AddGroupChatMembers}
+                  />
+                  <Stack.Screen name="Conversation" component={Conversation} />
+                  <Stack.Screen
+                    name="AdminDashboard"
+                    component={AdminDashboard}
+                  />
+                  <Stack.Screen name="Posts" component={Posts} />
+                  <Stack.Screen name="Reports" component={Reports} />
+                  <Stack.Screen name="ReportDetails" component={ReportDetails} />
+                  <Stack.Screen name="Schedule" component={Schedule} />
+                  <Stack.Screen name="Profile" component={Profile} />
+                  {/* Add other screens here as needed */}
+                </>
+              ) : (
+                <>
+                  <Stack.Screen name="Login">
+                    {(props) => (
+                      <Login
+                        {...props}
+                        onLoginSuccess={(userData: any) => setUser(userData)}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="Register">
+                    {(props) => (
+                      <Register
+                        {...props}
+                        onRegisterSuccess={(userData: any) => setUser(userData)}
+                      />
+                    )}
+                  </Stack.Screen>
+                </>
+              )}
+            </Stack.Navigator>
+          </ImageBackground>
+        </NavigationContainer>
+      </ErrorBoundary>
     </SafeAreaProvider>
   );
 }
