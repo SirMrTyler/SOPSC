@@ -17,6 +17,7 @@ export const onSchedulePress = (navigation: NavigationProp) => {
 
 export const onPublicPostPress = (navigation: NavigationProp) => {
     console.log('Public Post Pressed');
+    navigation.navigate('Posts');
 };
 
 export const onInboxPress = (navigation: NavigationProp) => {
