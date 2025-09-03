@@ -17,6 +17,11 @@ if (fs.existsSync(variantEnv)) {
 const IS_DEV = variant === 'development';
 const IS_PREVIEW = variant === 'preview';
 
+const getGoogleServiceFileAndroid = () => {
+  if (IS_DEV) return "./config/google-services.dev.json";
+  return "./firebase/google-services.json";
+}
+
 const getUniqueIdentifier = () => {
 
     if (IS_DEV) return 'com.sirmrtyler.sopscmobileapp.dev';
@@ -47,7 +52,11 @@ export default ({ config }) => ({
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
-    googleServicesFile: "./firebase/google-services.json",
+    googleServicesFile: getGoogleServiceFileAndroid(),
+    notification: {
+      icon: './assets/notification_icon_96.png',
+      color: '#1E88E5',
+    },
   },
   extra: {
     // Originally You Didn't Have This //
