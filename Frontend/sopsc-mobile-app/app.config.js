@@ -49,11 +49,13 @@ export default ({ config }) => ({
   plugins: [
     ...(config.plugins || []),
     "expo-notifications",
+    "@react-native-firebase/app",
     [
       'expo-build-properties',
       {
         ios: {
           userFrameworks: 'static',
+          useModularHeaders: true,
         },
       },
     ],
