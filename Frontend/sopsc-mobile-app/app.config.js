@@ -11,7 +11,8 @@ if (fs.existsSync(baseEnv)) {
   dotenv.config({ path: baseEnv });
 }
 if (fs.existsSync(variantEnv)) {
-  dotenv.config({ path: variantEnv });
+  // Setting override to true ensures .env.{variant} overrides .env
+  dotenv.config({ path: variantEnv, override: true });
 }
 
 const IS_DEV = variant === 'development';
@@ -43,23 +44,39 @@ console.log("📦 Package name for this build:", getUniqueIdentifier());
 export default ({ config }) => ({
   ...config,
   name: getAppName(),
-  plugins: [...(config.plugins || []), "expo-notifications"],
+
+  // Plugins: notifications, RN Firebase app, and build properties (iOS frameworks)
+  plugins: [
+    ...(config.plugins || []),
+    "expo-notifications",
+    [
+      'expo-build-properties',
+      {
+        ios: {
+          userFrameworks: 'static',
+        },
+      },
+    ],
+  ],
+
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
     googleServicesFile: "./firebase/GoogleService-Info.plist",
   },
+  
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
     googleServicesFile: getGoogleServiceFileAndroid(),
+    // small notification icon + accent color
     notification: {
       icon: './assets/notification_icon_96.png',
       color: '#1E88E5',
     },
   },
+
   extra: {
-    // Originally You Didn't Have This //
     ...(config.extra || {}),
     eas: {
       ...(config.extra?.eas || {}),
