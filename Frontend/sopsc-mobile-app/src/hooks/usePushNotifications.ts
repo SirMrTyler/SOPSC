@@ -22,7 +22,7 @@ Notifications.setNotificationHandler({
 
 export const usePushNotifications = (user: any) => {
   const lastTokens = useRef<{ expoPushToken?: string; deviceToken?: string }>({});
-const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
@@ -42,14 +42,11 @@ const notificationListener = useRef<Notifications.Subscription | null>(null);
       responseListener.current?.remove();
     };
   }, []);
+
   useEffect(() => {
     if (!user) return;
 
-    async function sendTokens(
-      expoPushToken: string,
-      deviceToken: string,
-      platform: string
-    ) {
+    async function sendTokens(expoPushToken: string, deviceToken: string, platform: string) {
       const maxRetries = 3;
       const payload = { expoPushToken, deviceToken, platform };
       const api = axios.create({
@@ -84,9 +81,7 @@ const notificationListener = useRef<Notifications.Subscription | null>(null);
               console.error("Failed to send push tokens", error);
             }
           } else {
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * attempt)
-            );
+            await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
           }
         }
       }
@@ -126,8 +121,15 @@ const notificationListener = useRef<Notifications.Subscription | null>(null);
       ).data;
       console.log("Expo token:", expoToken);
 
-      const deviceToken = await getFcmToken(messagingInst);
-      console.log("FCM token:", deviceToken);
+      let deviceToken = "";
+      if (Platform.OS === "android") {
+        deviceToken = (await getFcmToken(messagingInst)) ?? "";
+        console.log("FCM token:", deviceToken);
+      } else {
+        const apns = await Notifications.getDevicePushTokenAsync();
+        deviceToken = apns?.data ?? "";
+        console.log("APNs token:", deviceToken);
+      }
 
       if (
         lastTokens.current.expoPushToken !== expoToken ||
