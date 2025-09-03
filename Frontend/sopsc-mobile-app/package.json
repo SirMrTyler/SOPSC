@@ -42,7 +42,7 @@
   "name": "sopsc-mobile-app",
   "version": "1.0.0",
   "scripts": {
-    "eas-build-post-install": "node ./scripts/switchGoogleServices.js",
+    "eas-build-post-install": "if [ \"$EAS_BUILD_PLATFORM\" = \"android\" ]; then node ./scripts/switchGoogleServices.js; fi",
     "start": "npx expo run",
     "clean": "rm -rf android .expo .gradle build node_modules && yarn install",
     "android": "npx expo run:android",
