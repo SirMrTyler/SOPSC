@@ -45,40 +45,24 @@ export default ({ config }) => ({
   ...config,
   name: getAppName(),
 
-  // Plugins: notifications, RN Firebase app, and build properties (iOS frameworks)
-  plugins: [
-    ...(config.plugins || []),
-    "expo-notifications",
-    "@react-native-firebase/app",
-    [
-      'expo-build-properties',
-      {
-        ios: {
-          userFrameworks: 'static',
-          useModularHeaders: true,
-        },
-      },
-    ],
-  ],
-
+  // Plugins: notifications, RN Firebase app
+  plugins: [...(config.plugins || []), "expo-notifications"],
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
     googleServicesFile: "./firebase/GoogleService-Info.plist",
   },
-  
   android: {
     ...config.android,
     package: getUniqueIdentifier(),
     googleServicesFile: getGoogleServiceFileAndroid(),
-    // small notification icon + accent color
     notification: {
       icon: './assets/notification_icon_96.png',
       color: '#1E88E5',
     },
   },
-
   extra: {
+    // Originally You Didn't Have This //
     ...(config.extra || {}),
     eas: {
       ...(config.extra?.eas || {}),

@@ -5,6 +5,50 @@
     "scheme": "sopsc-mobile-app",
     "plugins": [
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "modular_headers": true,
+            "extraPods": [
+              {
+                "name": "FirebaseAuth", 
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseCore",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseFirestore",
+                "modular_headers": true
+              },
+              {
+                "name": "GoogleUtilities",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseCoreExtension",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseAppCheckInterop",
+                "modular_headers": true
+              },
+              {
+                "name": "RecaptchaInterop",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseFirestoreInternal",
+                "modular_headers": true
+              }
+            ]
+          }
+        }
+      ],
+      [
+        
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.203699688611-5uibr1f84mjjdn3b80920r21p8vuohho"
