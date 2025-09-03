@@ -1,10 +1,10 @@
 import { lazy } from "react";
 
 // Lazy load components
-const Landing = lazy(() => import("../components/landing/LandingPage"));
+const Landing = lazy(() => import("../components/Landing/LandingPage"));
 const Login = lazy(() => import("../components/auth/Login"));
-const Reports = lazy(() => import("../components/reports/Reports"));
-const ReportDetails = lazy(() => import("../components/reports/ReportDetails"));
+const Reports = lazy(() => import("../components/Reports/Reports"));
+const ReportDetails = lazy(() => import("../components/Reports/ReportDetails"));
 
 // Example admin component
 // const Dashboard = lazy(() => import("../components/dashboard/Dashboard"));

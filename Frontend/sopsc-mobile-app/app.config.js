@@ -56,10 +56,6 @@ export default ({ config }) => ({
     ...config.android,
     package: getUniqueIdentifier(),
     googleServicesFile: getGoogleServiceFileAndroid(),
-    notification: {
-      icon: './assets/notification_icon_96.png',
-      color: '#1E88E5',
-    },
   },
   extra: {
     // Originally You Didn't Have This //
