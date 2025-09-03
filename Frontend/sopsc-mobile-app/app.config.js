@@ -46,7 +46,7 @@ export default ({ config }) => ({
   name: getAppName(),
 
   // Plugins: notifications, RN Firebase app
-  plugins: [...(config.plugins || []), "expo-notifications"],
+  plugins: [...(config.plugins || []), "@react-native-firebase/app", "expo-notifications"],
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
