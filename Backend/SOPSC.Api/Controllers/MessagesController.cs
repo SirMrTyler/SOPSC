@@ -6,6 +6,8 @@ using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Models.Requests.Messages;
 using SOPSC.Api.Services.Auth.Interfaces;
+using SOPSC.Api.Models.Interfaces.Notifications;
+using System.Threading.Tasks;
 
 namespace SOPSC.Api.Controllers
 {
@@ -16,14 +18,16 @@ namespace SOPSC.Api.Controllers
     {
         private readonly IMessagesService _messagesService;
         private readonly IAuthenticationService<int> _authService;
-
+        private readonly IExpoPushService _expoPushService;
         public MessagesController(
             IMessagesService messagesService,
             IAuthenticationService<int> authService,
+            IExpoPushService expoPushService,
             ILogger<MessagesController> logger) : base(logger)
         {
             _messagesService = messagesService;
             _authService = authService;
+            _expoPushService = expoPushService;
         }
 
         [HttpGet]
@@ -79,7 +83,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ItemResponse<MessageCreated>> Send(SendMessageRequest model)
+        public async Task<ActionResult<ItemResponse<MessageCreated>>> Send(SendMessageRequest model)
         {
             int code = 201;
             BaseResponse response = null;
@@ -88,6 +92,16 @@ namespace SOPSC.Api.Controllers
                 int senderId = _authService.GetCurrentUserId();
                 MessageCreated created = _messagesService.SendMessage(senderId, model.ChatId, model.RecipientId, model.MessageContent);
                 response = new ItemResponse<MessageCreated> { Item = created };
+
+
+                try
+                {
+                    await _expoPushService.SendPushNotificationsAsync(new[] { model.RecipientId }, "New message", model.MessageContent, new { chatId = created.ChatId });
+                }
+                catch (Exception ex)
+                {
+                    base.Logger.LogError(ex.ToString());
+                }
             }
             catch (Exception ex)
             {
