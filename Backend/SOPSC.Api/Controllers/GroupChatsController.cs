@@ -3,9 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using SOPSC.Api.Data;
 using SOPSC.Api.Models.Domains.GroupChats;
 using SOPSC.Api.Models.Interfaces.GroupChats;
+using SOPSC.Api.Models.Interfaces.Notifications;
 using SOPSC.Api.Models.Requests.GroupChats;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SOPSC.Api.Controllers;
 
@@ -16,12 +20,18 @@ public class GroupChatsController : BaseApiController
 {
     private readonly IGroupChatsService _service;
     private readonly IAuthenticationService<int> _authService;
+    private readonly IExpoPushService _expoPushService;
 
-    public GroupChatsController(IGroupChatsService service, IAuthenticationService<int> authService, ILogger<GroupChatsController> logger)
+    public GroupChatsController(
+        IGroupChatsService service,
+        IAuthenticationService<int> authService,
+        IExpoPushService expoPushService,
+        ILogger<GroupChatsController> logger)
         : base(logger)
     {
         _service = service;
         _authService = authService;
+        _expoPushService = expoPushService;
     }
 
     [HttpGet]
@@ -85,7 +95,7 @@ public class GroupChatsController : BaseApiController
     }
 
     [HttpPost("{groupChatId:int}/messages")]
-    public ActionResult<ItemResponse<int>> SendMessage(int groupChatId, SendGroupMessageRequest model)
+    public async Task<ActionResult<ItemResponse<int>>> SendMessage(int groupChatId, SendGroupMessageRequest model)
     {
         int code = 201;
         BaseResponse response = null;
@@ -94,6 +104,28 @@ public class GroupChatsController : BaseApiController
             int senderId = _authService.GetCurrentUserId();
             int id = _service.SendMessage(groupChatId, senderId, model.MessageContent);
             response = new ItemResponse<int> { Item = id };
+
+            try
+            {
+                List<GroupChatMember> members = _service.GetMembers(groupChatId);
+                List<int> memberIds = members
+                    .Select(m => m.UserId)
+                    .Where(uid => uid != senderId)
+                    .ToList();
+
+                if (memberIds.Count > 0)
+                {
+                    await _expoPushService.SendPushNotificationsAsync(
+                        memberIds,
+                        "New group message",
+                        model.MessageContent,
+                        new { groupChatId });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
         }
         catch (Exception ex)
         {
