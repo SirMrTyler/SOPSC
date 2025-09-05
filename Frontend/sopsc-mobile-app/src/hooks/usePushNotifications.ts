@@ -4,24 +4,20 @@ import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import axios from "axios";
-import { getApp } from '@react-native-firebase/app';
-import { getMessaging, getToken as getFcmToken } from '@react-native-firebase/messaging';
 import { getToken, getDeviceId } from "../components/serviceHelpers";
-
-const messagingInst = getMessaging(getApp());
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
   }),
 });
 
 export const usePushNotifications = (user: any) => {
-  const lastTokens = useRef<{ expoPushToken?: string; deviceToken?: string }>({});
+  const lastExpoPushToken = useRef<string | undefined>(undefined);
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
 
@@ -46,21 +42,22 @@ export const usePushNotifications = (user: any) => {
   useEffect(() => {
     if (!user) return;
 
-    async function sendTokens(expoPushToken: string, deviceToken: string, platform: string) {
+    async function registerDevice(expoPushToken: string) {
       const maxRetries = 3;
-      const payload = { expoPushToken, deviceToken, platform };
       const api = axios.create({
         baseURL: process.env.EXPO_PUBLIC_API_URL,
       });
-      const token = await getToken();
+      const authToken = await getToken();
       const deviceId = await getDeviceId();
+      const platform = Platform.OS;
+      const payload = { expoPushToken, platform, deviceId };
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          await api.post("/notifications/token", payload, {
+          await api.post("/devices/register", payload, {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${authToken}`,
               DeviceId: deviceId,
             },
           });
@@ -75,10 +72,10 @@ export const usePushNotifications = (user: any) => {
                   error.response.data
                 );
               } else {
-                console.error("Network error sending push tokens", error.message);
+                console.error("Network error sending push token", error.message);
               }
             } else {
-              console.error("Failed to send push tokens", error);
+              console.error("Failed to send push token", error);
             }
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
@@ -121,23 +118,9 @@ export const usePushNotifications = (user: any) => {
       ).data;
       console.log("Expo token:", expoToken);
 
-      let deviceToken = "";
-      if (Platform.OS === "android") {
-        deviceToken = (await getFcmToken(messagingInst)) ?? "";
-        console.log("FCM token:", deviceToken);
-      } else {
-        const apns = await Notifications.getDevicePushTokenAsync();
-        deviceToken = apns?.data ?? "";
-        console.log("APNs token:", deviceToken);
-      }
-
-      if (
-        lastTokens.current.expoPushToken !== expoToken ||
-        lastTokens.current.deviceToken !== deviceToken
-      ) {
-        const platform = Platform.OS;
-        await sendTokens(expoToken, deviceToken, platform);
-        lastTokens.current = { expoPushToken: expoToken, deviceToken };
+      if (lastExpoPushToken.current !== expoToken) {
+        await registerDevice(expoToken);
+        lastExpoPushToken.current = expoToken;
       }
     }
 
