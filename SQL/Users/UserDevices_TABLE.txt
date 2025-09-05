@@ -1,0 +1,9 @@
+CREATE TABLE UserDevices (
+      Id INT IDENTITY PRIMARY KEY,
+      UserId INT NOT NULL,
+      DeviceId NVARCHAR(128) NOT NULL,
+      Platform NVARCHAR(16) NOT NULL,
+      ExpoPushToken NVARCHAR(255) NOT NULL,
+      LastSeenUtc DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+      CONSTRAINT UQ_UserDevices UNIQUE (UserId, DeviceId)
+    );
