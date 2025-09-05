@@ -27,11 +27,7 @@ import Reports from "./src/components/Reports/Reports"; // TODO: Make Reports co
 import ReportDetails from "./src/components/Reports/ReportDetails";
 import Schedule from "./src/components/Schedule/Schedule";
 import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile component logic
-import {
-  SafeAreaProvider,
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/Post";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
@@ -94,16 +90,11 @@ function AppNavigator({
   user: any | null;
   setUser: React.Dispatch<React.SetStateAction<any | null>>;
 }) {
-  const insets = useSafeAreaInsets();
-
   return (
     <ErrorBoundary>
       <SafeAreaView
-        style={{
-          flex: 1,
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-        }}
+        style={{ flex: 1, backgroundColor: "#2477ff" }}
+        edges={["top"]}
       >
         <NavigationContainer theme={AppTheme}>
           <StatusBar
