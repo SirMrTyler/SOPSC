@@ -80,7 +80,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    builder.Services.RegisterCustomServices(builder.Configuration);
+    ServiceExtensions.ConfigureServices(builder.Services, builder.Configuration);
 
     var app = builder.Build();
 

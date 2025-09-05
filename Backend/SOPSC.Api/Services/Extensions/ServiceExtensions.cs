@@ -11,6 +11,7 @@ using SOPSC.Api.Models.Interfaces.Posts;
 using SOPSC.Api.Services.Auth;
 using SOPSC.Api.Services.Auth.Interfaces;
 using SOPSC.Api.Services;
+using SOPSC.Api.Services.Notifications;
 using Google.Cloud.Firestore;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
@@ -73,6 +74,7 @@ namespace SOPSC.Api.Services.Extensions
             services.AddHttpClient<ExpoPushService>();
             services.AddScoped<IExpoPushService>(sp =>
                 sp.GetRequiredService<ExpoPushService>());
+            services.AddHostedService<FirestoreMessageListener>();
             
             // Firestore and FCM
             FirestoreDb firestore = null;
@@ -122,6 +124,11 @@ namespace SOPSC.Api.Services.Extensions
             // services.AddScoped<IEmailService, IEmailService>();
 
             return services;
+        }
+
+        public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.RegisterCustomServices(configuration);
         }
     }
 }
