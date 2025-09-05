@@ -62,8 +62,10 @@ export interface FsMessage {
   readTimestamp?: Date | null;
   /** keyed by firebaseUid */
   readBy?: Record<string, boolean>;
-  /** keyed by firebaseUid */
+  /** keyed by userId */
   recipients: Record<string, boolean>;
+  /** maps userId to firebaseUid */
+  recipientUids?: Record<string, string>;
   type: 'direct' | 'group';
 }
 
@@ -249,7 +251,11 @@ export const sendMessage = async (
     isRead: false, // legacy flag if referenced elsewhere
     readBy: { [sender.firebaseUid]: true }, // sender has read it
     recipients: recipients.reduce<Record<string, boolean>>((acc, r) => {
-      acc[r.firebaseUid] = true;
+      acc[String(r.userId)] = true;
+      return acc;
+    }, {}),
+    recipientUids: recipients.reduce<Record<string, string>>((acc, r) => {
+      acc[String(r.userId)] = r.firebaseUid;
       return acc;
     }, {}),
     type,
