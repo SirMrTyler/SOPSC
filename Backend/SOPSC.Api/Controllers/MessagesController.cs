@@ -18,16 +18,16 @@ namespace SOPSC.Api.Controllers
     {
         private readonly IMessagesService _messagesService;
         private readonly IAuthenticationService<int> _authService;
-        private readonly IExpoPushService _expoPushService;
+        private readonly INotificationPublisher _notificationPublisher;
         public MessagesController(
             IMessagesService messagesService,
             IAuthenticationService<int> authService,
-            IExpoPushService expoPushService,
+            INotificationPublisher notificationPublisher,
             ILogger<MessagesController> logger) : base(logger)
         {
             _messagesService = messagesService;
             _authService = authService;
-            _expoPushService = expoPushService;
+            _notificationPublisher = notificationPublisher;
         }
 
         [HttpGet]
@@ -96,7 +96,7 @@ namespace SOPSC.Api.Controllers
 
                 try
                 {
-                    await _expoPushService.SendPushNotificationsAsync(new[] { model.RecipientId }, "New message", model.MessageContent, new { chatId = created.ChatId });
+                    await _notificationPublisher.PublishAsync(new[] { model.RecipientId }, "New message", model.MessageContent, new { chatId = created.ChatId });
                 }
                 catch (Exception ex)
                 {

@@ -74,6 +74,7 @@ namespace SOPSC.Api.Services.Extensions
             services.AddHttpClient<ExpoPushService>();
             services.AddScoped<IExpoPushService>(sp =>
                 sp.GetRequiredService<ExpoPushService>());
+            services.AddScoped<INotificationPublisher, ExpoNotificationPublisher>();
             services.AddHostedService<FirestoreMessageListener>();
             
             // Firestore and FCM

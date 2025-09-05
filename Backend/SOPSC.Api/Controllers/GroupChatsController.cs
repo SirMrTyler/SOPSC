@@ -20,18 +20,18 @@ public class GroupChatsController : BaseApiController
 {
     private readonly IGroupChatsService _service;
     private readonly IAuthenticationService<int> _authService;
-    private readonly IExpoPushService _expoPushService;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public GroupChatsController(
         IGroupChatsService service,
         IAuthenticationService<int> authService,
-        IExpoPushService expoPushService,
+        INotificationPublisher notificationPublisher,
         ILogger<GroupChatsController> logger)
         : base(logger)
     {
         _service = service;
         _authService = authService;
-        _expoPushService = expoPushService;
+        _notificationPublisher = notificationPublisher;
     }
 
     [HttpGet]
@@ -115,7 +115,7 @@ public class GroupChatsController : BaseApiController
 
                 if (memberIds.Count > 0)
                 {
-                    await _expoPushService.SendPushNotificationsAsync(
+                    await _notificationPublisher.PublishAsync(
                         memberIds,
                         "New group message",
                         model.MessageContent,

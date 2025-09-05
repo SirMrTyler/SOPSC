@@ -4,7 +4,6 @@ using SOPSC.Api.Models.Interfaces.Notifications;
 using SOPSC.Api.Models.Requests.Notifications;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SOPSC.Api.Controllers
@@ -16,16 +15,16 @@ namespace SOPSC.Api.Controllers
     {
         private readonly INotificationService _notificationService;
         private readonly IAuthenticationService<int> _authService;
-        private readonly IExpoPushService _expoPushService;
+        private readonly INotificationPublisher _notificationPublisher;
 
         public NotificationsController(INotificationService notificationService,
             ILogger<NotificationsController> logger,
             IAuthenticationService<int> authService,
-            IExpoPushService expoPushService) : base(logger)
+            INotificationPublisher notificationPublisher) : base(logger)
         {
             _notificationService = notificationService;
             _authService = authService;
-            _expoPushService = expoPushService;
+            _notificationPublisher = notificationPublisher;
         }
 
         [HttpPost("token")]
@@ -58,8 +57,8 @@ namespace SOPSC.Api.Controllers
 
             try
             {
-                var ticketIds = await _expoPushService.SendPushNotificationsAsync(model.UserIds, model.Title, model.Body, model.Data);
-                response = new ItemResponse<List<string>> { Item = ticketIds };
+                await _notificationPublisher.PublishAsync(model.UserIds, model.Title, model.Body, model.Data);
+                response = new SuccessResponse();
             }
             catch (Exception ex)
             {
