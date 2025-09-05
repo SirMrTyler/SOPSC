@@ -35,6 +35,8 @@ namespace SOPSC.Api.Services.Notifications
                 return;
             }
 
+            _logger.LogInformation("Starting Firestore message listener for project {ProjectId}", db.ProjectId);
+
             _listener = db.CollectionGroup("messages").Listen(snapshot =>
             {
                 foreach (var change in snapshot.Changes)

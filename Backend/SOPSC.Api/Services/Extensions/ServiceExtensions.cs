@@ -15,6 +15,9 @@ using SOPSC.Api.Services.Notifications;
 using Google.Cloud.Firestore;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
+using Google.Apis.Auth.OAuth2;
+using System;
+using System.IO;
 
 namespace SOPSC.Api.Services.Extensions
 {
@@ -75,16 +78,26 @@ namespace SOPSC.Api.Services.Extensions
             services.AddScoped<IExpoPushService>(sp =>
                 sp.GetRequiredService<ExpoPushService>());
             services.AddScoped<INotificationPublisher, ExpoNotificationPublisher>();
-            services.AddHostedService<FirestoreMessageListener>();
-            
             // Firestore and FCM
             FirestoreDb firestore = null;
+            FirebaseMessaging messaging = null;
             try
             {
                 var projectId = configuration["Firebase:ProjectId"];
-                if (!string.IsNullOrWhiteSpace(projectId))
+                var credentialPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+                if (!string.IsNullOrWhiteSpace(credentialPath) && File.Exists(credentialPath))
                 {
+                    var credential = GoogleCredential.FromFile(credentialPath);
+                    if (FirebaseApp.DefaultInstance == null)
+                    {
+                        FirebaseApp.Create(new AppOptions
+                        {
+                            Credential = credential,
+                            ProjectId = projectId,
+                        });
+                    }
                     firestore = FirestoreDb.Create(projectId);
+                    messaging = FirebaseMessaging.DefaultInstance;
                 }
             }
             catch
@@ -96,20 +109,7 @@ namespace SOPSC.Api.Services.Extensions
             {
                 services.AddSingleton(firestore);
                 services.AddScoped<IReportRealtimeService, ReportRealtimeService>();
-            }
-
-            FirebaseMessaging messaging = null;
-            try
-            {
-                if (FirebaseApp.DefaultInstance == null)
-                {
-                    FirebaseApp.Create();
-                }
-                messaging = FirebaseMessaging.DefaultInstance;
-            }
-            catch
-            {
-                // Ignore if Firebase credentials are not configured
+                services.AddHostedService<FirestoreMessageListener>();
             }
 
             if (messaging != null)
