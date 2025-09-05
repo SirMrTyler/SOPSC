@@ -61,7 +61,11 @@
     ],
     "android": {
       "package": "com.sirmrtyler.sopscmobileapp",
-      "icon": "./assets/images/notification_icon_96.png"
+      "icon": "./assets/images/notification_icon_96.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/AppIcon.png",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "extra": {
       "eas": {
