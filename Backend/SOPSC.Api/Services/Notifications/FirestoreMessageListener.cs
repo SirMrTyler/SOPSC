@@ -60,10 +60,10 @@ namespace SOPSC.Api.Services.Notifications
                                     string body = change.Document.TryGetValue("messageContent", out string content) ? content : string.Empty;
 
                                     using var scope = _serviceProvider.CreateScope();
-                                    var pushService = scope.ServiceProvider.GetService<IExpoPushService>();
-                                    if (pushService != null)
+                                    var publisher = scope.ServiceProvider.GetService<INotificationPublisher>();
+                                    if (publisher != null)
                                     {
-                                        _ = pushService.SendPushNotificationsAsync(userIds, title, body);
+                                        _ = publisher.PublishAsync(userIds, title, body, null);
                                     }
                                 }
                             }
