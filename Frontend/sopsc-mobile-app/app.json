@@ -3,6 +3,7 @@
     "name": "SOPSC Mobile App",
     "slug": "sopsc-mobile-app",
     "scheme": "sopsc-mobile-app",
+    "icon": "./assets/images/AppIcon.png",
     "plugins": [
       [
         "expo-build-properties",
@@ -59,7 +60,8 @@
       ]
     ],
     "android": {
-      "package": "com.sirmrtyler.sopscmobileapp"
+      "package": "com.sirmrtyler.sopscmobileapp",
+      "icon": "./assets/images/notification_icon_96.png"
     },
     "extra": {
       "eas": {
@@ -71,6 +73,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.sirmrtyler.sopscmobileapp",
+      "icon": "./assets/images/notification_icon_96.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

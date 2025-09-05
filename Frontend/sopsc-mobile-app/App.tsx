@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ImageBackground, StyleSheet } from "react-native";
+import { ImageBackground, StyleSheet, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 
@@ -27,7 +27,11 @@ import Reports from "./src/components/Reports/Reports"; // TODO: Make Reports co
 import ReportDetails from "./src/components/Reports/ReportDetails";
 import Schedule from "./src/components/Schedule/Schedule";
 import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile component logic
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/Post";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
@@ -78,9 +82,35 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <ErrorBoundary>
+      <AppNavigator user={user} setUser={setUser} />
+    </SafeAreaProvider>
+  );
+}
+
+function AppNavigator({
+  user,
+  setUser,
+}: {
+  user: any | null;
+  setUser: React.Dispatch<React.SetStateAction<any | null>>;
+}) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <ErrorBoundary>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
         <NavigationContainer theme={AppTheme}>
-          <StatusBar style="light" translucent={false} />
+          <StatusBar
+            style={Platform.OS === "android" ? "dark" : "light"}
+            backgroundColor={Platform.OS === "android" ? "#2477ff" : undefined}
+            translucent={false}
+          />
           <ImageBackground
             source={backgroundImage}
             style={styles.background}
@@ -127,7 +157,10 @@ export default function App() {
                   />
                   <Stack.Screen name="Posts" component={Posts} />
                   <Stack.Screen name="Reports" component={Reports} />
-                  <Stack.Screen name="ReportDetails" component={ReportDetails} />
+                  <Stack.Screen
+                    name="ReportDetails"
+                    component={ReportDetails}
+                  />
                   <Stack.Screen name="Schedule" component={Schedule} />
                   <Stack.Screen name="Profile" component={Profile} />
                   {/* Add other screens here as needed */}
@@ -155,8 +188,8 @@ export default function App() {
             </Stack.Navigator>
           </ImageBackground>
         </NavigationContainer>
-      </ErrorBoundary>
-    </SafeAreaProvider>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 
