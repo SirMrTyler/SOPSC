@@ -47,12 +47,24 @@ namespace SOPSC.Api.Services.Notifications
                         {
                             if (change.Document.TryGetValue<Dictionary<string, object>>("recipients", out var recipientsMap))
                             {
-                                List<int> userIds = new();
-                                foreach (var key in recipientsMap.Keys)
+                                var conversationDoc = change.Document.Reference.Parent?.Parent;
+                                Dictionary<string, object>? participantsMap = null;
+                                if (conversationDoc != null)
                                 {
-                                    if (int.TryParse(key, out var id))
+                                    var conversationSnapshot = conversationDoc.GetSnapshotAsync().GetAwaiter().GetResult();
+                                    conversationSnapshot.TryGetValue<Dictionary<string, object>>("participants", out participantsMap);
+                                }
+
+                                List<int> userIds = new();
+                                foreach (var uid in recipientsMap.Keys)
+                                {
+                                    if (participantsMap != null && participantsMap.TryGetValue(uid, out var userIdObj) && int.TryParse(userIdObj?.ToString(), out var userId))
                                     {
-                                        userIds.Add(id);
+                                        userIds.Add(userId);
+                                    }
+                                    else
+                                    {
+                                        _logger.LogWarning("No userId found for UID {Uid}", uid);
                                     }
                                 }
 
