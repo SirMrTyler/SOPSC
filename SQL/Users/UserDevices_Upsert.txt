@@ -1,0 +1,23 @@
+ALTER PROC [dbo].[UserDevices_Upsert]
+    @UserId INT,
+    @DeviceId NVARCHAR(128),
+    @Platform NVARCHAR(16),
+    @ExpoPushToken NVARCHAR(255)
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM dbo.UserDevices WHERE UserId = @UserId AND DeviceId = @DeviceId)
+    BEGIN
+        UPDATE dbo.UserDevices
+        SET Platform = @Platform,
+            ExpoPushToken = @ExpoPushToken,
+            LastSeenUtc = SYSUTCDATETIME()
+        WHERE UserId = @UserId AND DeviceId = @DeviceId;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO dbo.UserDevices
+            (UserId, DeviceId, Platform, ExpoPushToken, LastSeenUtc)
+        VALUES
+            (@UserId, @DeviceId, @Platform, @ExpoPushToken, SYSUTCDATETIME());
+    END
+END
