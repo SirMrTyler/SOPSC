@@ -16,6 +16,8 @@ import {
   writeBatch,
 } from '@react-native-firebase/firestore';
 import type { FirebaseFirestoreTypes, Timestamp } from '@react-native-firebase/firestore';
+import axios from 'axios';
+import * as helper from '../components/serviceHelpers';
 
 /** Participant profile information */
 export interface MemberProfile {
@@ -267,7 +269,31 @@ export const sendMessage = async (
     numMessages: increment(1),
     sentTimestamp: serverTimestamp(),
   });
+
+  // 3) notify backend for push notifications, etc.
+  try {
+    const token = await helper.getToken();
+    const deviceId = await helper.getDeviceId();
+    const url =
+      type === 'direct'
+        ? `${process.env.EXPO_PUBLIC_API_URL}messages`
+        : `${process.env.EXPO_PUBLIC_API_URL}groupchats/${chatId}/messages`;
+    const payload =
+      type === 'direct'
+        ? { chatId, recipientId: recipients[0].userId, messageContent: content }
+        : { messageContent: content };
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (deviceId) headers.DeviceId = deviceId;
+    await axios.post(url, payload, { headers });
+  } catch (err) {
+    // Log and swallow errors so messaging UI isn't affected
+    console.error('sendMessage: backend notification failed', err);
+  }
 };
+
 
 /** Mark conversation and messages read for the user */
 export const markConversationRead = async (
