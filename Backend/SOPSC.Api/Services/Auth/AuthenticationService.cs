@@ -197,7 +197,7 @@ namespace SOPSC.Api.Services.Auth
             if (claims.Identity != null && claims.Identity.IsAuthenticated)
             {
                 var userIdClaim = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var name = claims.Identity.Name;
+                var name = claims.FindFirst(ClaimTypes.Name)?.Value;
 
                 // Extract all role claims
                 var roles = claims.FindAll(ClaimTypes.Role)
@@ -208,7 +208,7 @@ namespace SOPSC.Api.Services.Auth
                     return new UserBase
                     {
                         UserId = userId,
-                        Name = claims.Identity.Name,
+                        Name = name,
                         Roles = roles
                     };
                 }
