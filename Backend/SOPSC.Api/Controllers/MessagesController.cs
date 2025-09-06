@@ -91,7 +91,14 @@ namespace SOPSC.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<ItemResponse<object>>> Send([FromBody] SendMessageRequest model)
         {
-            if (model == null || !ModelState.IsValid)
+            if (model == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Ignore binding errors for ChatId so that null or non-numeric values default to a new chat
+            ModelState.Remove(nameof(SendMessageRequest.ChatId));
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -101,7 +108,8 @@ namespace SOPSC.Api.Controllers
             try
             {
                 var user = _authService.GetCurrentUser();
-                MessageCreated created = _messagesService.SendMessage(user.UserId, model.ChatId, model.RecipientId, model.MessageContent);
+                int chatId = model.ChatId.GetValueOrDefault();
+                MessageCreated created = _messagesService.SendMessage(user.UserId, chatId, model.RecipientId, model.MessageContent);
 
                 int tokenCount = 0;
 
