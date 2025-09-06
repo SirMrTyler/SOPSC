@@ -108,6 +108,10 @@ namespace SOPSC.Api.Controllers
             try
             {
                 var user = _authService.GetCurrentUser();
+                // Replace this line:
+                // int chatId = model.ChatId.GetValueOrDefault();
+
+                // With this line:
                 int chatId = model.ChatId.GetValueOrDefault();
                 MessageCreated created = _messagesService.SendMessage(user.UserId, chatId, model.RecipientId, model.MessageContent);
 

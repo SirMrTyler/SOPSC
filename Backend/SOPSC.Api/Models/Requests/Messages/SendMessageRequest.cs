@@ -10,7 +10,7 @@ namespace SOPSC.Api.Models.Requests.Messages
         /// <summary>
         /// Gets or sets the chat id. If zero, a new chat will be created.
         /// </summary>
-        public int ChatId { get; set; }
+        public int? ChatId { get; set; }
 
         /// <summary>
         /// Gets or sets the id of the recipient user.
