@@ -12,6 +12,8 @@ import {
   TextInput,
   Button,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../App";
@@ -75,7 +77,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
       },
       content,
       meta.type || conversation.type || "direct",
-      recipients,
+      recipients
     );
     setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -130,7 +132,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   return (
     <ScreenContainer showBottomBar={false} showBack title={conversationName}>
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={0 /* top bar height */}
+      >
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -154,7 +160,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
             disabled={!newMessage.trim()}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 };
