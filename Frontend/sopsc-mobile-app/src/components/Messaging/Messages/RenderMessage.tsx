@@ -3,19 +3,29 @@
  * Purpose: Displays a direct conversation thread and allows sending new messages.
  * Notes: Marks messages as read when viewed and scrolls to the latest on send.
  */
-import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Button, Image } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../../App';
-import { useMessages } from '../../../hooks/useMessages';
-import { useAuth } from '../../../hooks/useAuth';
-import ScreenContainer from '../../Navigation/ScreenContainer';
-import { FsMessage, sendMessage, markConversationRead } from '../../../types/fsMessages';
-import { formatTimestamp } from '../../../utils/date';
-import { useConversationMeta } from '../../../hooks/useConversationMeta';
-import defaultAvatar from '../../../../assets/images/default-avatar.png';
+import React, { useRef, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  Button,
+  Image,
+} from "react-native";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../../../../App";
+import { useMessages } from "../../../hooks/useMessages";
+import { useAuth } from "../../../hooks/useAuth";
+import ScreenContainer from "../../Navigation/ScreenContainer";
+import { FsMessage, markConversationRead } from "../../../types/fsMessages";
+import { sendMessage } from "../../../services/messageService";
+import { formatTimestamp } from "../../../utils/date";
+import { useConversationMeta } from "../../../hooks/useConversationMeta";
+import defaultAvatar from "../../../../assets/images/default-avatar.png";
 
-interface Props extends NativeStackScreenProps<RootStackParamList, 'Conversation'> {}
+interface Props
+  extends NativeStackScreenProps<RootStackParamList, "Conversation"> {}
 
 /**
  * Conversation
@@ -25,8 +35,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const { conversation } = route.params;
   const { user } = useAuth();
   const meta = useConversationMeta(conversation.chatId);
-  const messages = useMessages<FsMessage>(`conversations/${conversation.chatId}/messages`);
-  const [newMessage, setNewMessage] = useState('');
+  const messages = useMessages<FsMessage>(
+    `conversations/${conversation.chatId}/messages`
+  );
+  const [newMessage, setNewMessage] = useState("");
   const flatListRef = useRef<FlatList<FsMessage>>(null);
 
   // Mark messages as read whenever new ones arrive
@@ -46,24 +58,16 @@ const Conversation: React.FC<Props> = ({ route }) => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
     const participantEntries = Object.entries(conversation.participants || {});
-    const recipients = participantEntries.map(([uid, { userId }]) => ({
-      firebaseUid: uid,
-      userId,
-    }));
-    await sendMessage(
-      conversation.chatId,
-      {
-        userId: user.userId,
-        firebaseUid: user.firebaseUid,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profilePicturePath: user.profilePicturePath,
-      },
-      content,
-      meta.type || conversation.type,
-      recipients
-    );
-    setNewMessage('');
+    const recipientUserIds = participantEntries
+      .map(([_, { userId }]) => userId)
+      .filter((id) => id !== user.userId);
+    await sendMessage({
+      conversationId: conversation.chatId,
+      text: content,
+      recipientUserIds,
+      senderName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+    });
+    setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
@@ -74,9 +78,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const participantIds = Object.keys(profiles).map((id) => Number(id));
   const otherIds = participantIds.filter((id) => id !== user?.userId);
   const conversationName =
-    (meta.type || conversation.type) === 'group'
-      ? 'Group Chat'
-      : `${profiles[String(otherIds[0])]?.firstName ?? ''} ${profiles[String(otherIds[0])]?.lastName ?? ''}`.trim();
+    (meta.type || conversation.type) === "group"
+      ? "Group Chat"
+      : `${profiles[String(otherIds[0])]?.firstName ?? ""} ${
+          profiles[String(otherIds[0])]?.lastName ?? ""
+        }`.trim();
 
   const renderItem = ({ item }: { item: FsMessage }) => {
     const incoming = item.senderId !== user?.userId;
@@ -85,7 +91,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
       (uid) => conversation.participants[uid].userId !== item.senderId
     );
     const isRead = incoming
-      ? !!item.readBy?.[user?.firebaseUid || '']
+      ? !!item.readBy?.[user?.firebaseUid || ""]
       : otherParticipantUids.every((uid) => item.readBy?.[uid]);
     return (
       <View style={incoming ? styles.messageRowLeft : styles.messageRowRight}>
@@ -102,8 +108,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
         <View style={incoming ? styles.messageLeft : styles.messageRight}>
           <Text>{item.messageContent}</Text>
           <View style={styles.meta}>
-            <Text style={styles.time}>{formatTimestamp(item.sentTimestamp)}</Text>
-            <Text style={styles.readStatus}>{isRead ? 'Read' : 'Unread'}</Text>
+            <Text style={styles.time}>
+              {formatTimestamp(item.sentTimestamp)}
+            </Text>
+            <Text style={styles.readStatus}>{isRead ? "Read" : "Unread"}</Text>
           </View>
         </View>
       </View>
@@ -117,18 +125,24 @@ const Conversation: React.FC<Props> = ({ route }) => {
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
-          keyExtractor={item => item.messageId}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          keyExtractor={(item) => item.messageId}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: false })
+          }
         />
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             placeholder="Type a message"
-            placeholderTextColor={'#ccc'}
+            placeholderTextColor={"#ccc"}
             value={newMessage}
             onChangeText={setNewMessage}
           />
-          <Button title="Send" onPress={handleSend} disabled={!newMessage.trim()} />
+          <Button
+            title="Send"
+            onPress={handleSend}
+            disabled={!newMessage.trim()}
+          />
         </View>
       </View>
     </ScreenContainer>
@@ -138,15 +152,15 @@ const Conversation: React.FC<Props> = ({ route }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   messageRowLeft: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignSelf: "flex-start",
     marginVertical: 4,
   },
   messageRowRight: {
-    flexDirection: 'row',
-    alignSelf: 'flex-end',
+    flexDirection: "row",
+    alignSelf: "flex-end",
     marginVertical: 4,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   avatar: {
     width: 32,
@@ -155,43 +169,43 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   messageLeft: {
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
     padding: 8,
     borderRadius: 4,
   },
   messageRight: {
-    backgroundColor: '#cfe9ff',
+    backgroundColor: "#cfe9ff",
     padding: 8,
     borderRadius: 4,
   },
   meta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 2,
   },
   time: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   readStatus: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginLeft: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
   },
   input: {
     flex: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 4,
     marginRight: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    color: 'white',
+    color: "white",
   },
 });
 

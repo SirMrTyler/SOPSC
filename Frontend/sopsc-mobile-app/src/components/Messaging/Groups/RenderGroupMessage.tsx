@@ -27,7 +27,7 @@ import {
   getFsConversation,
   markConversationRead,
 } from "../../../types/fsMessages";
-import { sendMessage } from "../services/groupChatFs";
+import { sendMessage } from "../../../services/messageService";
 import { UserPlusIcon } from "react-native-heroicons/outline";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
 import { useFocusEffect } from "@react-navigation/native";
@@ -88,21 +88,15 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
    */
   const handleSend = async () => {
     if (!user || !newMessage.trim() || !conversation) return;
-    const recipients = Object.entries(conversation.participants || {})
-      .filter(([_, info]) => info.userId !== user.userId)
-      .map(([firebaseUid, info]) => ({ firebaseUid, userId: info.userId }));
-    await sendMessage(
-      chatId,
-      {
-        userId: user.userId,
-        firebaseUid: user.firebaseUid,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profilePicturePath: user.profilePicturePath,
-      },
-      newMessage.trim(),
-      recipients
-    );
+    const recipientUserIds = Object.entries(conversation.participants || {})
+      .map(([_, info]) => info.userId)
+      .filter((id) => id !== user.userId);
+    await sendMessage({
+      conversationId: chatId,
+      text: newMessage.trim(),
+      recipientUserIds,
+      senderName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+    });
     setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
   };
