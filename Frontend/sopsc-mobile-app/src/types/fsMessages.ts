@@ -274,13 +274,18 @@ export const sendMessage = async (
   try {
     const token = await helper.getToken();
     const deviceId = await helper.getDeviceId();
+    if (!token || (type === 'direct' && !recipients.length)) return;
     const url =
       type === 'direct'
         ? `${process.env.EXPO_PUBLIC_API_URL}messages`
         : `${process.env.EXPO_PUBLIC_API_URL}groupchats/${chatId}/messages`;
     const payload =
       type === 'direct'
-        ? { chatId, recipientId: recipients[0].userId, messageContent: content }
+        ? {
+            chatId: Number(chatId),
+            recipientId: recipients[0].userId,
+            messageContent: content,
+          }
         : { messageContent: content };
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
