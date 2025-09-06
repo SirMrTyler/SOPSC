@@ -27,7 +27,7 @@ import {
   getFsConversation,
   markConversationRead,
 } from "../../../types/fsMessages";
-import { sendMessage } from "../../../services/messageService";
+import { sendMessage } from "../services/messageService";
 import { UserPlusIcon } from "react-native-heroicons/outline";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
 import { useFocusEffect } from "@react-navigation/native";

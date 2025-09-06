@@ -19,7 +19,7 @@ import { useMessages } from "../../../hooks/useMessages";
 import { useAuth } from "../../../hooks/useAuth";
 import ScreenContainer from "../../Navigation/ScreenContainer";
 import { FsMessage, markConversationRead } from "../../../types/fsMessages";
-import { sendMessage } from "../../../services/messageService";
+import { sendMessage } from "../services/messageService";
 import { formatTimestamp } from "../../../utils/date";
 import { useConversationMeta } from "../../../hooks/useConversationMeta";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
