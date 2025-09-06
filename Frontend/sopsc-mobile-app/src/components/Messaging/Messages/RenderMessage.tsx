@@ -150,7 +150,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
             flatListRef.current?.scrollToEnd({ animated: false })
           }
         />
-        <View style={styles.inputContainer}>
+        <View
+          style={[styles.inputContainer, { marginBottom: insets.bottom + 4 }]}
+        >
           <TextInput
             style={styles.input}
             placeholder="Type a message"
