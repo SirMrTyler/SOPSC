@@ -128,6 +128,11 @@ namespace SOPSC.Api.Services
             // Ensure a chat exists between the users
             if (chatId <= 0)
             {
+                if (!UserExists(recipientId))
+                {
+                    throw new ArgumentException("Recipient does not exist.");
+                }
+
                 string chatProc = "[dbo].[ChatLookup_InsertOrGet]";
                 _dataProvider.ExecuteNonQuery(chatProc,
                     delegate (SqlParameterCollection param)

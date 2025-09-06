@@ -4,24 +4,22 @@ import * as helper from '../../serviceHelpers';
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}messages`;
 
 export interface SendMessageRequest {
-  conversationId: string;
-  text: string;
-  recipientUserIds: number[];
-  senderName: string;
+  chatId: number;
+  recipientId: number;
+  messageContent: string;
 }
 
 export const sendMessage = async ({
-  conversationId,
-  text,
-  recipientUserIds,
-  senderName,
+  chatId,
+  recipientId,
+  messageContent,
 }: SendMessageRequest): Promise<any> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
   const config = {
     method: 'POST',
     url: endpoint,
-    data: { conversationId, text, recipientUserIds, senderName },
+    data: { chatId, recipientId, messageContent },
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,

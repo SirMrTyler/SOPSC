@@ -91,12 +91,16 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     const recipientUserIds = Object.entries(conversation.participants || {})
       .map(([_, info]) => info.userId)
       .filter((id) => id !== user.userId);
-    await sendMessage({
-      conversationId: chatId,
-      text: newMessage.trim(),
-      recipientUserIds,
-      senderName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-    });
+    const message = newMessage.trim();
+    await Promise.all(
+      recipientUserIds.map((recipientId) =>
+        sendMessage({
+          chatId: Number(chatId) || 0,
+          recipientId,
+          messageContent: message,
+        })
+      )
+    );
     setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
   };

@@ -6,11 +6,7 @@ import {
   setDoc,
   collection,
 } from '@react-native-firebase/firestore';
-import {
-  sendMessage as fsSendMessage,
-  listenToMyConversations,
-  type FsConversation,
-} from '../../../types/fsMessages';
+import { listenToMyConversations, type FsConversation } from '../../../types/fsMessages';
 
 const db = getFirestore(getApp());
 
@@ -85,22 +81,10 @@ export const listenToGroupChats = (
     cb(convos.filter((c) => c.type === 'group')),
   );
 
-/**
- * Send a message to a group conversation.
- */
-export const sendMessage = async (
-  chatId: string,
-  sender: Participant,
-  content: string,
-  recipients: { userId: number; firebaseUid: string }[],
-): Promise<void> => {
-  await fsSendMessage(chatId, sender, content, 'group', recipients);
-};
 
 export default {
   createGroup,
   addMembers,
   listenToGroupChats,
-  sendMessage,
 };
 

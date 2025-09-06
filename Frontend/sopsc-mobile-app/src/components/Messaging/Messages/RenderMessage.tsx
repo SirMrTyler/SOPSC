@@ -58,14 +58,14 @@ const Conversation: React.FC<Props> = ({ route }) => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
     const participantEntries = Object.entries(conversation.participants || {});
-    const recipientUserIds = participantEntries
-      .map(([_, { userId }]) => userId)
-      .filter((id) => id !== user.userId);
+    const recipientId =
+      participantEntries
+        .map(([_, { userId }]) => userId)
+        .find((id) => id !== user.userId) ?? 0;
     await sendMessage({
-      conversationId: conversation.chatId,
-      text: content,
-      recipientUserIds,
-      senderName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+      chatId: Number(conversation.chatId) || 0,
+      recipientId,
+      messageContent: content,
     });
     setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
