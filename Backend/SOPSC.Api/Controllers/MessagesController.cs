@@ -6,7 +6,12 @@ using SOPSC.Api.Models.Interfaces.Messages;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Models.Requests.Messages;
 using SOPSC.Api.Services.Auth.Interfaces;
-using SOPSC.Api.Models.Interfaces.Notifications;
+using SOPSC.Api.Services;
+using System.Linq;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SOPSC.Api.Controllers
@@ -18,16 +23,17 @@ namespace SOPSC.Api.Controllers
     {
         private readonly IMessagesService _messagesService;
         private readonly IAuthenticationService<int> _authService;
-        private readonly INotificationPublisher _notificationPublisher;
+        private readonly IDevicesService _devicesService;
+
         public MessagesController(
             IMessagesService messagesService,
             IAuthenticationService<int> authService,
-            INotificationPublisher notificationPublisher,
+            IDevicesService devicesService,
             ILogger<MessagesController> logger) : base(logger)
         {
             _messagesService = messagesService;
             _authService = authService;
-            _notificationPublisher = notificationPublisher;
+            _devicesService = devicesService;
         }
 
         [HttpGet]
@@ -83,25 +89,38 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ItemResponse<MessageCreated>>> Send(SendMessageRequest model)
+        public async Task<ActionResult<ItemResponse<object>>> Send(SendMessageRequest model)
         {
             int code = 201;
             BaseResponse response = null;
             try
             {
-                int senderId = _authService.GetCurrentUserId();
-                MessageCreated created = _messagesService.SendMessage(senderId, model.ChatId, model.RecipientId, model.MessageContent);
-                response = new ItemResponse<MessageCreated> { Item = created };
+                var user = _authService.GetCurrentUser();
+                MessageCreated created = _messagesService.SendMessage(user.UserId, model.ChatId, model.RecipientId, model.MessageContent);
 
+                int tokenCount = 0;
 
                 try
                 {
-                    await _notificationPublisher.PublishAsync(new[] { model.RecipientId }, "New message", model.MessageContent, new { chatId = created.ChatId });
+                    IEnumerable<string> tokens = await _devicesService.ListExpoTokensAsync(new[] { model.RecipientId });
+                    var tokenList = tokens?.ToList() ?? new List<string>();
+                    tokenCount = tokenList.Count;
+                    if (tokenCount > 0)
+                    {
+                        using var client = new HttpClient();
+                        var payload = tokenList.Select(t => new { to = t, title = user.Name, body = model.MessageContent, sound = "default" });
+                        var json = JsonSerializer.Serialize(payload);
+                        var httpResponse = await client.PostAsync("https://exp.host/--/api/v2/push/send", new StringContent(json, Encoding.UTF8, "application/json"));
+                        string expoResponse = await httpResponse.Content.ReadAsStringAsync();
+                        base.Logger.LogInformation("Expo response: {Response}", expoResponse);
+                    }
                 }
                 catch (Exception ex)
                 {
                     base.Logger.LogError(ex.ToString());
                 }
+                
+                response = new ItemResponse<object> { Item = new { saved = true, pushed = tokenCount } };
             }
             catch (Exception ex)
             {

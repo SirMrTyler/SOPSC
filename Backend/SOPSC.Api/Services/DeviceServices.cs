@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SOPSC.Api.Services
 {
@@ -8,6 +9,11 @@ namespace SOPSC.Api.Services
         {
             // TODO: Persist device registration
             return Task.CompletedTask;
+        }
+        public Task<IEnumerable<string>> ListExpoTokensAsync(int[] userIds)
+        {
+            // TODO: Retrieve Expo push tokens for the given users
+            return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
         }
     }
 }
