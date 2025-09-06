@@ -14,6 +14,8 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../App";
@@ -103,7 +105,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
       },
       message,
       "group",
-      recipients,
+      recipients
     );
     setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -229,7 +231,11 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
         </TouchableOpacity>
       }
     >
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={/* top bar height */ 0}
+      >
         {conversation && (
           <Text style={styles.membersText}>
             <Text style={styles.membersLabel}>Members: </Text>
@@ -259,7 +265,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
             disabled={!newMessage.trim()}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 };

@@ -15,6 +15,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../App";
 import { useMessages } from "../../../hooks/useMessages";
@@ -45,6 +47,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
   );
   const [newMessage, setNewMessage] = useState("");
   const flatListRef = useRef<FlatList<FsMessage>>(null);
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
 
   // Mark messages as read whenever new ones arrive
   useEffect(() => {
@@ -135,7 +139,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={0 /* top bar height */}
+        keyboardVerticalOffset={headerHeight + insets.top}
       >
         <FlatList
           ref={flatListRef}
