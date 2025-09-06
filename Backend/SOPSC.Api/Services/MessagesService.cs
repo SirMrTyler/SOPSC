@@ -3,6 +3,7 @@ using SOPSC.Api.Data;
 using SOPSC.Api.Data.Interfaces;
 using SOPSC.Api.Models.Domains.Messages;
 using SOPSC.Api.Models.Interfaces.Messages;
+using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -119,6 +120,11 @@ namespace SOPSC.Api.Services
 
         public MessageCreated SendMessage(int senderId, int chatId, int recipientId, string messageContent)
         {
+            if (!UserExists(senderId) || !UserExists(recipientId))
+            {
+                throw new ArgumentException("Sender or recipient does not exist.");
+            }
+
             // Ensure a chat exists between the users
             if (chatId <= 0)
             {
@@ -164,6 +170,21 @@ namespace SOPSC.Api.Services
                 });
 
             return new MessageCreated { Id = messageId, ChatId = chatId };
+        }
+
+        private bool UserExists(int userId)
+        {
+            bool exists = false;
+            string procName = "[dbo].[Users_SelectById]";
+
+            _dataProvider.ExecuteCmd(procName,
+                param => { param.AddWithValue("@UserId", userId); },
+                delegate (IDataReader reader, short set)
+                {
+                    exists = true;
+                });
+
+            return exists;
         }
 
         public void DeleteMessages(string messageIds)
