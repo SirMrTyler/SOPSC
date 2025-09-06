@@ -89,8 +89,13 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ItemResponse<object>>> Send(SendMessageRequest model)
+        public async Task<ActionResult<ItemResponse<object>>> Send([FromBody] SendMessageRequest model)
         {
+            if (model == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             int code = 201;
             BaseResponse response = null;
             try
