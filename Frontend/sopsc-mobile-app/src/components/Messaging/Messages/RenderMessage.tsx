@@ -18,8 +18,11 @@ import type { RootStackParamList } from "../../../../App";
 import { useMessages } from "../../../hooks/useMessages";
 import { useAuth } from "../../../hooks/useAuth";
 import ScreenContainer from "../../Navigation/ScreenContainer";
-import { FsMessage, markConversationRead } from "../../../types/fsMessages";
-import { sendMessage } from "../services/messageService";
+import {
+  FsMessage,
+  markConversationRead,
+  sendMessage,
+} from "../../../types/fsMessages";
 import { formatTimestamp } from "../../../utils/date";
 import { useConversationMeta } from "../../../hooks/useConversationMeta";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
@@ -58,15 +61,22 @@ const Conversation: React.FC<Props> = ({ route }) => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
     const participantEntries = Object.entries(conversation.participants || {});
-    const recipientId =
-      participantEntries
-        .map(([_, { userId }]) => userId)
-        .find((id) => id !== user.userId) ?? 0;
-    await sendMessage({
-      chatId: Number(conversation.chatId) || 0,
-      recipientId,
-      messageContent: content,
-    });
+    const recipients = participantEntries
+      .filter(([_, { userId }]) => userId !== user.userId)
+      .map(([firebaseUid, { userId }]) => ({ firebaseUid, userId }));
+    await sendMessage(
+      String(conversation.chatId),
+      {
+        userId: user.userId,
+        firebaseUid: user.firebaseUid,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePicturePath: user.profilePicturePath,
+      },
+      content,
+      meta.type || conversation.type || "direct",
+      recipients,
+    );
     setNewMessage("");
     flatListRef.current?.scrollToEnd({ animated: true });
   };
