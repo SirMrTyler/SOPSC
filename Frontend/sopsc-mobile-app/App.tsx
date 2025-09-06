@@ -32,15 +32,6 @@ import Posts from "./src/components/Posts/Post";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
-
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
