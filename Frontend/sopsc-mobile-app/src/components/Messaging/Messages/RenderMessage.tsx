@@ -49,7 +49,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const flatListRef = useRef<FlatList<FsMessage>>(null);
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
-
+  const keyboardOffset = headerHeight || insets.top + 44;
   // Mark messages as read whenever new ones arrive
   useEffect(() => {
     if (!user) return;
@@ -139,7 +139,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={headerHeight + insets.top}
+        keyboardVerticalOffset={keyboardOffset}
       >
         <FlatList
           ref={flatListRef}
