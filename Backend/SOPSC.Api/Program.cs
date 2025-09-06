@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using DotNetEnv;
+using SOPSC.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +80,8 @@ try
     });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
+    builder.Services.AddScoped<IDevicesService, DevicesService>();
 
     ServiceExtensions.ConfigureServices(builder.Services, builder.Configuration);
 
