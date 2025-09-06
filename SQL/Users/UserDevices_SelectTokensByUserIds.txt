@@ -1,0 +1,12 @@
+ALTER PROC [dbo].[UserDevices_SelectTokensByUserIds]
+    @UserIds NVARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @Ids TABLE (UserId INT);
+    INSERT INTO @Ids (UserId)
+    SELECT VALUE FROM STRING_SPLIT(@UserIds, ',');
+
+    SELECT ud.ExpoPushToken
+    FROM dbo.UserDevices ud
+    WHERE ud.UserId IN (SELECT UserId FROM @Ids) AND ud.ExpoPushToken IS NOT NULL;
+END
