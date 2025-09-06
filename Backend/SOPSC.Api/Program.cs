@@ -75,8 +75,8 @@ try
     })
     .ConfigureApiBehaviorOptions(options =>
     {
-        // Allow controllers to handle model validation errors manually
-        options.SuppressModelStateInvalidFilter = true;
+        // Ensure automatic model state validation for controllers
+        options.SuppressModelStateInvalidFilter = false;
     });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
