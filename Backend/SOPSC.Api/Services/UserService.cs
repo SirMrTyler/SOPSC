@@ -154,9 +154,7 @@ namespace SOPSC.Api.Services
                 paramCollection.AddWithValue("@LastName", userModel.LastName);
                 paramCollection.AddWithValue("@Email", userModel.Email);
                 paramCollection.AddWithValue("@Password", hashedPassword);
-                paramCollection.AddWithValue("@IsActive", true);
-                paramCollection.AddWithValue("@RoleId", 4);
-                paramCollection.AddWithValue("@AgencyId", (object?)userModel.AgencyId ?? DBNull.Value);
+                paramCollection.AddWithValue("@FirebaseUid", "");
 
                 SqlParameter idOut = new SqlParameter("@UserId", SqlDbType.Int);
                 idOut.Direction = ParameterDirection.Output;

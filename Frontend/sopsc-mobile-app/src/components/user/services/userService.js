@@ -23,11 +23,8 @@ const login = (email, password, deviceId, firebaseUid) => {
 };
 
 // Google Sign-In login
-const googleLogin = (idToken, firebaseUid, phone) => {
+const googleLogin = (idToken, firebaseUid) => {
   const payload = { idToken, firebaseUid };
-  if (phone) {
-    payload.phone = phone;
-  }
 
   const config = {
     method: 'POST',
@@ -39,11 +36,11 @@ const googleLogin = (idToken, firebaseUid, phone) => {
 };
 
 // Register user with email/password
-const register = async ({ firstName, lastName, phone, email, password, passwordConfirm, firebaseUid }) => {
+const register = async ({ firstName, lastName, email, password, passwordConfirm, firebaseUid }) => {
   const config = {
     method: 'POST',
     url: `${endpoint}/register`,
-    data: { firstName, lastName, phone, email, password, passwordConfirm, firebaseUid },
+    data: { firstName, lastName, email, password, passwordConfirm, firebaseUid },
     headers: { 'Content-Type': 'application/json' },
   };
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
