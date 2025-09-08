@@ -29,6 +29,7 @@ import {
   getFsConversation,
   markConversationRead,
   sendMessage,
+  MemberProfile,
 } from "../../../types/fsMessages";
 import { UserPlusIcon } from "react-native-heroicons/outline";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
@@ -90,17 +91,18 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
    */
   const handleSend = async () => {
     if (!user || !newMessage.trim() || !conversation) return;
-    const profiles = conversation.memberProfiles || {};
+    const profiles: Record<string, MemberProfile> =
+      conversation.memberProfiles || {};
     const recipients = Object.entries(conversation.participants || {})
       .filter(([_, info]) => info.userId !== user.userId)
       .map(([firebaseUid, info]) => {
-        const prof = profiles[info.userId] || {};
+        const prof = profiles[String(info.userId)] as MemberProfile | undefined;
         return {
           firebaseUid,
           userId: info.userId,
-          firstName: prof.firstName,
-          lastName: prof.lastName,
-          profilePicturePath: prof.profilePicturePath,
+          firstName: prof?.firstName,
+          lastName: prof?.lastName,
+          profilePicturePath: prof?.profilePicturePath,
         };
       });
     const message = newMessage.trim();

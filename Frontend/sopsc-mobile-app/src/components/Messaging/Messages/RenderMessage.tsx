@@ -26,6 +26,7 @@ import {
   FsMessage,
   markConversationRead,
   sendMessage,
+  MemberProfile,
 } from "../../../types/fsMessages";
 import { formatTimestamp } from "../../../utils/date";
 import { useConversationMeta } from "../../../hooks/useConversationMeta";
@@ -71,13 +72,13 @@ const Conversation: React.FC<Props> = ({ route }) => {
     const recipients = participantEntries
       .filter(([_, info]) => info.userId !== user.userId)
       .map(([firebaseUid, info]) => {
-        const prof = profiles[String(info.userId)] || {};
+        const prof = profiles[String(info.userId)] as MemberProfile | undefined;
         return {
           firebaseUid,
           userId: info.userId,
-          firstName: prof.firstName,
-          lastName: prof.lastName,
-          profilePicturePath: prof.profilePicturePath,
+          firstName: prof?.firstName,
+          lastName: prof?.lastName,
+          profilePicturePath: prof?.profilePicturePath,
         };
       });
     await sendMessage(
