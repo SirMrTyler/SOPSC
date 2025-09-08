@@ -90,9 +90,19 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
    */
   const handleSend = async () => {
     if (!user || !newMessage.trim() || !conversation) return;
+    const profiles = conversation.memberProfiles || {};
     const recipients = Object.entries(conversation.participants || {})
       .filter(([_, info]) => info.userId !== user.userId)
-      .map(([firebaseUid, info]) => ({ firebaseUid, userId: info.userId }));
+      .map(([firebaseUid, info]) => {
+        const prof = profiles[info.userId] || {};
+        return {
+          firebaseUid,
+          userId: info.userId,
+          firstName: prof.firstName,
+          lastName: prof.lastName,
+          profilePicturePath: prof.profilePicturePath,
+        };
+      });
     const message = newMessage.trim();
     await sendMessage(
       String(chatId),

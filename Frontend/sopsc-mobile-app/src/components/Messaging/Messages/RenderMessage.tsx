@@ -66,10 +66,20 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
+    const profiles = meta.memberProfiles || conversation.memberProfiles || {};
     const participantEntries = Object.entries(conversation.participants || {});
     const recipients = participantEntries
-      .filter(([_, { userId }]) => userId !== user.userId)
-      .map(([firebaseUid, { userId }]) => ({ firebaseUid, userId }));
+      .filter(([_, info]) => info.userId !== user.userId)
+      .map(([firebaseUid, info]) => {
+        const prof = profiles[String(info.userId)] || {};
+        return {
+          firebaseUid,
+          userId: info.userId,
+          firstName: prof.firstName,
+          lastName: prof.lastName,
+          profilePicturePath: prof.profilePicturePath,
+        };
+      });
     await sendMessage(
       String(conversation.chatId),
       {
