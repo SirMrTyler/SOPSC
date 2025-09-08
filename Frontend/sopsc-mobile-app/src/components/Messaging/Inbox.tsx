@@ -23,7 +23,10 @@ import {
   listenToMyConversations,
   FsConversation,
   FsConversationNav,
+  MemberProfile,
 } from "../../types/fsMessages";
+import { getAll } from "../User/services/userService";
+import type { UserResult } from "../../types/user";
 import ScreenContainer from "../Navigation/ScreenContainer";
 import {
   FirebaseFirestoreTypes,
@@ -45,8 +48,34 @@ const Messages: React.FC = () => {
   );
   const [loading, setLoading] = useState(true);
   const [queryString, setQuery] = useState("");
+  const [directory, setDirectory] = useState<Record<number, MemberProfile>>({});
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // Load a user directory so we can hydrate missing names/avatars
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getAll(0, 500);
+        const list: UserResult[] = data?.item?.pagedItems ?? [];
+        const idx: Record<number, MemberProfile> = {};
+        for (const u of list) {
+          idx[Number(u.userId)] = {
+            firstName: u.firstName,
+            lastName: u.lastName,
+            profilePicturePath: (u as any).profilePicturePath,
+          };
+        }
+        if (mounted) setDirectory(idx);
+      } catch (err) {
+        console.error("[Inbox] Failed to load user directory", err);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Subscribe to Firestore for real-time conversation updates
   useEffect(() => {
@@ -55,20 +84,47 @@ const Messages: React.FC = () => {
       { userId: user.userId, firebaseUid: user.firebaseUid },
       (list) => {
         const directConversations = list.filter((c) => c.type === "direct");
-        const trimmed = directConversations.map((c) => ({
-          ...c,
-          mostRecentMessage:
-            c.mostRecentMessage.length > PREVIEW_LENGTH
-              ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + "..."
-              : c.mostRecentMessage,
-        }));
-        setMessages(trimmed);
-        setFilteredMessages(trimmed);
+        const hydrated = directConversations.map((c) => {
+          const participants = Object.values(c.participants || {}) as Array<{ userId: number }>;
+          const otherUserId = participants.find((p) => p.userId !== user.userId)?.userId;
+
+          const memberProfiles: Record<string, MemberProfile> = { ...(c.memberProfiles || {}) };
+
+          if (user.userId && !memberProfiles[String(user.userId)]) {
+            memberProfiles[String(user.userId)] = {
+              firstName: user.firstName,
+              lastName: user.lastName,
+              profilePicturePath: user.profilePicturePath,
+            };
+          }
+
+          if (otherUserId && !memberProfiles[String(otherUserId)]) {
+            const sql = directory[otherUserId];
+            if (sql) {
+              memberProfiles[String(otherUserId)] = {
+                firstName: sql.firstName,
+                lastName: sql.lastName,
+                profilePicturePath: sql.profilePicturePath,
+              };
+            }
+          }
+
+          return {
+            ...c,
+            memberProfiles,
+            mostRecentMessage:
+              c.mostRecentMessage.length > PREVIEW_LENGTH
+                ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + "..."
+                : c.mostRecentMessage,
+          };
+        });
+        setMessages(hydrated);
+        setFilteredMessages(hydrated);
         setLoading(false);
       }
     );
     return () => unsubscribe();
-  }, [user]);
+  }, [user, directory]);
 
   // Refilter messages when search input changes
   useEffect(() => {
