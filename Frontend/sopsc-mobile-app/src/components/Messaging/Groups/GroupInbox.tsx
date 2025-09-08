@@ -48,18 +48,29 @@ const GroupChats: React.FC = () => {
 
   const renderItem = ({ item }: { item: FsConversation }) => {
     const unread = item.unreadCount?.[user?.firebaseUid || ""] || 0;
+    const groupName =
+      (item as any).name ||
+      item.otherUserName ||
+      (item as any).groupName ||
+      (item.memberProfiles
+        ? Object.values(item.memberProfiles)
+            .slice(0, 3)
+            .map((m: any) => `${m.firstName} ${m.lastName}`.trim())
+            .join(", ")
+        : "") ||
+      "Group Chat";
     return (
       <TouchableOpacity
         style={styles.item}
         onPress={() =>
           navigation.navigate("GroupChatConversation", {
             chatId: item.chatId,
-            name: item.otherUserName || "Group Chat",
+            name: groupName,
           })
         }
       >
         <View style={styles.rowBetween}>
-          <Text style={styles.name}>{item.otherUserName || "Group Chat"}</Text>
+          <Text style={styles.name}>{groupName}</Text>
           <Text style={styles.membersCount}>
             <Text style={styles.membersLabel}>Members: </Text>
             {Object.keys(item.participants).length}

@@ -29,12 +29,22 @@ const ConversationItem: React.FC<Props> = ({
   const others = Object.entries(profiles).filter(
     ([id]) => Number(id) !== user?.userId
   );
+  const nameFromProfiles = `${others[0]?.[1]?.firstName ?? ""} ${
+    others[0]?.[1]?.lastName ?? ""
+  }`.trim();
+  const fallbackDirectName = React.useMemo(() => {
+    if (nameFromProfiles) return nameFromProfiles;
+    const other = Object.values(conversation.participants || {})
+      .map((p: any) => p.userId)
+      .find((id: number) => id !== user?.userId);
+    const prof = other ? profiles[String(other)] : undefined;
+    return prof ? `${prof.firstName} ${prof.lastName}`.trim() : "";
+  }, [conversation, profiles, user, nameFromProfiles]);
+
   const displayName =
     conversation.type === "group"
       ? "Group Chat"
-      : `${others[0]?.[1]?.firstName ?? ""} ${
-          others[0]?.[1]?.lastName ?? ""
-        }`.trim();
+      : nameFromProfiles || fallbackDirectName || "Member";
   const avatarPath =
     conversation.type === "group"
       ? undefined
