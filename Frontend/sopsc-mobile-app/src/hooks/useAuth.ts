@@ -84,6 +84,8 @@ export const useAuth = () => {
   }, []);
 
   const signInEmail = async (email: string, password: string) => {
+    email = email.trim();
+    password = password.trim();
     let deviceId = await SecureStore.getItemAsync('deviceId');
     if (!deviceId) {
       deviceId = Crypto.randomUUID();
@@ -96,6 +98,8 @@ export const useAuth = () => {
         fbUser = await signInWithEmailAndPassword(fbAuth, email, password);
       } catch (err: any) {
         if (err.code === 'auth/user-not-found') {
+          console.error('Firebase sign-in error code:', err?.code);
+          console.error('Firebase sign-in error message:', err?.message);
           fbUser = await createUserWithEmailAndPassword(fbAuth, email, password);
         } else {
           throw err;
@@ -119,6 +123,8 @@ export const useAuth = () => {
       setUser(mapUser({ ...currentUser.item, firebaseUid: uid }));
     } catch (error: any) {
       console.error('Email login error:', error);
+      console.error('Email login error code:', error?.code);
+      console.error('Email login error message:', error?.message);
       const message =
         error?.response?.data?.errors?.[0] ?? 'Email login failed. Please try again.';
       Alert.alert('Login failed', message);
