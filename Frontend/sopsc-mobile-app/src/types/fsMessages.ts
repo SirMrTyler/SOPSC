@@ -225,8 +225,12 @@ export const sendMessage = async (
   const memberProfileUpdates: Record<string, any> = {};
   allParticipants.forEach((p) => {
     participantUpdates[`participants.${p.firebaseUid}.userId`] = p.userId;
-    memberProfileUpdates[`memberProfiles.${String(p.userId)}.firstName`] = (p as any).firstName ?? '';
-    memberProfileUpdates[`memberProfiles.${String(p.userId)}.lastName`] = (p as any).lastName ?? '';
+    if ((p as any).firstName) {
+      memberProfileUpdates[`memberProfiles.${String(p.userId)}.firstName`] = (p as any).firstName;
+    }
+    if ((p as any).lastName) {
+      memberProfileUpdates[`memberProfiles.${String(p.userId)}.lastName`] = (p as any).lastName;
+    }
     if ((p as any).profilePicturePath) {
       memberProfileUpdates[`memberProfiles.${String(p.userId)}.profilePicturePath`] = (p as any).profilePicturePath;
     }
