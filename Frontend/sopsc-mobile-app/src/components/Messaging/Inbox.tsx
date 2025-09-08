@@ -25,7 +25,7 @@ import {
   FsConversationNav,
   MemberProfile,
 } from "../../types/fsMessages";
-import { getAll } from "../User/services/userService";
+import { getAll, getById } from "../User/services/userService";
 import type { UserResult } from "../../types/user";
 import ScreenContainer from "../Navigation/ScreenContainer";
 import {
@@ -82,42 +82,57 @@ const Messages: React.FC = () => {
     if (!user) return;
     const unsubscribe = listenToMyConversations(
       { userId: user.userId, firebaseUid: user.firebaseUid },
-      (list) => {
+      async (list) => {
         const directConversations = list.filter((c) => c.type === "direct");
-        const hydrated = directConversations.map((c) => {
-          const participants = Object.values(c.participants || {}) as Array<{ userId: number }>;
-          const otherUserId = participants.find((p) => p.userId !== user.userId)?.userId;
+        const hydrated = await Promise.all(
+          directConversations.map(async (c) => {
+            const participants = Object.values(c.participants || {}) as Array<{ userId: number }>;
+            const otherUserId = participants.find((p) => p.userId !== user.userId)?.userId;
 
-          const memberProfiles: Record<string, MemberProfile> = { ...(c.memberProfiles || {}) };
-
-          if (user.userId && !memberProfiles[String(user.userId)]) {
-            memberProfiles[String(user.userId)] = {
-              firstName: user.firstName,
-              lastName: user.lastName,
-              profilePicturePath: user.profilePicturePath,
+            const memberProfiles: Record<string, MemberProfile> = {
+              ...(c.memberProfiles || {}),
             };
-          }
 
-          if (otherUserId && !memberProfiles[String(otherUserId)]) {
-            const sql = directory[otherUserId];
-            if (sql) {
-              memberProfiles[String(otherUserId)] = {
-                firstName: sql.firstName,
-                lastName: sql.lastName,
-                profilePicturePath: sql.profilePicturePath,
+            if (user.userId && !memberProfiles[String(user.userId)]) {
+              memberProfiles[String(user.userId)] = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                profilePicturePath: user.profilePicturePath,
               };
             }
-          }
 
-          return {
-            ...c,
-            memberProfiles,
-            mostRecentMessage:
-              c.mostRecentMessage.length > PREVIEW_LENGTH
-                ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + "..."
-                : c.mostRecentMessage,
-          };
-        });
+            if (otherUserId && !memberProfiles[String(otherUserId)]) {
+              let prof = directory[otherUserId];
+              if (!prof) {
+                try {
+                  const res = await getById(otherUserId);
+                  prof = res?.item;
+                  if (prof) {
+                    setDirectory((prev) => ({ ...prev, [otherUserId]: prof! }));
+                  }
+                } catch (err) {
+                  console.error("[Inbox] Failed to fetch user profile", err);
+                }
+              }
+              if (prof) {
+                memberProfiles[String(otherUserId)] = {
+                  firstName: prof.firstName,
+                  lastName: prof.lastName,
+                  profilePicturePath: prof.profilePicturePath,
+                };
+              }
+            }
+
+            return {
+              ...c,
+              memberProfiles,
+              mostRecentMessage:
+                c.mostRecentMessage.length > PREVIEW_LENGTH
+                  ? c.mostRecentMessage.slice(0, PREVIEW_LENGTH) + "..."
+                  : c.mostRecentMessage,
+            };
+          })
+        );
         setMessages(hydrated);
         setFilteredMessages(hydrated);
         setLoading(false);

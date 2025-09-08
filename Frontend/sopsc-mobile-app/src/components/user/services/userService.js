@@ -147,6 +147,21 @@ const getAll = async (pageIndex = 0, pageSize = 20) => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 }
 
+const getById = async (userId) => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'GET',
+    url: `${endpoint}/${userId}`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 export {
   login,
   googleLogin,
@@ -158,4 +173,5 @@ export {
   upsertFirebaseUid,
   getAll,
   search,
+  getById,
 };

@@ -456,6 +456,40 @@ public class UsersController : BaseApiController
         return StatusCode(code, response);
     }
 
+    [Authorize]
+    [HttpGet("{userId:int}")]
+    public ActionResult<ItemResponse<UserProfile>> GetById(int userId)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            User user = _userService.GetById(userId);
+            if (user == null)
+            {
+                code = 404;
+                response = new ErrorResponse("User not found.");
+            }
+            else
+            {
+                UserProfile profile = new UserProfile
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ProfilePicturePath = user.ProfilePicturePath
+                };
+                response = new ItemResponse<UserProfile> { Item = profile };
+            }
+        }
+        catch (Exception ex)
+        {
+            base.Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+        return StatusCode(code, response);
+    }
+
     #endregion
 
     #region UPDATE

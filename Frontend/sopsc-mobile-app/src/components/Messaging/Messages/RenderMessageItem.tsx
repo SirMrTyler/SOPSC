@@ -3,12 +3,13 @@
  * Purpose: Renders a preview row for a conversation in the inbox list.
  * Notes: Shows read status and timestamp for the latest message.
  */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import type { FsConversation } from "../../../types/fsMessages";
 import { formatTimestamp } from "../../../utils/date";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
 import { useAuth } from "../../../hooks/useAuth";
+import { getById } from "../../User/services/userService";
 interface Props {
   conversation: FsConversation;
   onPress: () => void;
@@ -41,10 +42,40 @@ const ConversationItem: React.FC<Props> = ({
     return prof ? `${prof.firstName} ${prof.lastName}`.trim() : "";
   }, [conversation, profiles, user, nameFromProfiles]);
 
+  const [resolvedName, setResolvedName] = useState(
+    nameFromProfiles || fallbackDirectName
+  );
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (nameFromProfiles || fallbackDirectName || conversation.type === "group") {
+        setResolvedName(nameFromProfiles || fallbackDirectName);
+        return;
+      }
+      const other = Object.values(conversation.participants || {})
+        .map((p: any) => p.userId)
+        .find((id: number) => id !== user?.userId);
+      if (other) {
+        try {
+          const res = await getById(other);
+          const prof = res?.item;
+          if (prof) {
+            conversation.memberProfiles = {
+              ...(conversation.memberProfiles || {}),
+              [other]: prof,
+            };
+            setResolvedName(`${prof.firstName} ${prof.lastName}`.trim());
+          }
+        } catch (err) {
+          console.error("[RenderMessageItem] Failed to fetch user profile", err);
+        }
+      }
+    };
+    loadProfile();
+  }, [conversation, nameFromProfiles, fallbackDirectName, user]);
+
   const displayName =
-    conversation.type === "group"
-      ? "Group Chat"
-      : nameFromProfiles || fallbackDirectName || "Member";
+    conversation.type === "group" ? "Group Chat" : resolvedName || "Member";
   const avatarPath =
     conversation.type === "group"
       ? undefined
