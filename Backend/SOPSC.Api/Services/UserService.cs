@@ -92,13 +92,16 @@ namespace SOPSC.Api.Services
                 },
                 singleRecordMapper: delegate (IDataReader reader, short set)
                 {
-                    hashedPassword = reader.GetSafeString(reader.GetOrdinal("Password"));
-                    user = new UserBase
+                    if (set == 0)
                     {
-                        UserId = reader.GetSafeInt32(reader.GetOrdinal("UserId")),
-                        Name = email
-                    };
-                    roleId = reader.GetSafeInt32(reader.GetOrdinal("RoleId"));
+                        hashedPassword = reader.GetSafeString(reader.GetOrdinal("Password"));
+                        user = new UserBase
+                        {
+                            UserId = reader.GetSafeInt32(reader.GetOrdinal("UserId")),
+                            Name = email
+                        };
+                        roleId = reader.GetSafeInt32(reader.GetOrdinal("RoleId"));
+                    }
                 });
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, hashedPassword))
