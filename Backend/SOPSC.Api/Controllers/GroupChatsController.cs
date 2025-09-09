@@ -4,6 +4,7 @@ using SOPSC.Api.Data;
 using SOPSC.Api.Models.Domains.GroupChats;
 using SOPSC.Api.Models.Interfaces.GroupChats;
 using SOPSC.Api.Models.Interfaces.Notifications;
+using SOPSC.Api.Models.Interfaces.Users;
 using SOPSC.Api.Models.Requests.GroupChats;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
@@ -21,17 +22,20 @@ public class GroupChatsController : BaseApiController
     private readonly IGroupChatsService _service;
     private readonly IAuthenticationService<int> _authService;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly IUserService _userService;
 
     public GroupChatsController(
         IGroupChatsService service,
         IAuthenticationService<int> authService,
         INotificationPublisher notificationPublisher,
+        IUserService userService,
         ILogger<GroupChatsController> logger)
         : base(logger)
     {
         _service = service;
         _authService = authService;
         _notificationPublisher = notificationPublisher;
+        _userService = userService;
     }
 
     [HttpGet]
@@ -107,6 +111,13 @@ public class GroupChatsController : BaseApiController
 
             try
             {
+                var sender = _userService.GetById(senderId);
+                string title = $"{sender?.FirstName} {sender?.LastName}".Trim();
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    title = sender?.Email ?? "New group message";
+                }
+
                 List<GroupChatMember> members = _service.GetMembers(groupChatId);
                 List<int> memberIds = members
                     .Select(m => m.UserId)
@@ -117,7 +128,7 @@ public class GroupChatsController : BaseApiController
                 {
                     await _notificationPublisher.PublishAsync(
                         memberIds,
-                        "New group message",
+                        title,
                         model.MessageContent,
                         new { groupChatId });
                 }
