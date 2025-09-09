@@ -6,7 +6,8 @@ BEGIN
     INSERT INTO @Ids (UserId)
     SELECT VALUE FROM STRING_SPLIT(@UserIds, ',');
 
-    SELECT ud.ExpoPushToken
+    SELECT DISTINCT ud.ExpoPushToken
     FROM dbo.UserDevices ud
-    WHERE ud.UserId IN (SELECT UserId FROM @Ids) AND ud.ExpoPushToken IS NOT NULL;
+    WHERE ud.UserId IN (SELECT UserId FROM @Ids)
+        AND ud.ExpoPushToken IS NOT NULL;
 END
