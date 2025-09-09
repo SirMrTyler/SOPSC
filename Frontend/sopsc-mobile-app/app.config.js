@@ -3,7 +3,10 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 const variant = process.env.APP_VARIANT || 'development';
-
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV =
+    variant === 'development' || variant === 'development' ? 'development' : 'production';
+}
 // Load environment variables from .env and .env.{variant} if present
 const baseEnv = path.resolve(__dirname, '.env');
 const variantEnv = path.resolve(__dirname, `.env.${variant}`);
