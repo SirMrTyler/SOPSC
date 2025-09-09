@@ -7,6 +7,7 @@ using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Models.Requests.Messages;
 using SOPSC.Api.Services.Auth.Interfaces;
 using SOPSC.Api.Services;
+using SOPSC.Api.Models.Interfaces.Users;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -25,16 +26,19 @@ namespace SOPSC.Api.Controllers
         private readonly IMessagesService _messagesService;
         private readonly IAuthenticationService<int> _authService;
         private readonly IDevicesService _devicesService;
+        private readonly IUserService _userService;
 
         public MessagesController(
             IMessagesService messagesService,
             IAuthenticationService<int> authService,
             IDevicesService devicesService,
+            IUserService userService,
             ILogger<MessagesController> logger) : base(logger)
         {
             _messagesService = messagesService;
             _authService = authService;
             _devicesService = devicesService;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -116,6 +120,13 @@ namespace SOPSC.Api.Controllers
                 int chatId = model.ChatId.GetValueOrDefault();
                 MessageCreated created = _messagesService.SendMessage(user.UserId, chatId, model.RecipientId, model.MessageContent);
 
+                var sender = _userService.GetById(user.UserId);
+                string title = $"{sender?.FirstName} {sender?.LastName}".Trim();
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    title = sender?.Email ?? user.Name;
+                }
+
                 int tokenCount = 0;
 
                 try
@@ -135,7 +146,7 @@ namespace SOPSC.Api.Controllers
                         base.Logger.LogInformation("Sending push to {Count} distinct tokens: {Tokens}", tokenCount, string.Join(", ", tokenHashes));
 
                         using var client = new HttpClient();
-                        var payload = tokenList.Select(t => new { to = t, title = user.Name, body = model.MessageContent, sound = "default" });
+                        var payload = tokenList.Select(t => new { to = t, title, body = model.MessageContent, sound = "default" });
                         var json = JsonSerializer.Serialize(payload);
                         var httpResponse = await client.PostAsync("https://exp.host/--/api/v2/push/send", new StringContent(json, Encoding.UTF8, "application/json"));
                         string expoResponse = await httpResponse.Content.ReadAsStringAsync();
