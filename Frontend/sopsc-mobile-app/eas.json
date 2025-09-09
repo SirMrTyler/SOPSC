@@ -9,6 +9,7 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development",
+        "NODE_ENV": "development",
         "EXPO_PUBLIC_API_URL": "https://6bead0305bb1.ngrok-free.app/api/",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "191358823571-5d3nohpk3g2c51j1cj3hs0r09mi8evcq.apps.googleusercontent.com"
       }
