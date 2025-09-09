@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace SOPSC.Api.Services
                         tokens.Add(token);
                     }
                 });
-            IEnumerable<string> result = tokens?.AsEnumerable() ?? Enumerable.Empty<string>();
+            IEnumerable<string> result = tokens?.Distinct(StringComparer.OrdinalIgnoreCase) ?? Enumerable.Empty<string>();
             return Task.FromResult(result);
         }
     }

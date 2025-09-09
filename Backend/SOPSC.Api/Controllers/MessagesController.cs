@@ -7,6 +7,7 @@ using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Models.Requests.Messages;
 using SOPSC.Api.Services.Auth.Interfaces;
 using SOPSC.Api.Services;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -120,10 +121,19 @@ namespace SOPSC.Api.Controllers
                 try
                 {
                     IEnumerable<string> tokens = await _devicesService.ListExpoTokensAsync(new[] { model.RecipientId });
-                    var tokenList = tokens?.ToList() ?? new List<string>();
+                    var tokenList = (tokens ?? Enumerable.Empty<string>())
+                        .Where(t => !string.IsNullOrWhiteSpace(t))
+                        .Select(t => t.Trim())
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
                     tokenCount = tokenList.Count;
+
                     if (tokenCount > 0)
                     {
+                        var tokenHashes = tokenList.Select(t => $"{t.Substring(0, Math.Min(6, t.Length))}...{t.Substring(Math.Max(0, t.Length - 4))}");
+                        base.Logger.LogInformation("Sending push to {Count} distinct tokens: {Tokens}", tokenCount, string.Join(", ", tokenHashes));
+
                         using var client = new HttpClient();
                         var payload = tokenList.Select(t => new { to = t, title = user.Name, body = model.MessageContent, sound = "default" });
                         var json = JsonSerializer.Serialize(payload);
