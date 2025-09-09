@@ -89,8 +89,9 @@ export const usePushNotifications = (user: any) => {
       
       if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync("default", {
-          name: "default",
+          name: "Default",
           importance: Notifications.AndroidImportance.MAX,
+          showBadge: true,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: "#FF231F7C",
         });
