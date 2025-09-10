@@ -22,17 +22,11 @@ import { useAuth } from "../../hooks/useAuth";
 import {
   listenToMyConversations,
   FsConversation,
-  FsConversationNav,
   MemberProfile,
 } from "../../types/fsMessages";
 import { getAll, getById } from "../User/services/userService";
 import type { UserResult } from "../../types/user";
 import ScreenContainer from "../Navigation/ScreenContainer";
-import {
-  FirebaseFirestoreTypes,
-  Timestamp,
-} from "@react-native-firebase/firestore";
-import { toIso } from "../../utils/date";
 
 const PREVIEW_LENGTH = 50;
 
@@ -161,12 +155,8 @@ const Messages: React.FC = () => {
     );
   }
 
-  const handleUserPress = (item: FsConversationNav) => {
-    const convo: FsConversationNav = {
-      ...item,
-      sentTimestamp: toIso(item.sentTimestamp),
-    };
-    navigation.navigate("Conversation", { conversation: convo });
+  const handleUserPress = (item: FsConversation) => {
+    navigation.navigate("Conversation", { conversationId: item.chatId });
   };
 
   return (
@@ -209,7 +199,7 @@ const Messages: React.FC = () => {
             renderItem={({ item }) => (
               <RenderMessageItem
                 conversation={item}
-                onPress={() => handleUserPress(item as FsConversationNav)}
+                onPress={() => handleUserPress(item)}
               />
             )}
           />
