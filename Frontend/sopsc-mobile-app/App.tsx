@@ -7,6 +7,7 @@ import {
   NavigationContainer,
   DefaultTheme,
   LinkingOptions,
+  createNavigationContainerRef,
 } from "@react-navigation/native";
 import * as Linking from "expo-linking";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -58,6 +59,8 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
 const backgroundImage = require("./assets/images/backgroundImage.png");
 
 const AppTheme = {
@@ -108,7 +111,25 @@ const linking: LinkingOptions<RootStackParamList> = {
 
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
-  usePushNotifications(user);
+
+  const handleNotificationTap = ({
+    url,
+    conversationId,
+  }: {
+    url?: string;
+    conversationId?: string;
+  }) => {
+    if (url) {
+      Linking.openURL(url);
+    } else if (conversationId) {
+      navigationRef.navigate(
+        "Conversation" as never,
+        { conversationId } as never,
+      );
+    }
+  };
+
+  usePushNotifications(user, handleNotificationTap);
 
   return (
     <SafeAreaProvider>
@@ -130,7 +151,11 @@ function AppNavigator({
         style={{ flex: 1, backgroundColor: "#2477ff" }}
         edges={["top"]}
       >
-        <NavigationContainer theme={AppTheme} linking={linking}>
+        <NavigationContainer
+          theme={AppTheme}
+          linking={linking}
+          ref={navigationRef}
+        >
           <StatusBar
             style={Platform.OS === "android" ? "dark" : "light"}
             backgroundColor={Platform.OS === "android" ? "#2477ff" : undefined}
