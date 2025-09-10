@@ -16,7 +16,15 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const usePushNotifications = (user: any) => {
+interface NotificationTapPayload {
+  url?: string;
+  conversationId?: string;
+}
+
+export const usePushNotifications = (
+  user: any,
+  onNotificationTap?: (payload: NotificationTapPayload) => void,
+) => {
   const lastExpoPushToken = useRef<string | undefined>(undefined);
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
@@ -24,14 +32,25 @@ export const usePushNotifications = (user: any) => {
   useEffect(() => {
     notificationListener.current = Notifications.addNotificationReceivedListener(
       (notification) => {
-        console.log("Notification received:", notification);
-      }
+        if (__DEV__) {
+          console.log("Notification received:", notification);
+        }
+      },
     );
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification response:", response);
-      });
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data =
+          (response.notification.request.content.data as NotificationTapPayload) ||
+          {};
+        const { url, conversationId } = data;
+        if (url || conversationId) {
+          onNotificationTap?.({ url, conversationId });
+        } else if (__DEV__) {
+          console.log("Notification response:", response);
+        }
+      },
+    );
 
     return () => {
       notificationListener.current?.remove();
@@ -117,7 +136,9 @@ export const usePushNotifications = (user: any) => {
           projectId,
         })
       ).data;
-      console.log("Expo token:", expoToken);
+      if (__DEV__) {
+        console.log("Expo token:", expoToken);
+      }
 
       if (lastExpoPushToken.current !== expoToken) {
         await registerDevice(expoToken);
