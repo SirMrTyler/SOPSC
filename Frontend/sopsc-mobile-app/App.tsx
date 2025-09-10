@@ -3,7 +3,12 @@
 
 // Libraries
 import React, { useState } from "react";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  LinkingOptions,
+} from "@react-navigation/native";
+import * as Linking from "expo-linking";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ImageBackground, StyleSheet, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -63,6 +68,44 @@ const AppTheme = {
   },
 };
 
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ["sopsc://", "https://sopsc.app"],
+  config: {
+    screens: {
+      Conversation: "chat/:conversationId",
+    },
+  },
+  async getInitialURL() {
+    const url = await Linking.getInitialURL();
+    if (url) return url;
+
+    const response = await Notifications.getLastNotificationResponseAsync();
+    return response?.notification.request.content.data?.url;
+  },
+  subscribe(listener) {
+    const onReceiveURL = ({ url }: { url: string }) => listener(url);
+
+    const urlSub = Linking.addEventListener("url", onReceiveURL);
+
+    let lastNotificationId: string | null = null;
+
+    const notificationSub =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const url = response.notification.request.content.data?.url;
+        const id = response.notification.request.identifier;
+        if (url && id !== lastNotificationId) {
+          lastNotificationId = id;
+          listener(url);
+        }
+      });
+
+    return () => {
+      urlSub.remove();
+      notificationSub.remove();
+    };
+  },
+};
+
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
   usePushNotifications(user);
@@ -87,7 +130,7 @@ function AppNavigator({
         style={{ flex: 1, backgroundColor: "#2477ff" }}
         edges={["top"]}
       >
-        <NavigationContainer theme={AppTheme}>
+        <NavigationContainer theme={AppTheme} linking={linking}>
           <StatusBar
             style={Platform.OS === "android" ? "dark" : "light"}
             backgroundColor={Platform.OS === "android" ? "#2477ff" : undefined}
