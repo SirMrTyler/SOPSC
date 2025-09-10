@@ -119,6 +119,7 @@ namespace SOPSC.Api.Controllers
                 // With this line:
                 int chatId = model.ChatId.GetValueOrDefault();
                 MessageCreated created = _messagesService.SendMessage(user.UserId, chatId, model.RecipientId, model.MessageContent);
+                int conversationId = created.ChatId;
 
                 var sender = _userService.GetById(user.UserId);
                 string title = $"{sender?.FirstName} {sender?.LastName}".Trim();
@@ -146,7 +147,14 @@ namespace SOPSC.Api.Controllers
                         base.Logger.LogInformation("Sending push to {Count} distinct tokens: {Tokens}", tokenCount, string.Join(", ", tokenHashes));
 
                         using var client = new HttpClient();
-                        var payload = tokenList.Select(t => new { to = t, title, body = model.MessageContent, sound = "default" });
+                        var payload = tokenList.Select(t => new
+                        {
+                            to = t,
+                            title,
+                            body = model.MessageContent,
+                            sound = "default",
+                            data = new { url = $"sopsc://chat/{conversationId}", conversationId }
+                        });
                         var json = JsonSerializer.Serialize(payload);
                         var httpResponse = await client.PostAsync("https://exp.host/--/api/v2/push/send", new StringContent(json, Encoding.UTF8, "application/json"));
                         string expoResponse = await httpResponse.Content.ReadAsStringAsync();

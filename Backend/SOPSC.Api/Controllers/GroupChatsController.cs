@@ -130,7 +130,7 @@ public class GroupChatsController : BaseApiController
                         memberIds,
                         title,
                         model.MessageContent,
-                        new { groupChatId });
+                        new { url = $"sopsc://chat/{groupChatId}", conversationId = groupChatId });
                 }
             }
             catch (Exception ex)

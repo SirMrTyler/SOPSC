@@ -48,6 +48,7 @@ namespace SOPSC.Api.Services.Notifications
                             if (change.Document.TryGetValue<Dictionary<string, object>>("recipients", out var recipientsMap))
                             {
                                 var conversationDoc = change.Document.Reference.Parent?.Parent;
+                                string conversationId = conversationDoc?.Id;
                                 Dictionary<string, object>? participantsMap = null;
                                 if (conversationDoc != null)
                                 {
@@ -77,7 +78,8 @@ namespace SOPSC.Api.Services.Notifications
                                     var publisher = scope.ServiceProvider.GetService<INotificationPublisher>();
                                     if (publisher != null)
                                     {
-                                        _ = publisher.PublishAsync(userIds, title, body, null);
+                                        var data = new { url = $"sopsc://chat/{conversationId}", conversationId };
+                                        _ = publisher.PublishAsync(userIds, title, body, data);
                                     }
                                 }
                             }
