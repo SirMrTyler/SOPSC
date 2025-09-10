@@ -24,9 +24,11 @@ import { useAuth } from "../../../hooks/useAuth";
 import ScreenContainer from "../../Navigation/ScreenContainer";
 import {
   FsMessage,
+  FsConversation,
   markConversationRead,
   sendMessage,
   MemberProfile,
+  getFsConversation,
 } from "../../../types/fsMessages";
 import { formatTimestamp } from "../../../utils/date";
 import { useConversationMeta } from "../../../hooks/useConversationMeta";
@@ -40,11 +42,12 @@ interface Props
  * Renders an individual chat and handles read receipts and message sending.
  */
 const Conversation: React.FC<Props> = ({ route }) => {
-  const { conversation } = route.params;
+  const { conversationId } = route.params;
   const { user } = useAuth();
-  const meta = useConversationMeta(conversation.chatId);
+  const [conversation, setConversation] = useState<FsConversation | null>(null);
+  const meta = useConversationMeta(conversationId);
   const messages = useMessages<FsMessage>(
-    `conversations/${conversation.chatId}/messages`
+    `conversations/${conversationId}/messages`
   );
   const [newMessage, setNewMessage] = useState("");
   const flatListRef = useRef<FlatList<FsMessage>>(null);
@@ -55,11 +58,16 @@ const Conversation: React.FC<Props> = ({ route }) => {
   useEffect(() => {
     if (!user) return;
     markConversationRead(
-      conversation.chatId,
+      conversationId,
       { userId: user.userId, firebaseUid: user.firebaseUid },
       messages
     );
-  }, [messages, user, conversation.chatId]);
+  }, [messages, user, conversationId]);
+
+  useEffect(() => {
+    if (!user) return;
+    getFsConversation(conversationId, user.userId).then(setConversation);
+  }, [conversationId, user]);
 
   /**
    * Sends a message through the Firestore helper and resets the input.
@@ -67,8 +75,8 @@ const Conversation: React.FC<Props> = ({ route }) => {
   const handleSend = async () => {
     if (!user || !newMessage.trim()) return;
     const content = newMessage.trim();
-    const profiles = meta.memberProfiles || conversation.memberProfiles || {};
-    const participantEntries = Object.entries(conversation.participants || {});
+    const profiles = meta.memberProfiles || conversation?.memberProfiles || {};
+    const participantEntries = Object.entries(conversation?.participants || {});
     const recipients = participantEntries
       .filter(([_, info]) => info.userId !== user.userId)
       .map(([firebaseUid, info]) => {
@@ -82,7 +90,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         };
       });
     await sendMessage(
-      String(conversation.chatId),
+      String(conversationId),
       {
         userId: user.userId,
         firebaseUid: user.firebaseUid,
@@ -91,7 +99,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
         profilePicturePath: user.profilePicturePath,
       },
       content,
-      meta.type || conversation.type || "direct",
+      meta.type || conversation?.type || "direct",
       recipients
     );
     setNewMessage("");
@@ -101,11 +109,11 @@ const Conversation: React.FC<Props> = ({ route }) => {
   /**
    * Renders each message bubble with timestamp and read status.
    */
-  const profiles = meta.memberProfiles || conversation.memberProfiles || {};
+  const profiles = meta.memberProfiles || conversation?.memberProfiles || {};
   const participantIds = Object.keys(profiles).map((id) => Number(id));
   const otherIds = participantIds.filter((id) => id !== user?.userId);
   const conversationName =
-    (meta.type || conversation.type) === "group"
+    (meta.type || conversation?.type) === "group"
       ? "Group Chat"
       : `${profiles[String(otherIds[0])]?.firstName ?? ""} ${
           profiles[String(otherIds[0])]?.lastName ?? ""
@@ -113,9 +121,9 @@ const Conversation: React.FC<Props> = ({ route }) => {
 
   const renderItem = ({ item }: { item: FsMessage }) => {
     const incoming = item.senderId !== user?.userId;
-    const participantUids = Object.keys(conversation.participants || {});
+    const participantUids = Object.keys(conversation?.participants || {});
     const otherParticipantUids = participantUids.filter(
-      (uid) => conversation.participants[uid].userId !== item.senderId
+      (uid) => conversation?.participants?.[uid].userId !== item.senderId
     );
     const isRead = incoming
       ? !!item.readBy?.[user?.firebaseUid || ""]

@@ -20,7 +20,6 @@ import type { RootStackParamList } from "../../../App";
 import { getAll } from "../User/services/userService";
 import { useAuth } from "../../hooks/useAuth";
 import { UserResult } from "../../types/user";
-import { FsConversationNav } from "../../types/fsMessages";
 import ScreenContainer from "../Navigation/ScreenContainer";
 import { getApp } from "@react-native-firebase/app";
 import {
@@ -103,13 +102,8 @@ const UserList: React.FC = () => {
       );
       const snapshot = await getDocs(q);
       let chatId: string;
-      let sentTimestamp: string | null = null;
       if (!snapshot.empty) {
-        const doc = snapshot.docs[0];
-        chatId = doc.id;
-        const data: any = doc.data();
-        const ts = data.sentTimestamp?.toDate?.();
-        sentTimestamp = ts ? ts.toISOString() : null;
+        chatId = snapshot.docs[0].id;
       } else {
         const docRef = await addDoc(convRef, {
           participants: {
@@ -137,34 +131,7 @@ const UserList: React.FC = () => {
         await updateDoc(docRef, { chatId: docRef.id });
         chatId = docRef.id;
       }
-      const conversation: FsConversationNav = {
-        chatId: chatId,
-        mostRecentMessage: "",
-        sentTimestamp: sentTimestamp,
-        numMessages: 0,
-        participants: {
-          [user.firebaseUid]: { userId: user.userId },
-          [u.firebaseUid]: { userId: u.userId },
-        },
-        memberProfiles: {
-          [user.userId]: {
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePicturePath: user.profilePicturePath || "",
-          },
-          [u.userId]: {
-            firstName: u.firstName,
-            lastName: u.lastName,
-            profilePicturePath: u.profilePicturePath || "",
-          },
-        },
-        unreadCount: { [user.firebaseUid]: 0, [u.firebaseUid]: 0 },
-        type: "direct",
-        otherUserId: u.userId,
-        otherUserName: `${u.firstName} ${u.lastName}`,
-        otherUserProfilePicturePath: u.profilePicturePath || "",
-      };
-      navigation.navigate("Conversation", { conversation });
+      navigation.navigate("Conversation", { conversationId: chatId });
     } catch (err) {
       console.log("[UserList] error navigating to conversation", err);
     }
