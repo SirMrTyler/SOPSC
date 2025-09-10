@@ -48,6 +48,7 @@ export default ({ config }) => ({
   ...config,
   name: getAppName(),
 
+  icon: "./assets/images/app-icon-1024.png",
   // Plugins: notifications, RN Firebase app
   plugins: [
     ...(config.plugins || []),
@@ -56,7 +57,6 @@ export default ({ config }) => ({
       "expo-notifications",
       {
         icon: "./assets/images/notification_icon_96.png",
-        color: "#ffffff",
         defaultChannel: "default",
       },
     ],
@@ -65,6 +65,7 @@ export default ({ config }) => ({
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
     googleServicesFile: "./firebase/GoogleService-Info.plist",
+    icon: "./assets/images/app-icon-1024.png",
   },
   android: {
     ...config.android,
