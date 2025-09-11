@@ -2,7 +2,7 @@
 // ngrok http https://localhost:5001
 
 // Libraries
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -13,7 +13,6 @@ import * as Linking from "expo-linking";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ImageBackground, StyleSheet, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import * as Notifications from "expo-notifications";
 
 // Components
 import Login from "./src/components/User/Login";
@@ -36,6 +35,8 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/Post";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
+import { consumePendingUrl } from "./src/navigation/intentQueue";
+import { installNotificationTapHandling } from "./src/navigation/handleTaps";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -48,6 +49,7 @@ export type RootStackParamList = {
   GroupChatConversation: { chatId: string; name: string };
   AddGroupChatMembers: { chatId: string };
   Conversation: { conversationId: string };
+  Chat: { conversationId: string };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
   Reports: undefined;
@@ -71,38 +73,25 @@ const AppTheme = {
 };
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ["sopsc://", "https://sopsc.app"],
+  prefixes: [Linking.createURL("/"), "sopsc://", "https://sopsc.app"],
   config: {
     screens: {
-      Conversation: "chat/:conversationId",
+      Chat: "chat/:conversationId",
+      Login: "login",
+      Register: "register",
+      Landing: "landing",
+      Messages: "messages",
     },
   },
   async getInitialURL(): Promise<string | null> {
     const url = await Linking.getInitialURL();
     if (url) return url;
-
-    const response = await Notifications.getLastNotificationResponseAsync();
-    return typeof response?.notification.request.content.data?.url === "string"
-      ? response.notification.request.content.data.url
-      : null;
+    return consumePendingUrl();
   },
   subscribe(listener) {
     const onReceiveURL = ({ url }: { url: string }) => listener(url);
-
     const urlSub = Linking.addEventListener("url", onReceiveURL);
-
-    let lastNotificationId: string | null = null;
-
-    const notificationSub =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const url = response.notification.request.content.data?.url;
-        const id = response.notification.request.identifier;
-        if (url && id !== lastNotificationId) {
-          lastNotificationId = id;
-          listener(url as string);
-        }
-      });
-
+    const notificationSub = installNotificationTapHandling();
     return () => {
       urlSub.remove();
       notificationSub.remove();
@@ -112,6 +101,7 @@ const linking: LinkingOptions<RootStackParamList> = {
 
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
+  const [navReady, setNavReady] = useState(false);
 
   const handleNotificationTap = ({
     url,
@@ -129,9 +119,21 @@ export default function App() {
 
   usePushNotifications(user, handleNotificationTap);
 
+  useEffect(() => {
+    if (!navReady) return;
+    const url = consumePendingUrl();
+    if (url) {
+      Linking.openURL(url);
+    }
+  }, [navReady]);
+
   return (
     <SafeAreaProvider>
-      <AppNavigator user={user} setUser={setUser} />
+      <AppNavigator
+        user={user}
+        setUser={setUser}
+        onReady={() => setNavReady(true)}
+      />
     </SafeAreaProvider>
   );
 }
@@ -139,9 +141,11 @@ export default function App() {
 function AppNavigator({
   user,
   setUser,
+  onReady,
 }: {
   user: any | null;
   setUser: React.Dispatch<React.SetStateAction<any | null>>;
+  onReady: () => void;
 }) {
   return (
     <ErrorBoundary>
@@ -153,6 +157,7 @@ function AppNavigator({
           theme={AppTheme}
           linking={linking}
           ref={navigationRef}
+          onReady={onReady}
         >
           <StatusBar
             style={Platform.OS === "android" ? "dark" : "light"}
@@ -199,6 +204,7 @@ function AppNavigator({
                     component={AddGroupChatMembers}
                   />
                   <Stack.Screen name="Conversation" component={Conversation} />
+                  <Stack.Screen name="Chat" component={Conversation} />
                   <Stack.Screen
                     name="AdminDashboard"
                     component={AdminDashboard}
