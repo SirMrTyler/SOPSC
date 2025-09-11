@@ -8,6 +8,7 @@ import {
   FlatList,
   Modal,
   TextInput,
+  Alert,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
@@ -21,6 +22,7 @@ import {
   prayForPost,
   prayForComment,
   deletePost,
+  reportPost,
   type Post,
   addComment,
 } from "./services/postService";
@@ -38,6 +40,8 @@ const PostDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [reportVisible, setReportVisible] = useState(false);
+  const [reportMessage, setReportMessage] = useState('');
   const { user } = useAuth();
 
   const buildCommentTree = (items: CommentNode[]): CommentNode[] => {
@@ -139,6 +143,19 @@ const PostDetails: React.FC = () => {
     }
   };
 
+  const handleReportSubmit = async () => {
+    if (!reportMessage.trim()) return;
+    try {
+      await reportPost(post.prayerId, reportMessage);
+      Alert.alert('Report submitted');
+      setReportMessage('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setReportVisible(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!canModify) return;
     try {
@@ -213,7 +230,10 @@ const PostDetails: React.FC = () => {
           {!canModify && (
             <TouchableOpacity
               style={styles.sheetItem}
-              onPress={() => navigation.navigate("Reports")}
+              onPress={() => {
+                setMenuVisible(false);
+                setReportVisible(true);
+              }}
             >
               <Text style={styles.sheetText}>Report</Text>
             </TouchableOpacity>
@@ -221,6 +241,38 @@ const PostDetails: React.FC = () => {
           <TouchableOpacity
             style={styles.sheetItem}
             onPress={() => setMenuVisible(false)}
+          >
+            <Text style={styles.sheetText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      <Modal
+        visible={reportVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReportVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.sheetOverlay}
+          onPress={() => setReportVisible(false)}
+        />
+        <View style={styles.sheet}>
+          <TextInput
+            style={styles.input}
+            placeholder="Describe the issue"
+            placeholderTextColor="#ccc"
+            value={reportMessage}
+            onChangeText={setReportMessage}
+          />
+          <TouchableOpacity
+            style={styles.sheetItem}
+            onPress={handleReportSubmit}
+          >
+            <Text style={styles.sheetText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetItem}
+            onPress={() => setReportVisible(false)}
           >
             <Text style={styles.sheetText}>Cancel</Text>
           </TouchableOpacity>

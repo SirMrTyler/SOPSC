@@ -112,6 +112,25 @@ const deletePost = async (id: number): Promise<void> => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+const reportPost = async (
+  id: number,
+  message: string
+): Promise<void> => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'POST',
+    url: `${endpoint}/${id}/report`,
+    data: { message },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 const prayForPost = async (id: number): Promise<void> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
@@ -205,6 +224,7 @@ export {
   createPost,
   updatePost,
   deletePost,
+  reportPost,
   prayForPost,
   prayForComment,
   getComments,
