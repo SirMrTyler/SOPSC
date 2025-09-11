@@ -33,7 +33,6 @@ import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile co
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/PostList";
 import PostDetails from "./src/components/Posts/PostDetails";
-import type { Post } from "./src/components/Posts/services/postService";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { consumePendingUrl } from "./src/navigation/intentQueue";
@@ -53,7 +52,7 @@ export type RootStackParamList = {
   Conversation: { conversationId: string };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
-  PostDetails: { post: Post };
+  PostDetails: { postId: number };
   Reports: undefined;
   ReportDetails: { reportId: number };
   Schedule: undefined;
