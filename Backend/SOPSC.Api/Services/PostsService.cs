@@ -105,18 +105,25 @@ namespace SOPSC.Api.Services
         {
             List<Comment> list = null;
             string procName = "[dbo].[PrayerRequestComments_SelectByPrayerId]";
-            _data.ExecuteCmd(procName,
-                param => param.AddWithValue("@PrayerId", prayerId),
-                (reader, set) =>
-                {
-                    int index = 0;
-                    Comment c = MapComment(reader, ref index);
-                    if (list == null)
+
+            try
+            {
+                _data.ExecuteCmd(procName,
+                    param => param.AddWithValue("@PrayerId", prayerId),
+                    (reader, set) =>
                     {
-                        list = new List<Comment>();
-                    }
-                    list.Add(c);
-                });
+                        int index = 0;
+                        Comment c = MapComment(reader, ref index);
+                        list ??= new List<Comment>();
+                        list.Add(c);
+                    });
+            }
+            catch (SqlException ex) when (ex.Number == 2812)
+            {
+                // Stored procedure not found; return an empty list to avoid API errors
+                list = new List<Comment>();
+            }
+
             return list;
         }
 
