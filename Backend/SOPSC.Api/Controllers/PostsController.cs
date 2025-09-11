@@ -106,7 +106,8 @@ namespace SOPSC.Api.Controllers
             try
             {
                 model.PrayerId = id;
-                _service.Update(model);
+                int userId = _authService.GetCurrentUserId();
+                _service.Update(userId, model);
                 response = new SuccessResponse();
             }
             catch (Exception ex)

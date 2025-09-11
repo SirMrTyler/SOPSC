@@ -75,13 +75,14 @@ namespace SOPSC.Api.Services
             return id;
         }
 
-        public void Update(PostUpdateRequest model)
+        public void Update(int userId, PostUpdateRequest model)
         {
             string procName = "[dbo].[Posts_UpdateById]";
             _data.ExecuteNonQuery(procName,
                 param =>
                 {
                     param.AddWithValue("@PrayerId", model.PrayerId);
+                    param.AddWithValue("@UserId", userId);
                     param.AddWithValue("@Subject", model.Subject);
                     param.AddWithValue("@Body", model.Body);
                 });

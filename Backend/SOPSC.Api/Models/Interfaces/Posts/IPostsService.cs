@@ -12,7 +12,7 @@ namespace SOPSC.Api.Models.Interfaces.Posts
         List<Post> GetAll();
         Post GetById(int id);
         int Add(int userId, PostAddRequest model);
-        void Update(PostUpdateRequest model);
+        void Update(int userId, PostUpdateRequest model);
         void Delete(int id);
         void UpdatePrayerCount(int id);
         List<Comment> GetComments(int prayerId);
