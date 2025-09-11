@@ -50,7 +50,6 @@ export type RootStackParamList = {
   GroupChatConversation: { chatId: string; name: string };
   AddGroupChatMembers: { chatId: string };
   Conversation: { conversationId: string };
-  Chat: { conversationId: string };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
   Reports: undefined;
@@ -77,7 +76,7 @@ const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [Linking.createURL("/"), "sopsc://", "https://sopsc.app"],
   config: {
     screens: {
-      Chat: "chat/:conversationId",
+      Conversation: "chat/:conversationId",
       Login: "login",
       Register: "register",
       Landing: "landing",
@@ -199,7 +198,6 @@ function AppNavigator({
                     component={AddGroupChatMembers}
                   />
                   <Stack.Screen name="Conversation" component={Conversation} />
-                  <Stack.Screen name="Chat" component={Conversation} />
                   <Stack.Screen
                     name="AdminDashboard"
                     component={AdminDashboard}
