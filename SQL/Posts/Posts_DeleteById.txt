@@ -1,0 +1,11 @@
+ALTER PROC dbo.Posts_DeleteById
+    @PrayerId INT
+AS
+/* -- TESTING EXECUTION BLOCK
+    DECLARE @PrayerId INT = 1;
+    EXEC dbo.Posts_DeleteById @PrayerId;
+*/
+BEGIN
+    DELETE FROM dbo.Posts
+    WHERE PrayerId = @PrayerId;
+END;

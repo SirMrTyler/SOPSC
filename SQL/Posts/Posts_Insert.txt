@@ -1,4 +1,4 @@
-ALTER PROC	dbo.PrayerRequests_Insert
+ALTER PROC	dbo.Posts_Insert
 	@PrayerId INT OUTPUT,
 	@UserId INT,
 	@Subject NVARCHAR(50),
@@ -7,7 +7,7 @@ ALTER PROC	dbo.PrayerRequests_Insert
 AS
 /* -- TESTING EXECUTION BLOCK
 	DECLARE @PrayerId INT;
-	EXEC dbo.PrayerRequests_Insert
+	EXEC dbo.Posts_Insert
 		@PrayerId OUTPUT,
 		@UserId = 2,
 		@Subject = 'Vigilance',
@@ -15,7 +15,7 @@ AS
 		@PrayerCount = 0;
 
 	SELECT *
-	FROM dbo.PrayerRequests
+	FROM dbo.Posts
 	WHERE PrayerId = @PrayerId;
 */
 BEGIN
@@ -27,7 +27,7 @@ BEGIN
 	FROM dbo.Users
 	WHERE UserId = @UserId;
 
-	INSERT INTO dbo.PrayerRequests
+	INSERT INTO dbo.Posts
 		(UserId,
 		Subject,
 		Body,

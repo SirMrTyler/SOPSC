@@ -1,7 +1,7 @@
-ALTER PROC dbo.PrayerRequests_SelectAll
+ALTER PROC dbo.Posts_SelectAll
 AS
 /* -- TESTING EXECUTION BLOCK
-	EXEC dbo.PrayerRequests_SelectAll;
+	EXEC dbo.Posts_SelectAll;
 */
 BEGIN
 	SELECT
@@ -15,7 +15,7 @@ BEGIN
 			END AS PrayerBody,
 		pr.PrayerCount,
 		pr.DateCreated
-	FROM dbo.PrayerRequests AS pr
+	FROM dbo.Posts AS pr
 	JOIN dbo.Users u ON pr.UserId = u.UserId
 	ORDER BY pr.DateCreated DESC;
 END;
