@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { FlatList, ActivityIndicator, TouchableOpacity } from "react-native";
 import { PlusIcon } from "react-native-heroicons/outline";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ScreenContainer from "../Navigation/ScreenContainer";
 import PostPreview from "./PostPreview";
@@ -14,14 +14,18 @@ const PostList: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const data = await getPosts();
-      setPosts(data);
-      setLoading(false);
-    };
-    fetchPosts();
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    const data = await getPosts();
+    setPosts(data);
+    setLoading(false);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+    }, [fetchPosts])
+  );
 
   const renderItem = ({ item }: { item: Post }) => (
     <PostPreview
@@ -36,7 +40,7 @@ const PostList: React.FC = () => {
     <ScreenContainer
       title="Prayer Requests"
       rightComponent={
-        <TouchableOpacity onPress={() => navigation.navigate("PostForm")}> 
+        <TouchableOpacity onPress={() => navigation.navigate("PostForm")}>
           <PlusIcon color="white" size={22} />
         </TouchableOpacity>
       }
