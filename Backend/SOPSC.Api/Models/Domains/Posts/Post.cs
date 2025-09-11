@@ -9,9 +9,11 @@ namespace SOPSC.Api.Models.Domains.Posts
     {
         public int PrayerId { get; set; }
         public int UserId { get; set; }
+        public string AuthorName { get; set; }
         public string Subject { get; set; }
         public string Body { get; set; }
-        public DateTime DateCreated { get; set; }
         public int PrayerCount { get; set; }
+        public DateTime DateCreated { get; set; }
+        public int CommentCount { get; set; }
     }
 }
