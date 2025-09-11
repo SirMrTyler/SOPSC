@@ -83,8 +83,8 @@ namespace SOPSC.Api.Services
                 {
                     param.AddWithValue("@PrayerId", model.PrayerId);
                     param.AddWithValue("@UserId", userId);
-                    param.AddWithValue("@Subject", model.Subject);
-                    param.AddWithValue("@Body", model.Body);
+                    param.AddWithValue("@NewSubject", model.Subject);
+                    param.AddWithValue("@NewBody", model.Body);
                 });
         }
 
