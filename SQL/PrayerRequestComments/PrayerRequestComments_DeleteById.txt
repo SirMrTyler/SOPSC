@@ -1,0 +1,16 @@
+/****** Object:  StoredProcedure [dbo].[PrayerRequestComments_DeleteById]    Script Date: 6/7/2024 12:00:00 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[PrayerRequestComments_DeleteById]
+        @CommentId INT
+AS
+/* -- TESTING EXECUTION BLOCK
+        DECLARE @CommentId INT = 1;
+        EXEC dbo.PrayerRequestComments_DeleteById @CommentId;
+*/
+BEGIN
+        DELETE FROM dbo.PrayerRequestComments
+        WHERE CommentId = @CommentId;
+END;

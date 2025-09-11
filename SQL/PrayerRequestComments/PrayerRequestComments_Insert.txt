@@ -1,0 +1,32 @@
+/****** Object:  StoredProcedure [dbo].[PrayerRequestComments_Insert]    Script Date: 6/7/2024 12:00:00 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[PrayerRequestComments_Insert]
+        @CommentId INT OUTPUT,
+        @PrayerId INT,
+        @UserId INT,
+        @Comment NVARCHAR(MAX)
+AS
+/* -- TESTING EXECUTION BLOCK
+        DECLARE @CommentId INT;
+        EXEC dbo.PrayerRequestComments_Insert
+                @CommentId OUTPUT,
+                @PrayerId = 1,
+                @UserId = 1,
+                @Comment = N'Test comment';
+        SELECT @CommentId;
+*/
+BEGIN
+        INSERT INTO dbo.PrayerRequestComments
+                (PrayerId,
+                UserId,
+                Comment)
+        VALUES
+                (@PrayerId,
+                @UserId,
+                @Comment);
+
+        SET @CommentId = SCOPE_IDENTITY();
+END;

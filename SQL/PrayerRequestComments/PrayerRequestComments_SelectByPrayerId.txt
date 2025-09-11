@@ -1,0 +1,23 @@
+/****** Object:  StoredProcedure [dbo].[PrayerRequestComments_SelectByPrayerId]    Script Date: 6/7/2024 12:00:00 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[PrayerRequestComments_SelectByPrayerId]
+        @PrayerId INT
+AS
+/* -- TESTING EXECUTION BLOCK
+        DECLARE @PrayerId INT = 1;
+        EXEC dbo.PrayerRequestComments_SelectByPrayerId @PrayerId;
+*/
+BEGIN
+        SELECT
+                CommentId,
+                PrayerId,
+                UserId,
+                Comment,
+                DateCreated
+        FROM dbo.PrayerRequestComments
+        WHERE PrayerId = @PrayerId
+        ORDER BY DateCreated ASC;
+END;

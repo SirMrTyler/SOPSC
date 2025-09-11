@@ -1,0 +1,29 @@
+CREATE TABLE [dbo].[PrayerRequestComments](
+        [CommentId] [int] IDENTITY(1,1) NOT NULL,
+        [PrayerId] [int] NOT NULL,
+        [UserId] [int] NOT NULL,
+        [Comment] [nvarchar](max) NOT NULL,
+        [DateCreated] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_PrayerRequestComments] PRIMARY KEY CLUSTERED
+(
+        [CommentId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[PrayerRequestComments] ADD CONSTRAINT [DF_PrayerRequestComments_DateCreated] DEFAULT (sysutcdatetime()) FOR [DateCreated]
+GO
+
+ALTER TABLE [dbo].[PrayerRequestComments]  WITH CHECK ADD  CONSTRAINT [FK_PrayerRequestComments_Posts] FOREIGN KEY([PrayerId])
+REFERENCES [dbo].[Posts] ([PrayerId])
+GO
+
+ALTER TABLE [dbo].[PrayerRequestComments] CHECK CONSTRAINT [FK_PrayerRequestComments_Posts]
+GO
+
+ALTER TABLE [dbo].[PrayerRequestComments]  WITH CHECK ADD  CONSTRAINT [FK_PrayerRequestComments_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+
+ALTER TABLE [dbo].[PrayerRequestComments] CHECK CONSTRAINT [FK_PrayerRequestComments_Users]
+GO
