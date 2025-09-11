@@ -25,6 +25,7 @@ import {
   reportPost,
   type Post,
   addComment,
+  deleteComment,
 } from "./services/postService";
 import { useAuth } from "../../hooks/useAuth";
 import CommentComponent, { CommentNode } from "./Comment";
@@ -90,7 +91,7 @@ const PostDetails: React.FC = () => {
   const isAdmin = user?.Roles?.some(
     (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
-  const canModify = !!user && (user.userId === post.userId || isAdmin);
+  const isOwner = user?.userId === post.userId;
 
   const handlePray = async () => {
     try {
@@ -117,6 +118,23 @@ const PostDetails: React.FC = () => {
           return c;
         });
       setComments((prev) => increment(prev));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCommentDelete = async (id: number) => {
+    try {
+      await deleteComment(id);
+      const remove = (items: CommentNode[]): CommentNode[] =>
+        items
+          .filter((c) => c.commentId !== id)
+          .map((c) =>
+            c.replies && c.replies.length
+              ? { ...c, replies: remove(c.replies) }
+              : c
+          );
+      setComments((prev) => remove(prev));
     } catch (err) {
       console.error(err);
     }
@@ -157,7 +175,7 @@ const PostDetails: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!canModify) return;
+    if (!(isOwner || isAdmin)) return;
     try {
       await deletePost(post.prayerId);
       navigation.goBack();
@@ -186,7 +204,11 @@ const PostDetails: React.FC = () => {
           data={comments}
           keyExtractor={(item) => item.commentId.toString()}
           renderItem={({ item }) => (
-            <CommentComponent comment={item} onPray={handleCommentPray} />
+            <CommentComponent
+              comment={item}
+              onPray={handleCommentPray}
+              onDelete={handleCommentDelete}
+            />
           )}
           ListFooterComponent={
             <View style={styles.composer}>
@@ -219,23 +241,23 @@ const PostDetails: React.FC = () => {
           onPress={() => setMenuVisible(false)}
         />
         <View style={styles.sheet}>
-          {canModify && (
-            <>
-              <TouchableOpacity
-                style={styles.sheetItem}
-                onPress={() => {
-                  setMenuVisible(false);
-                  navigation.navigate("PostForm", { postId: post.prayerId });
-                }}
-              >
-                <Text style={styles.sheetText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.sheetItem} onPress={handleDelete}>
-                <Text style={styles.sheetText}>Delete</Text>
-              </TouchableOpacity>
-            </>
+          {isOwner && (
+            <TouchableOpacity
+              style={styles.sheetItem}
+              onPress={() => {
+                setMenuVisible(false);
+                navigation.navigate("PostForm", { postId: post.prayerId });
+              }}
+            >
+              <Text style={styles.sheetText}>Edit</Text>
+            </TouchableOpacity>
           )}
-          {!canModify && (
+          {(isOwner || isAdmin) && (
+            <TouchableOpacity style={styles.sheetItem} onPress={handleDelete}>
+              <Text style={styles.sheetText}>Delete</Text>
+            </TouchableOpacity>
+          )}
+          {!isOwner && !isAdmin && (
             <TouchableOpacity
               style={styles.sheetItem}
               onPress={() => {
