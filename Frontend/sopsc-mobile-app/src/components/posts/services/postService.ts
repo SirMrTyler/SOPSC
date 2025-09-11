@@ -20,6 +20,8 @@ export interface Comment {
   userId: number;
   text: string;
   dateCreated: string;
+  prayerCount: number;
+  parentCommentId?: number;
 }
 
 const getPosts = async (): Promise<Post[]> => {
@@ -125,6 +127,21 @@ const prayForPost = async (id: number): Promise<void> => {
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+const prayForComment = async (id: number): Promise<void> => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'PUT',
+    url: `${endpoint}/comments/${id}/prayer`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+};
+
 const getComments = async (postId: number): Promise<Comment[]> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
@@ -189,6 +206,7 @@ export {
   updatePost,
   deletePost,
   prayForPost,
+  prayForComment,
   getComments,
   addComment,
   deleteComment,

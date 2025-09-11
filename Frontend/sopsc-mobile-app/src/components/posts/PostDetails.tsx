@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
+  TextInput,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
@@ -18,11 +19,13 @@ import {
   getPostById,
   getComments,
   prayForPost,
+  prayForComment,
   deletePost,
   type Post,
-  type Comment,
+  addComment,
 } from "./services/postService";
 import { useAuth } from "../../hooks/useAuth";
+import CommentComponent, { CommentNode } from "./Comment";
 
 type RouteProps = RouteProp<RootStackParamList, "PostDetails">;
 
@@ -31,18 +34,38 @@ const PostDetails: React.FC = () => {
   const navigation = useNavigation<any>();
   const { postId } = params;
   const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [newComment, setNewComment] = useState('');
   const { user } = useAuth();
+
+  const buildCommentTree = (items: CommentNode[]): CommentNode[] => {
+    const map = new Map<number, CommentNode>();
+    const roots: CommentNode[] = [];
+    items.forEach((c) => map.set(c.commentId, { ...c, replies: [] }));
+    map.forEach((c) => {
+      if (c.parentCommentId) {
+        const parent = map.get(c.parentCommentId);
+        if (parent) {
+          parent.replies!.push(c);
+        } else {
+          roots.push(c);
+        }
+      } else {
+        roots.push(c);
+      }
+    });
+    return roots;
+  };
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await getPostById(postId);
         setPost(data);
-        const commentData = await getComments(postId);
-        setComments(commentData);
+        const commentData = (await getComments(postId)) as CommentNode[];
+        setComments(buildCommentTree(commentData));
       } catch (err) {
         console.error(err);
       } finally {
@@ -76,6 +99,46 @@ const PostDetails: React.FC = () => {
     }
   };
 
+  const handleCommentPray = async (id: number) => {
+    try {
+      await prayForComment(id);
+      const increment = (items: CommentNode[]): CommentNode[] =>
+        items.map((c) => {
+          if (c.commentId === id) {
+            return { ...c, prayerCount: c.prayerCount + 1 };
+          }
+          if (c.replies && c.replies.length) {
+            return { ...c, replies: increment(c.replies) };
+          }
+          return c;
+        });
+      setComments((prev) => increment(prev));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    try {
+      const newId = await addComment(postId, { text: newComment });
+      const comment: CommentNode = {
+        commentId: newId,
+        prayerId: postId,
+        userId: user?.userId ?? 0,
+        text: newComment,
+        dateCreated: new Date().toISOString(),
+        prayerCount: 0,
+        authorName: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
+        replies: [],
+      };
+      setComments((prev) => [...prev, comment]);
+      setNewComment('');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleDelete = async () => {
     if (!canModify) return;
     try {
@@ -85,15 +148,6 @@ const PostDetails: React.FC = () => {
       console.error(err);
     }
   };
-
-  const renderComment = ({ item }: { item: Comment }) => (
-    <View style={styles.commentItem}>
-      <Text style={styles.commentText}>{item.text}</Text>
-      <Text style={styles.commentMeta}>
-        {formatDistanceToNow(new Date(item.dateCreated), { addSuffix: true })}
-      </Text>
-    </View>
-  );
 
   return (
     <ScreenContainer showBack title={post.subject} showBottomBar={false}>
@@ -117,7 +171,23 @@ const PostDetails: React.FC = () => {
         <FlatList
           data={comments}
           keyExtractor={(item) => item.commentId.toString()}
-          renderItem={renderComment}
+          renderItem={({ item }) => (
+            <CommentComponent comment={item} onPray={handleCommentPray} />
+          )}
+          ListFooterComponent={
+            <View style={styles.composer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Add a comment..."
+                placeholderTextColor="#ccc"
+                value={newComment}
+                onChangeText={setNewComment}
+              />
+              <TouchableOpacity style={styles.sendButton} onPress={handleAddComment}>
+                <Text style={styles.sendButtonText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          }
         />
       </View>
 
@@ -198,20 +268,29 @@ const styles = StyleSheet.create({
     color: "white",
     marginBottom: 8,
   },
-  commentItem: {
+  composer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  input: {
+    flex: 1,
     backgroundColor: "rgba(255,255,255,0.1)",
-    padding: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
-    marginBottom: 8,
-  },
-  commentText: {
     color: "white",
-    fontSize: 14,
+    marginRight: 8,
   },
-  commentMeta: {
-    fontSize: 12,
-    color: "#ccc",
-    marginTop: 4,
+  sendButton: {
+    backgroundColor: "white",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  sendButtonText: {
+    color: "#333",
+    fontSize: 14,
   },
   sheetOverlay: {
     flex: 1,
