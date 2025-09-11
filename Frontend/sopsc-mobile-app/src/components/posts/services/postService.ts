@@ -38,10 +38,11 @@ const getPosts = async (): Promise<Post[]> => {
   };
   try {
     const data = await axios(config).then(helper.onGlobalSuccess);
-    if (!Array.isArray(data)) {
+    const list = data?.item;
+    if (!Array.isArray(list)) {
       return [];
     }
-    return data;
+    return list;
   } catch (err: any) {
     if (err?.response?.status === 404) {
       return [];
@@ -62,10 +63,15 @@ const getPostById = async (id: number): Promise<Post> => {
       DeviceId: deviceId,
     },
   };
-  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+  return axios(config)
+    .then(helper.onGlobalSuccess)
+    .then((data) => data?.item)
+    .catch(helper.onGlobalError);
 };
 
-const createPost = async (payload: { subject: string; body: string }): Promise<number> => {
+const createPost = async (
+  payload: { subject: string; body: string },
+): Promise<number> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
   const config = {
@@ -78,7 +84,10 @@ const createPost = async (payload: { subject: string; body: string }): Promise<n
       DeviceId: deviceId,
     },
   };
-  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+  return axios(config)
+    .then(helper.onGlobalSuccess)
+    .then((data) => data?.item)
+    .catch(helper.onGlobalError);
 };
 
 const updatePost = async (id: number, payload: { subject: string; body: string }): Promise<void> => {
@@ -175,10 +184,11 @@ const getComments = async (postId: number): Promise<Comment[]> => {
   };
   try {
     const data = await axios(config).then(helper.onGlobalSuccess);
-    if (!Array.isArray(data)) {
+    const list = data?.item;
+    if (!Array.isArray(list)) {
       return [];
     }
-    return data;
+    return list;
   } catch (err: any) {
     if (err?.response?.status === 404) {
       return [];
@@ -187,7 +197,10 @@ const getComments = async (postId: number): Promise<Comment[]> => {
   }
 };
 
-const addComment = async (postId: number, payload: { text: string }): Promise<number> => {
+const addComment = async (
+  postId: number,
+  payload: { text: string },
+): Promise<number> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
   const config = {
@@ -200,7 +213,10 @@ const addComment = async (postId: number, payload: { text: string }): Promise<nu
       DeviceId: deviceId,
     },
   };
-  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+  return axios(config)
+    .then(helper.onGlobalSuccess)
+    .then((data) => data?.item)
+    .catch(helper.onGlobalError);
 };
 
 const deleteComment = async (commentId: number): Promise<void> => {
