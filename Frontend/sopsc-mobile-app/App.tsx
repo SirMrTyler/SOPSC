@@ -2,7 +2,7 @@
 // ngrok http https://localhost:5001
 
 // Libraries
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -37,6 +37,7 @@ import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { consumePendingUrl } from "./src/navigation/intentQueue";
 import { installNotificationTapHandling } from "./src/navigation/handleTaps";
+import AuthGate from "./src/navigation/AuthGate";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -119,21 +120,15 @@ export default function App() {
 
   usePushNotifications(user, handleNotificationTap);
 
-  useEffect(() => {
-    if (!navReady) return;
-    const url = consumePendingUrl();
-    if (url) {
-      Linking.openURL(url);
-    }
-  }, [navReady]);
-
   return (
     <SafeAreaProvider>
-      <AppNavigator
-        user={user}
-        setUser={setUser}
-        onReady={() => setNavReady(true)}
-      />
+      <AuthGate user={user} bootstrapped={navReady}>
+        <AppNavigator
+          user={user}
+          setUser={setUser}
+          onReady={() => setNavReady(true)}
+        />
+      </AuthGate>
     </SafeAreaProvider>
   );
 }
