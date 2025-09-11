@@ -162,6 +162,7 @@ namespace SOPSC.Api.Services
             Post p = new()
             {
                 PrayerId = reader.GetSafeInt32(index++),
+                UserId = reader.GetSafeInt32(index++),
                 AuthorName = reader.GetSafeString(index++),
                 Subject = reader.GetSafeString(index++),
                 Body = reader.GetSafeString(index++),
