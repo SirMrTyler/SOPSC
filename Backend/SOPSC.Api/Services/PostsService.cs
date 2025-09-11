@@ -95,15 +95,23 @@ namespace SOPSC.Api.Services
                 param => param.AddWithValue("@PrayerId", id));
         }
 
-        public void UpdatePrayerCount(int prayerId, int userId)
+        public Post UpdatePrayerCount(int prayerId, int userId)
         {
+            Post post = null;
+
             string procName = "[dbo].[Posts_UpdatePrayerCount]";
-            _data.ExecuteNonQuery(procName,
+            _data.ExecuteCmd(procName,
                 param =>
                 {
                     param.AddWithValue("@PrayerId", prayerId);
                     param.AddWithValue("@UserId", userId);
+                },
+                (reader, set) =>
+                {
+                    int index = 0;
+                    post = MapPost(reader, ref index);
                 });
+            return post;
         }
 
         public List<Comment> GetComments(int prayerId)
@@ -175,6 +183,10 @@ namespace SOPSC.Api.Services
                 DateCreated = reader.GetSafeUtcDateTime(index++),
                 CommentCount = reader.GetSafeInt32(index++)
             };
+            if (reader.FieldCount > index)
+            {
+                p.HasPrayed = reader.GetSafeBool(index++);
+            }
             return p;
         }
 

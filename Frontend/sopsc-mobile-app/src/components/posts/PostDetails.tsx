@@ -43,6 +43,7 @@ const PostDetails: React.FC = () => {
   const [newComment, setNewComment] = useState("");
   const [reportVisible, setReportVisible] = useState(false);
   const [reportMessage, setReportMessage] = useState("");
+  const [hasPrayed, setHasPrayed] = useState(false);
   const { user } = useAuth();
 
   const buildCommentTree = (items: CommentNode[]): CommentNode[] => {
@@ -69,6 +70,7 @@ const PostDetails: React.FC = () => {
       try {
         const data = await getPostById(postId);
         setPost(data);
+        setHasPrayed(Boolean(data?.hasPrayed));
         const commentData = (await getComments(postId)) as CommentNode[];
         setComments(buildCommentTree(commentData));
       } catch (err) {
@@ -95,9 +97,10 @@ const PostDetails: React.FC = () => {
 
   const handlePray = async () => {
     try {
-      await prayForPost(post.prayerId);
+      const res = await prayForPost(post.prayerId);
+      setHasPrayed(res.hasPrayed);
       setPost((prev) =>
-        prev ? { ...prev, prayerCount: prev.prayerCount + 1 } : prev
+        prev ? { ...prev, prayerCount: res.prayerCount + 1 } : prev
       );
     } catch (err) {
       console.error(err);
@@ -199,7 +202,10 @@ const PostDetails: React.FC = () => {
           </TouchableOpacity>
         </View>
         <Text style={styles.body}>{post.body}</Text>
-        <TouchableOpacity style={styles.prayButton} onPress={handlePray}>
+        <TouchableOpacity
+          style={[styles.prayButton, hasPrayed && styles.prayedButton]}
+          onPress={handlePray}
+        >
           <Text style={styles.prayText}>🙏 {post.prayerCount}</Text>
         </TouchableOpacity>
         <Text style={styles.commentHeader}>Comments</Text>
@@ -341,6 +347,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 20,
     marginBottom: 16,
+  },
+  prayedButton: {
+    backgroundColor: "#FFD700",
   },
   prayText: {
     color: "#333",

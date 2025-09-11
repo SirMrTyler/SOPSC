@@ -139,15 +139,15 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPut("{id:int}/prayer")]
-        public ActionResult<SuccessResponse> UpdatePrayerCount(int id)
+        public ActionResult<ItemResponse<Post>> UpdatePrayerCount(int id)
         {
             int code = 200;
             BaseResponse response = null;
             try
             {
                 int userId = _authService.GetCurrentUserId();
-                _service.UpdatePrayerCount(id, userId);
-                response = new SuccessResponse();
+                Post post = _service.UpdatePrayerCount(id, userId);
+                response = new ItemResponse<Post> { Item = post };
             }
             catch (Exception ex)
             {
