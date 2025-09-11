@@ -1,0 +1,21 @@
+/****** Object:  StoredProcedure [dbo].[Posts_SelectPrayerers]    Script Date: 9/11/2025 3:06:07 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[Posts_SelectPrayerers]
+    @PrayerId INT
+AS
+/* -- TESTING EXECUTION BLOCK
+    DECLARE @PrayerId INT = 1;
+
+    EXEC dbo.Posts_SelectPrayerers @PrayerId;
+*/
+BEGIN
+    SELECT
+        pp.UserId,
+        u.FirstName + ' ' + u.LastName AS [Name]
+    FROM dbo.PostPrayers pp
+    JOIN dbo.Users u ON pp.UserId = u.UserId
+    WHERE pp.PrayerId = @PrayerId;
+END;

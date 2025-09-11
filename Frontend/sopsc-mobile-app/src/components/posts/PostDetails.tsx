@@ -26,6 +26,8 @@ import {
   type Post,
   addComment,
   deleteComment,
+  getPrayerers,
+  type Prayerer,
 } from "./services/postService";
 import { useAuth } from "../../hooks/useAuth";
 import CommentComponent, { CommentNode } from "./Comment";
@@ -45,6 +47,8 @@ const PostDetails: React.FC = () => {
   const [reportMessage, setReportMessage] = useState("");
   const [hasPrayed, setHasPrayed] = useState(false);
   const { user } = useAuth();
+  const [prayerers, setPrayerers] = useState<Prayerer[]>([]);
+  const [prayerersVisible, setPrayerersVisible] = useState(false);
 
   const buildCommentTree = (items: CommentNode[]): CommentNode[] => {
     const map = new Map<number, CommentNode>();
@@ -121,6 +125,16 @@ const PostDetails: React.FC = () => {
           return c;
         });
       setComments((prev) => increment(prev));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadPrayerers = async () => {
+    try {
+      const list = await getPrayerers(post.prayerId);
+      setPrayerers(list);
+      setPrayerersVisible(true);
     } catch (err) {
       console.error(err);
     }
@@ -208,6 +222,11 @@ const PostDetails: React.FC = () => {
         >
           <Text style={styles.prayText}>🙏 {post.prayerCount}</Text>
         </TouchableOpacity>
+        {isOwner && (
+          <TouchableOpacity style={styles.prayButton} onPress={loadPrayerers}>
+            <Text style={styles.prayText}>View Prayerers</Text>
+          </TouchableOpacity>
+        )}
         <Text style={styles.commentHeader}>Comments</Text>
         <FlatList
           data={comments}
@@ -282,6 +301,30 @@ const PostDetails: React.FC = () => {
             onPress={() => setMenuVisible(false)}
           >
             <Text style={styles.sheetText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      <Modal
+        visible={prayerersVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setPrayerersVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.sheetOverlay}
+          onPress={() => setPrayerersVisible(false)}
+        />
+        <View style={styles.sheet}>
+          {prayerers.map((p) => (
+            <View key={p.userId} style={styles.sheetItem}>
+              <Text style={styles.sheetText}>{p.name}</Text>
+            </View>
+          ))}
+          <TouchableOpacity
+            style={styles.sheetItem}
+            onPress={() => setPrayerersVisible(false)}
+          >
+            <Text style={styles.sheetText}>Close</Text>
           </TouchableOpacity>
         </View>
       </Modal>

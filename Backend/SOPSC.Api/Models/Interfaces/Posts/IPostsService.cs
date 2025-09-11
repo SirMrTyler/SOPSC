@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using SOPSC.Api.Models.Domains.Posts;
 using SOPSC.Api.Models.Requests.Posts;
+using User = SOPSC.Api.Models.Domains.Users.UserBase;
 
 namespace SOPSC.Api.Models.Interfaces.Posts
 {
@@ -16,6 +17,7 @@ namespace SOPSC.Api.Models.Interfaces.Posts
         void Delete(int id);
         Post UpdatePrayerCount(int prayerId, int userId);
         List<Comment> GetComments(int prayerId);
+        List<User> GetPrayerers(int prayerId);
         int AddComment(int userId, CommentAddRequest model);
         void DeleteComment(int commentId);
     }

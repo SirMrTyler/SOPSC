@@ -1,0 +1,14 @@
+CREATE TABLE [dbo].[PostPrayers](
+        [PrayerId] [int] NOT NULL,
+        [UserId] [int] NOT NULL,
+        [DateCreated] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_PostPrayers] PRIMARY KEY CLUSTERED
+(
+        [PrayerId] ASC,
+        [UserId] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[PostPrayers] ADD  DEFAULT (sysdatetime()) FOR [DateCreated]
+GO

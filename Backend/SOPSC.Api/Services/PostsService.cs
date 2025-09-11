@@ -5,6 +5,7 @@ using SOPSC.Api.Models.Interfaces.Posts;
 using SOPSC.Api.Models.Requests.Posts;
 using System.Collections.Generic;
 using System.Data;
+using User = SOPSC.Api.Models.Domains.Users.UserBase;
 
 namespace SOPSC.Api.Services
 {
@@ -116,6 +117,28 @@ namespace SOPSC.Api.Services
                     };
                 });
             return post;
+        }
+
+        public List<User> GetPrayerers(int prayerId)
+        {
+            List<User> list = null;
+            string procName = "[dbo].[Posts_SelectPrayerers]";
+
+            _data.ExecuteCmd(procName,
+                param => param.AddWithValue("@PrayerId", prayerId),
+                (reader, set) =>
+                {
+                    int index = 0;
+                    User user = new()
+                    {
+                        UserId = reader.GetSafeInt32(index++),
+                        Name = reader.GetSafeString(index++)
+                    };
+                    list ??= new List<User>();
+                    list.Add(user);
+                });
+
+            return list;
         }
 
         public List<Comment> GetComments(int prayerId)

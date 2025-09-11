@@ -7,6 +7,7 @@ using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
 using System;
 using System.Collections.Generic;
+using User = SOPSC.Api.Models.Domains.Users.UserBase;
 
 namespace SOPSC.Api.Controllers
 {
@@ -155,6 +156,46 @@ namespace SOPSC.Api.Controllers
                 code = 500;
                 response = new ErrorResponse($"Generic Error: {ex.Message}.");
             }
+            return StatusCode(code, response);
+        }
+
+        [HttpGet("{id:int}/prayers")]
+        public ActionResult<ItemResponse<List<User>>> GetPrayerers(int id)
+        {
+            int code = 200;
+            BaseResponse response = null;
+
+            try
+            {
+                int userId = _authService.GetCurrentUserId();
+                Post post = _service.GetById(id);
+
+                if (post == null || post.UserId != userId)
+                {
+                    code = 403;
+                    response = new ErrorResponse("Unauthorized access.");
+                }
+                else
+                {
+                    List<User> list = _service.GetPrayerers(id);
+                    if (list == null || list.Count == 0)
+                    {
+                        code = 404;
+                        response = new ErrorResponse("Records not found.");
+                    }
+                    else
+                    {
+                        response = new ItemResponse<List<User>> { Item = list };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
             return StatusCode(code, response);
         }
 

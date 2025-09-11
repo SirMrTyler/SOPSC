@@ -25,6 +25,11 @@ export interface Comment {
   parentCommentId?: number;
 }
 
+export interface Prayerer {
+  userId: number;
+  name: string;
+}
+
 const getPosts = async (): Promise<Post[]> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
@@ -141,6 +146,33 @@ const reportPost = async (
   return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
 };
 
+const getPrayerers = async (id: number): Promise<Prayerer[]> => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const config = {
+    method: 'GET',
+    url: `${endpoint}/${id}/prayers`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      DeviceId: deviceId,
+    },
+  };
+  try {
+    const data = await axios(config).then(helper.onGlobalSuccess);
+    const list = data?.item;
+    if (!Array.isArray(list)) {
+      return [];
+    }
+    return list;
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      return [];
+    }
+    return helper.onGlobalError(err);
+  }
+};
+
 const prayForPost = async (
   id: number,
 ): Promise<{ prayerCount: number; hasPrayed: boolean }> => {
@@ -251,6 +283,7 @@ export {
   updatePost,
   deletePost,
   reportPost,
+  getPrayerers,
   prayForPost,
   prayForComment,
   getComments,
