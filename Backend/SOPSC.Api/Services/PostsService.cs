@@ -109,7 +109,11 @@ namespace SOPSC.Api.Services
                 (reader, set) =>
                 {
                     int index = 0;
-                    post = MapPost(reader, ref index);
+                    post = new Post
+                    {
+                        PrayerCount = reader.GetSafeInt32(index++),
+                        HasPrayed = reader.GetSafeBool(index++)
+                    };
                 });
             return post;
         }
