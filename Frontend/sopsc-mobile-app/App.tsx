@@ -33,6 +33,7 @@ import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile co
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Posts from "./src/components/Posts/PostList";
 import PostDetails from "./src/components/Posts/PostDetails";
+import PostForm from "./src/components/Posts/PostForm";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { consumePendingUrl } from "./src/navigation/intentQueue";
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
   PostDetails: { postId: number };
+  PostForm: { postId?: number };
   Reports: undefined;
   ReportDetails: { reportId: number };
   Schedule: undefined;
@@ -205,6 +207,7 @@ function AppNavigator({
                   />
                   <Stack.Screen name="Posts" component={Posts} />
                   <Stack.Screen name="PostDetails" component={PostDetails} />
+                  <Stack.Screen name="PostForm" component={PostForm} />
                   <Stack.Screen name="Reports" component={Reports} />
                   <Stack.Screen
                     name="ReportDetails"

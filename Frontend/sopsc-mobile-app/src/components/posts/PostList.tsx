@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, ActivityIndicator, TouchableOpacity } from "react-native";
+import { PlusIcon } from "react-native-heroicons/outline";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ScreenContainer from "../navigation/ScreenContainer";
@@ -31,7 +32,14 @@ const PostList: React.FC = () => {
   );
 
   return (
-    <ScreenContainer title="Prayer Requests">
+    <ScreenContainer
+      title="Prayer Requests"
+      rightComponent={
+        <TouchableOpacity onPress={() => navigation.navigate("PostForm")}> 
+          <PlusIcon color="white" size={22} />
+        </TouchableOpacity>
+      }
+    >
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
