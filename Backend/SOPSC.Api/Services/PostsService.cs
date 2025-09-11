@@ -95,11 +95,15 @@ namespace SOPSC.Api.Services
                 param => param.AddWithValue("@PrayerId", id));
         }
 
-        public void UpdatePrayerCount(int id)
+        public void UpdatePrayerCount(int prayerId, int userId)
         {
             string procName = "[dbo].[Posts_UpdatePrayerCount]";
             _data.ExecuteNonQuery(procName,
-                param => param.AddWithValue("@PrayerId", id));
+                param =>
+                {
+                    param.AddWithValue("@PrayerId", prayerId);
+                    param.AddWithValue("@UserId", userId);
+                });
         }
 
         public List<Comment> GetComments(int prayerId)

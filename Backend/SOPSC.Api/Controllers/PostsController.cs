@@ -145,7 +145,8 @@ namespace SOPSC.Api.Controllers
             BaseResponse response = null;
             try
             {
-                _service.UpdatePrayerCount(id);
+                int userId = _authService.GetCurrentUserId();
+                _service.UpdatePrayerCount(id, userId);
                 response = new SuccessResponse();
             }
             catch (Exception ex)
