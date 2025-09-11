@@ -91,7 +91,7 @@ const PostDetails: React.FC = () => {
   const isAdmin = user?.Roles?.some(
     (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
-  const isOwner = user?.userId === post.userId;
+  const isOwner = Number(user?.userId) === Number(post.userId);
 
   const handlePray = async () => {
     try {

@@ -8,7 +8,10 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { ChatBubbleOvalLeftIcon, EllipsisVerticalIcon } from "react-native-heroicons/outline";
+import {
+  ChatBubbleOvalLeftIcon,
+  EllipsisVerticalIcon,
+} from "react-native-heroicons/outline";
 import { useNavigation } from "@react-navigation/native";
 import { timeAgo } from "../../utils/timeAgo";
 import type { Post } from "./services/postService";
@@ -33,7 +36,7 @@ const PostPreview: React.FC<Props> = ({ post, onPress }) => {
   const isAdmin = user?.Roles?.some(
     (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
-  const isOwner = user?.userId === post.userId;
+  const isOwner = Number(user?.userId) === Number(post.userId);
 
   const handleDelete = async () => {
     if (!(isOwner || isAdmin)) return;

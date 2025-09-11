@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   Modal,
   TextInput,
   Alert,
-} from 'react-native';
-import { EllipsisVerticalIcon } from 'react-native-heroicons/outline';
-import { timeAgo } from '../../utils/timeAgo';
-import type { Comment as BaseComment } from './services/postService';
-import { deleteComment } from './services/postService';
-import { useAuth } from '../../hooks/useAuth';
+} from "react-native";
+import { EllipsisVerticalIcon } from "react-native-heroicons/outline";
+import { timeAgo } from "../../utils/timeAgo";
+import type { Comment as BaseComment } from "./services/postService";
+import { deleteComment } from "./services/postService";
+import { useAuth } from "../../hooks/useAuth";
 
 export interface CommentNode extends BaseComment {
   authorName: string;
@@ -31,14 +31,14 @@ const Comment: React.FC<Props> = ({ comment, depth = 0, onPray, onDelete }) => {
   const [showAllReplies, setShowAllReplies] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
-  const [reportMessage, setReportMessage] = useState('');
+  const [reportMessage, setReportMessage] = useState("");
   const replies = comment.replies ?? [];
   const visibleReplies = showAllReplies ? replies : replies.slice(0, 1);
 
   const isAdmin = user?.Roles?.some(
-    (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
+    (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
-  const isOwner = user?.userId === comment.userId;
+  const isOwner = Number(user?.userId) === Number(comment.userId);
 
   const handleDelete = async () => {
     if (!(isOwner || isAdmin)) return;
@@ -54,13 +54,13 @@ const Comment: React.FC<Props> = ({ comment, depth = 0, onPray, onDelete }) => {
 
   const handleReportSubmit = () => {
     if (!reportMessage.trim()) return;
-    Alert.alert('Report submitted');
-    setReportMessage('');
+    Alert.alert("Report submitted");
+    setReportMessage("");
     setReportVisible(false);
   };
 
   return (
-    <View style={[styles.container, { marginLeft: depth * 16 }] }>
+    <View style={[styles.container, { marginLeft: depth * 16 }]}>
       <View style={styles.headerRow}>
         <Text style={styles.meta}>
           {comment.authorName} • {timeAgo(comment.dateCreated)}
@@ -110,7 +110,7 @@ const Comment: React.FC<Props> = ({ comment, depth = 0, onPray, onDelete }) => {
               style={styles.sheetItem}
               onPress={() => {
                 setMenuVisible(false);
-                Alert.alert('Edit not implemented');
+                Alert.alert("Edit not implemented");
               }}
             >
               <Text style={styles.sheetText}>Edit</Text>
@@ -179,55 +179,55 @@ const Comment: React.FC<Props> = ({ comment, depth = 0, onPray, onDelete }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: "rgba(255,255,255,0.1)",
     padding: 8,
     borderRadius: 8,
     marginBottom: 8,
   },
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4,
   },
   meta: {
     fontSize: 12,
-    color: '#ccc',
+    color: "#ccc",
   },
   body: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     marginBottom: 4,
   },
   prayButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'white',
+    alignSelf: "flex-start",
+    backgroundColor: "white",
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 16,
     marginTop: 4,
   },
   prayText: {
-    color: '#333',
+    color: "#333",
     fontSize: 12,
   },
   loadMore: {
     marginTop: 4,
   },
   loadMoreText: {
-    color: '#80bfff',
+    color: "#80bfff",
     fontSize: 12,
   },
   sheetOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
   sheet: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     paddingBottom: 16,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
@@ -237,11 +237,11 @@ const styles = StyleSheet.create({
   },
   sheetText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: "rgba(0,0,0,0.05)",
     paddingHorizontal: 12,
     paddingVertical: 8,
     margin: 16,
