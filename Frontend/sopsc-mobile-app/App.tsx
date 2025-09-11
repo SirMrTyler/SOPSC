@@ -77,12 +77,14 @@ const linking: LinkingOptions<RootStackParamList> = {
       Conversation: "chat/:conversationId",
     },
   },
-  async getInitialURL() {
+  async getInitialURL(): Promise<string | null> {
     const url = await Linking.getInitialURL();
     if (url) return url;
 
     const response = await Notifications.getLastNotificationResponseAsync();
-    return response?.notification.request.content.data?.url;
+    return typeof response?.notification.request.content.data?.url === "string"
+      ? response.notification.request.content.data.url
+      : null;
   },
   subscribe(listener) {
     const onReceiveURL = ({ url }: { url: string }) => listener(url);
@@ -97,7 +99,7 @@ const linking: LinkingOptions<RootStackParamList> = {
         const id = response.notification.request.identifier;
         if (url && id !== lastNotificationId) {
           lastNotificationId = id;
-          listener(url);
+          listener(url as string);
         }
       });
 
@@ -121,10 +123,7 @@ export default function App() {
     if (url) {
       Linking.openURL(url);
     } else if (conversationId) {
-      navigationRef.navigate(
-        "Conversation" as never,
-        { conversationId } as never,
-      );
+      navigationRef.navigate("Conversation", { conversationId });
     }
   };
 
