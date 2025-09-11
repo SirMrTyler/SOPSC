@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { formatDistanceToNow } from 'date-fns';
+import { timeAgo } from '../../utils/timeAgo';
 import type { Comment as BaseComment } from './services/postService';
 
 export interface CommentNode extends BaseComment {
@@ -23,7 +23,7 @@ const Comment: React.FC<Props> = ({ comment, depth = 0, onPray }) => {
     <View style={[styles.container, { marginLeft: depth * 16 }] }>
       <Text style={styles.meta}>
         {comment.authorName} •{' '}
-        {formatDistanceToNow(new Date(comment.dateCreated), { addSuffix: true })}
+        {timeAgo(comment.dateCreated)}
       </Text>
       <Text style={styles.body}>{comment.text}</Text>
       <TouchableOpacity

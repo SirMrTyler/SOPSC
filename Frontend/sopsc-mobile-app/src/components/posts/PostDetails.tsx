@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
-import { formatDistanceToNow } from "date-fns";
+import { timeAgo } from "../../utils/timeAgo";
 import { EllipsisVerticalIcon } from "react-native-heroicons/outline";
 import ScreenContainer from "../navigation/ScreenContainer";
 import type { RootStackParamList } from "../../../App";
@@ -155,9 +155,7 @@ const PostDetails: React.FC = () => {
         <View style={styles.headerRow}>
           <Text style={styles.meta}>
             {post.authorName} •{" "}
-            {formatDistanceToNow(new Date(post.dateCreated), {
-              addSuffix: true,
-            })}
+            {timeAgo(post.dateCreated)}
           </Text>
           <TouchableOpacity onPress={() => setMenuVisible(true)}>
             <EllipsisVerticalIcon size={20} color="#fff" />

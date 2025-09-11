@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { ChatBubbleOvalLeftIcon } from "react-native-heroicons/outline";
-import { formatDistanceToNow } from "date-fns";
+import { timeAgo } from "../../utils/timeAgo";
 import type { Post } from "./services/postService";
 
 type Props = {
@@ -18,9 +18,7 @@ const PostPreview: React.FC<Props> = ({ post }) => {
       <Text style={styles.meta}>
         {post.authorName} •
         {" "}
-        {formatDistanceToNow(new Date(post.dateCreated), {
-          addSuffix: true,
-        })}
+        {timeAgo(post.dateCreated)}
       </Text>
       <Text style={styles.body}>{bodyPreview}</Text>
       <View style={styles.footer}>
