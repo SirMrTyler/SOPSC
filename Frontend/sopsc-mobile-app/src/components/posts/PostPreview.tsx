@@ -1,20 +1,36 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import { ChatBubbleOvalLeftIcon } from "react-native-heroicons/outline";
+import { formatDistanceToNow } from "date-fns";
 import type { Post } from "./services/postService";
 
 type Props = {
   post: Post;
-  onPress: () => void;
 };
 
-const PostPreview: React.FC<Props> = ({ post, onPress }) => {
+const PostPreview: React.FC<Props> = ({ post }) => {
+  const bodyPreview =
+    post.body.length > 256 ? `${post.body.slice(0, 256)}…` : post.body;
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text style={styles.subject}>{post.subject}</Text>
-      <Text style={styles.body} numberOfLines={2}>
-        {post.body}
+    <View style={styles.container}>
+      <Text style={styles.title}>{post.subject}</Text>
+      <Text style={styles.meta}>
+        {post.authorName} •
+        {" "}
+        {formatDistanceToNow(new Date(post.dateCreated), {
+          addSuffix: true,
+        })}
       </Text>
-    </TouchableOpacity>
+      <Text style={styles.body}>{bodyPreview}</Text>
+      <View style={styles.footer}>
+        <Text style={styles.count}>🙏 {post.prayerCount}</Text>
+        <View style={styles.comments}>
+          <ChatBubbleOvalLeftIcon color="#555" size={16} />
+          <Text style={styles.commentText}>{post.commentCount}</Text>
+        </View>
+      </View>
+    </View>
   );
 };
 
@@ -26,12 +42,36 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 8,
   },
-  subject: {
+  title: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 2,
+  },
+  meta: {
+    fontSize: 12,
+    color: "#555",
+    marginBottom: 8,
   },
   body: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 12,
+  },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  count: {
+    fontSize: 14,
+    color: "#555",
+  },
+  comments: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  commentText: {
     fontSize: 14,
     color: "#555",
   },

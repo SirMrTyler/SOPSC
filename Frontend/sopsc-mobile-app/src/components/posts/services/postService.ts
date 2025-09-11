@@ -10,6 +10,8 @@ export interface Post {
   body: string;
   dateCreated: string;
   prayerCount: number;
+  commentCount: number;
+  authorName: string;
 }
 
 export interface Comment {
