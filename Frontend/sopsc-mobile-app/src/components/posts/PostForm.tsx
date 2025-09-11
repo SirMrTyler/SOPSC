@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from "react-native";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
-import ScreenContainer from "../navigation/ScreenContainer";
+import ScreenContainer from "../Navigation/ScreenContainer";
 import { createPost, updatePost, getPostById } from "./services/postService";
 import type { RootStackParamList } from "../../../App";
 
@@ -18,10 +24,12 @@ const PostForm: React.FC = () => {
 
   useEffect(() => {
     if (isEdit) {
-      getPostById(postId!).then((p) => {
-        setSubject(p.subject);
-        setBody(p.body);
-      }).catch((err) => console.error(err));
+      getPostById(postId!)
+        .then((p) => {
+          setSubject(p.subject);
+          setBody(p.body);
+        })
+        .catch((err) => console.error(err));
     }
   }, [isEdit, postId]);
 
@@ -40,7 +48,11 @@ const PostForm: React.FC = () => {
   };
 
   return (
-    <ScreenContainer showBack title={isEdit ? "Edit Post" : "New Post"} showBottomBar={false}>
+    <ScreenContainer
+      showBack
+      title={isEdit ? "Edit Post" : "New Post"}
+      showBottomBar={false}
+    >
       <View style={styles.container}>
         <TextInput
           style={styles.input}
@@ -58,7 +70,9 @@ const PostForm: React.FC = () => {
           multiline
         />
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>{isEdit ? "Edit Post" : "Create Post"}</Text>
+          <Text style={styles.buttonText}>
+            {isEdit ? "Edit Post" : "Create Post"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScreenContainer>
