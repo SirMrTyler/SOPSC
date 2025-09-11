@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, ActivityIndicator } from "react-native";
+import { FlatList, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ScreenContainer from "../navigation/ScreenContainer";
@@ -23,10 +23,11 @@ const PostList: React.FC = () => {
   }, []);
 
   const renderItem = ({ item }: { item: Post }) => (
-    <PostPreview
-      post={item}
+    <TouchableOpacity
       onPress={() => navigation.navigate("PostDetails", { post: item })}
-    />
+    >
+      <PostPreview post={item} />
+    </TouchableOpacity>
   );
 
   return (
