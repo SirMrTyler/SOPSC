@@ -23,7 +23,7 @@ namespace SOPSC.Api.Services
         public List<Post> GetAll()
         {
             List<Post> list = null;
-            string procName = "[dbo].[PrayerRequests_SelectAll]";
+            string procName = "[dbo].[Posts_SelectAll]";
             _data.ExecuteCmd(procName, null,
                 (reader, set) =>
                 {
@@ -41,7 +41,7 @@ namespace SOPSC.Api.Services
         public Post GetById(int id)
         {
             Post post = null;
-            string procName = "[dbo].[PrayerRequests_SelectById]";
+            string procName = "[dbo].[Posts_SelectById]";
             _data.ExecuteCmd(procName,
                 param => param.AddWithValue("@PrayerId", id),
                 (reader, set) =>
@@ -55,7 +55,7 @@ namespace SOPSC.Api.Services
         public int Add(int userId, PostAddRequest model)
         {
             int id = 0;
-            string procName = "[dbo].[PrayerRequests_Insert]";
+            string procName = "[dbo].[Posts_Insert]";
             _data.ExecuteNonQuery(procName,
                 param =>
                 {
@@ -77,7 +77,7 @@ namespace SOPSC.Api.Services
 
         public void Update(PostUpdateRequest model)
         {
-            string procName = "[dbo].[PrayerRequests_UpdateById]";
+            string procName = "[dbo].[Posts_UpdateById]";
             _data.ExecuteNonQuery(procName,
                 param =>
                 {
@@ -89,14 +89,14 @@ namespace SOPSC.Api.Services
 
         public void Delete(int id)
         {
-            string procName = "[dbo].[PrayerRequests_DeleteById]";
+            string procName = "[dbo].[Posts_DeleteById]";
             _data.ExecuteNonQuery(procName,
                 param => param.AddWithValue("@PrayerId", id));
         }
 
         public void UpdatePrayerCount(int id)
         {
-            string procName = "[dbo].[PrayerRequests_UpdatePrayerCount]";
+            string procName = "[dbo].[Posts_UpdatePrayerCount]";
             _data.ExecuteNonQuery(procName,
                 param => param.AddWithValue("@PrayerId", id));
         }

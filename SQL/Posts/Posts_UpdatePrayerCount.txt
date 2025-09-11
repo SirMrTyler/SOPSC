@@ -1,4 +1,4 @@
-ALTER PROC dbo.PrayerRequests_UpdatePrayerCount
+ALTER PROC dbo.Posts_UpdatePrayerCount
     @PrayerId INT,
     @UserId INT
 AS
@@ -6,7 +6,7 @@ AS
     DECLARE @PrayerId INT = 1;
     DECLARE @UserId INT = 3;
 
-    EXEC dbo.PrayerRequests_UpdatePrayerCount
+    EXEC dbo.Posts_UpdatePrayerCount
         @PrayerId,
         @UserId;
 */
@@ -24,7 +24,7 @@ BEGIN
         @OriginalPosterId = u.UserId,
         @OriginalPosterName = u.FirstName + ' ' + u.LastName,
         @PrayerCount = PrayerCount
-    FROM dbo.PrayerRequests pr
+    FROM dbo.Posts pr
     JOIN dbo.Users u ON pr.UserId = u.UserId
     WHERE PrayerId = @PrayerId;
 
@@ -39,7 +39,7 @@ BEGIN
     IF @AlreadyPrayed = 1
     BEGIN
         -- Decrement PrayerCount
-        UPDATE dbo.PrayerRequests
+        UPDATE dbo.Posts
         SET PrayerCount = PrayerCount - 1
         WHERE PrayerId = @PrayerId;
 
@@ -52,13 +52,13 @@ BEGIN
     ELSE
     BEGIN
         -- Increment PrayerCount
-        UPDATE dbo.PrayerRequests
+        UPDATE dbo.Posts
         SET PrayerCount = PrayerCount + 1
         WHERE PrayerId = @PrayerId;
 
         -- Get updated PrayerCount
         SELECT @PrayerCount = PrayerCount
-        FROM dbo.PrayerRequests
+        FROM dbo.Posts
         WHERE PrayerId = @PrayerId;
 
         -- Generate notification content for the original poster
@@ -115,6 +115,6 @@ BEGIN
         pr.Subject,
         pr.Body,
         pr.PrayerCount
-    FROM dbo.PrayerRequests pr
+    FROM dbo.Posts pr
     WHERE PrayerId = @PrayerId;
 END;
