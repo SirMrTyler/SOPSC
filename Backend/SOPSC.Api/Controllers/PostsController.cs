@@ -5,8 +5,11 @@ using SOPSC.Api.Models.Interfaces.Posts;
 using SOPSC.Api.Models.Requests.Posts;
 using SOPSC.Api.Models.Responses;
 using SOPSC.Api.Services.Auth.Interfaces;
+using SOPSC.Api.Models.Interfaces.Users;
+using SOPSC.Api.Models.Interfaces.Notifications;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using User = SOPSC.Api.Models.Domains.Users.UserBase;
 
 namespace SOPSC.Api.Controllers
@@ -18,11 +21,20 @@ namespace SOPSC.Api.Controllers
     {
         private readonly IPostsService _service;
         private readonly IAuthenticationService<int> _authService;
+        private readonly INotificationPublisher _notificationPublisher;
+        private readonly IUserService _userService;
 
-        public PostsController(IPostsService service, IAuthenticationService<int> authService, ILogger<PostsController> logger) : base(logger)
+        public PostsController(
+            IPostsService service,
+            IAuthenticationService<int> authService,
+            INotificationPublisher notificationPublisher,
+            IUserService userService,
+            ILogger<PostsController> logger) : base(logger)
         {
             _service = service;
             _authService = authService;
+            _notificationPublisher = notificationPublisher;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -80,7 +92,7 @@ namespace SOPSC.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ItemResponse<int>> Create(PostAddRequest model)
+        public async Task<ActionResult<ItemResponse<int>>> Create(PostAddRequest model)
         {
             int code = 201;
             BaseResponse response = null;
@@ -88,6 +100,18 @@ namespace SOPSC.Api.Controllers
             {
                 int userId = _authService.GetCurrentUserId();
                 int id = _service.Add(userId, model);
+
+                var requester = _userService.GetById(userId);
+                var userIds = _userService.GetUserIdsByRole(3);
+                userIds?.Remove(userId);
+
+                if (userIds != null && userIds.Count > 0)
+                {
+                    string title = "SOPSC";
+                    string body = $"{requester.FirstName} {requester.LastName} Has Requested Prayer";
+                    await _notificationPublisher.PublishAsync(userIds, title, body, null);
+                }
+
                 response = new ItemResponse<int> { Item = id };
             }
             catch (Exception ex)
