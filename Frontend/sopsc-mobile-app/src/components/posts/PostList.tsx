@@ -24,7 +24,7 @@ const PostList: React.FC = () => {
 
   const renderItem = ({ item }: { item: Post }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate("PostDetails", { post: item })}
+      onPress={() => navigation.navigate("PostDetails", { postId: item.prayerId })}
     >
       <PostPreview post={item} />
     </TouchableOpacity>
