@@ -26,13 +26,14 @@ import RenderGroupMessage from "./src/components/Messaging/Groups/RenderGroupMes
 import AddGroupChatMembers from "./src/components/Messaging/Groups/GroupMessageAddMember";
 import Conversation from "./src/components/Messaging/Messages/RenderMessage";
 import AdminDashboard from "./src/components/Admin/AdminDashboard"; // TODO: Make AdminDashboard Component
-import PrayerRequests from "./src/components/Posts/Post"; // TODO: Make Prayer Requests component logic
 import Reports from "./src/components/Reports/Reports"; // TODO: Make Reports component logic
 import ReportDetails from "./src/components/Reports/ReportDetails";
 import Schedule from "./src/components/Schedule/Schedule";
 import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile component logic
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Posts from "./src/components/Posts/Post";
+import Posts from "./src/components/Posts/PostList";
+import PostDetails from "./src/components/Posts/PostDetails";
+import type { Post } from "./src/components/Posts/services/postService";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { consumePendingUrl } from "./src/navigation/intentQueue";
@@ -52,6 +53,7 @@ export type RootStackParamList = {
   Conversation: { conversationId: string };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
+  PostDetails: { post: Post };
   Reports: undefined;
   ReportDetails: { reportId: number };
   Schedule: undefined;
@@ -203,6 +205,7 @@ function AppNavigator({
                     component={AdminDashboard}
                   />
                   <Stack.Screen name="Posts" component={Posts} />
+                  <Stack.Screen name="PostDetails" component={PostDetails} />
                   <Stack.Screen name="Reports" component={Reports} />
                   <Stack.Screen
                     name="ReportDetails"
