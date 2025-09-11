@@ -12,5 +12,7 @@ namespace SOPSC.Api.Models.Domains.Posts
         public int UserId { get; set; }
         public string Text { get; set; }
         public DateTime DateCreated { get; set; }
+        public int PrayerCount { get; set; }
+        public bool HasPrayed { get; set; }
     }
 }

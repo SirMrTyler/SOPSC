@@ -113,18 +113,21 @@ const PostDetails: React.FC = () => {
 
   const handleCommentPray = async (id: number) => {
     try {
-      await prayForComment(id);
-      const increment = (items: CommentNode[]): CommentNode[] =>
+      const res = await prayForComment(id);
+      const update = (items: CommentNode[]): CommentNode[] =>
         items.map((c) => {
           if (c.commentId === id) {
-            return { ...c, prayerCount: c.prayerCount + 1 };
+            const count = res.hasPrayed
+              ? c.prayerCount + 1
+              : Math.max(c.prayerCount - 1, 0);
+            return { ...c, prayerCount: count, hasPrayed: res.hasPrayed };
           }
           if (c.replies && c.replies.length) {
-            return { ...c, replies: increment(c.replies) };
+            return { ...c, replies: update(c.replies) };
           }
           return c;
         });
-      setComments((prev) => increment(prev));
+      setComments((prev) => update(prev));
     } catch (err) {
       console.error(err);
     }

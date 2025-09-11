@@ -17,6 +17,7 @@ namespace SOPSC.Api.Models.Interfaces.Posts
         void Delete(int id);
         Post UpdatePrayerCount(int prayerId, int userId);
         List<Comment> GetComments(int prayerId);
+        Comment UpdateCommentPrayerCount(int commentId, int userId);
         List<User> GetPrayerers(int prayerId);
         int AddComment(int userId, CommentAddRequest model);
         void DeleteComment(int commentId);

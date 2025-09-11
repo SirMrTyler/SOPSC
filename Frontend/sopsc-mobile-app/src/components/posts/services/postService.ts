@@ -23,6 +23,7 @@ export interface Comment {
   dateCreated: string;
   prayerCount: number;
   parentCommentId?: number;
+  hasPrayed?: boolean;
 }
 
 export interface Prayerer {
@@ -197,7 +198,9 @@ const prayForPost = async (
     .catch(helper.onGlobalError);
 };
 
-const prayForComment = async (id: number): Promise<void> => {
+const prayForComment = async (
+  id: number,
+): Promise<{ prayerCount: number; hasPrayed: boolean }> => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
   const config = {
@@ -209,7 +212,14 @@ const prayForComment = async (id: number): Promise<void> => {
       DeviceId: deviceId,
     },
   };
-  return axios(config).then(helper.onGlobalSuccess).catch(helper.onGlobalError);
+  return axios(config)
+    .then(helper.onGlobalSuccess)
+    .then((data) => data?.item as Comment)
+    .then((comment) => ({
+      prayerCount: comment.prayerCount,
+      hasPrayed: Boolean(comment.hasPrayed),
+    }))
+    .catch(helper.onGlobalError);
 };
 
 const getComments = async (postId: number): Promise<Comment[]> => {

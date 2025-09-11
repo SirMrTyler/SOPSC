@@ -167,6 +167,28 @@ namespace SOPSC.Api.Services
             return list;
         }
 
+        public Comment UpdateCommentPrayerCount(int commentId, int userId)
+        {
+            Comment comment = null;
+            string procName = "[dbo].[PrayerRequestComments_UpdatePrayerCount]";
+            _data.ExecuteCmd(procName,
+                param =>
+                {
+                    param.AddWithValue("@CommentId", commentId);
+                    param.AddWithValue("@UserId", userId);
+                },
+                (reader, set) =>
+                {
+                    int index = 0;
+                    comment = new Comment
+                    {
+                        PrayerCount = reader.GetSafeInt32(index++),
+                        HasPrayed = reader.GetSafeBool(index++)
+                    };
+                });
+            return comment;
+        }
+
         public int AddComment(int userId, CommentAddRequest model)
         {
             int id = 0;
@@ -225,8 +247,13 @@ namespace SOPSC.Api.Services
                 PrayerId = reader.GetSafeInt32(index++),
                 UserId = reader.GetSafeInt32(index++),
                 Text = reader.GetSafeString(index++),
-                DateCreated = reader.GetSafeUtcDateTime(index++)
+                DateCreated = reader.GetSafeUtcDateTime(index++),
+                PrayerCount = reader.GetSafeInt32(index++)
             };
+            if (reader.FieldCount > index)
+            {
+                c.HasPrayed = reader.GetSafeBool(index++);
+            }
             return c;
         }
     }

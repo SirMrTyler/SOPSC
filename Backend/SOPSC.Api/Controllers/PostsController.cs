@@ -199,6 +199,26 @@ namespace SOPSC.Api.Controllers
             return StatusCode(code, response);
         }
 
+        [HttpPut("comments/{id:int}/prayer")]
+        public ActionResult<ItemResponse<Comment>> UpdateCommentPrayerCount(int id)
+        {
+            int code = 200;
+            BaseResponse response = null;
+            try
+            {
+                int userId = _authService.GetCurrentUserId();
+                Comment comment = _service.UpdateCommentPrayerCount(id, userId);
+                response = new ItemResponse<Comment> { Item = comment };
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+            return StatusCode(code, response);
+        }
+
         [HttpGet("{id:int}/comments")]
         public ActionResult<ItemResponse<List<Comment>>> GetComments(int id)
         {

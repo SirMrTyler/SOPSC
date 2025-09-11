@@ -72,7 +72,7 @@ const Comment: React.FC<Props> = ({ comment, depth = 0, onPray, onDelete }) => {
       <Text style={styles.body}>{comment.text}</Text>
       <TouchableOpacity
         onPress={() => onPray(comment.commentId)}
-        style={styles.prayButton}
+        style={[styles.prayButton, comment.hasPrayed && styles.prayedButton]}
       >
         <Text style={styles.prayText}>🙏 {comment.prayerCount}</Text>
       </TouchableOpacity>
@@ -206,6 +206,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 16,
     marginTop: 4,
+  },
+  prayedButton: {
+    backgroundColor: "#FFD700",
   },
   prayText: {
     color: "#333",
