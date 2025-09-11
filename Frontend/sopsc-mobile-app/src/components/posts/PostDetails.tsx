@@ -221,7 +221,13 @@ const PostDetails: React.FC = () => {
         <View style={styles.sheet}>
           {canModify && (
             <>
-              <TouchableOpacity style={styles.sheetItem} onPress={() => {}}>
+              <TouchableOpacity
+                style={styles.sheetItem}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("PostForm", { postId: post.prayerId });
+                }}
+              >
                 <Text style={styles.sheetText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetItem} onPress={handleDelete}>
