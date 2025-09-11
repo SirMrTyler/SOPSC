@@ -21,9 +21,10 @@ import { useAuth } from "../../hooks/useAuth";
 type Props = {
   post: Post;
   onPress?: () => void; // ✅ allow parent to pass a tap handler
+  onDeleted?: (id: number) => void;
 };
 
-const PostPreview: React.FC<Props> = ({ post, onPress }) => {
+const PostPreview: React.FC<Props> = ({ post, onPress, onDeleted }) => {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -42,6 +43,7 @@ const PostPreview: React.FC<Props> = ({ post, onPress }) => {
     if (!(isOwner || isAdmin)) return;
     try {
       await deletePost(post.prayerId);
+      onDeleted?.(post.prayerId);
       Alert.alert("Post deleted");
     } catch (err) {
       console.error(err);

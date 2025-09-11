@@ -27,12 +27,17 @@ const PostList: React.FC = () => {
     }, [fetchPosts])
   );
 
+  const handleRemove = (id: number) => {
+    setPosts((prev) => prev.filter((p) => p.prayerId !== id));
+  };
+
   const renderItem = ({ item }: { item: Post }) => (
     <PostPreview
       post={item}
       onPress={() =>
         navigation.navigate("PostDetails", { postId: item.prayerId })
       }
+      onDeleted={handleRemove}
     />
   );
 
