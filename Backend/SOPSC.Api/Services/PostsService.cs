@@ -167,7 +167,7 @@ namespace SOPSC.Api.Services
                 Body = reader.GetSafeString(index++),
                 PrayerCount = reader.GetSafeInt32(index++),
                 DateCreated = reader.GetSafeUtcDateTime(index++),
-                CommentCount = 0
+                CommentCount = reader.GetSafeInt32(index++)
             };
             return p;
         }

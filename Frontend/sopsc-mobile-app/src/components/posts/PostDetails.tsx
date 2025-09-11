@@ -156,6 +156,9 @@ const PostDetails: React.FC = () => {
       };
       setComments((prev) => [...prev, comment]);
       setNewComment("");
+      setPost((prev) =>
+        prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev
+      );
     } catch (err) {
       console.error(err);
     }
