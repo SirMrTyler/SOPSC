@@ -22,13 +22,13 @@ import AddGroupChatMembers from "./src/components/Messaging/Groups/GroupMessageA
 import Conversation from "./src/components/Messaging/Messages/RenderMessage";
 import { FsConversationNav } from "./src/types/fsMessages";
 import AdminDashboard from "./src/components/Admin/AdminDashboard"; // TODO: Make AdminDashboard Component
-import PrayerRequests from "./src/components/Posts/Post"; // TODO: Make Prayer Requests component logic
 import Reports from "./src/components/Reports/Reports"; // TODO: Make Reports component logic
 import ReportDetails from "./src/components/Reports/ReportDetails";
 import Schedule from "./src/components/Schedule/Schedule";
 import Profile from "./src/components/Profile/Profile"; // TODO: Make Profile component logic
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import Posts from "./src/components/Posts/Post";
+import Posts from "./src/components/posts/Post";
+import PostDetails from "./src/components/posts/PostDetails";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 
 Notifications.setNotificationHandler({
@@ -53,6 +53,7 @@ export type RootStackParamList = {
   Conversation: { conversation: FsConversationNav };
   AdminDashboard: undefined; // Assuming you have an AdminDashboard screen
   Posts: undefined;
+  PostDetails: { postId: number };
   Reports: undefined;
   ReportDetails: { reportId: number };
   Schedule: undefined;
@@ -124,6 +125,7 @@ export default function App() {
                   component={AdminDashboard}
                 />
                 <Stack.Screen name="Posts" component={Posts} />
+                <Stack.Screen name="PostDetails" component={PostDetails} />
                 <Stack.Screen name="Reports" component={Reports} />
                 <Stack.Screen name="ReportDetails" component={ReportDetails} />
                 <Stack.Screen name="Schedule" component={Schedule} />

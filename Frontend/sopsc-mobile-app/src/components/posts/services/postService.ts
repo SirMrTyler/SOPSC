@@ -6,10 +6,12 @@ const endpoint = `${process.env.EXPO_PUBLIC_API_URL}posts`;
 export interface Post {
   prayerId: number;
   userId: number;
+  userName?: string;
   subject: string;
   body: string;
   dateCreated: string;
   prayerCount: number;
+  commentCount?: number;
 }
 
 export interface Comment {
