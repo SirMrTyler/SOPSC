@@ -3,7 +3,7 @@ import { FlatList, ActivityIndicator, TouchableOpacity } from "react-native";
 import { PlusIcon } from "react-native-heroicons/outline";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import ScreenContainer from "../navigation/ScreenContainer";
+import ScreenContainer from "../Navigation/ScreenContainer";
 import PostPreview from "./PostPreview";
 import { getPosts, Post } from "./services/postService";
 import type { RootStackParamList } from "../../../App";
@@ -24,11 +24,12 @@ const PostList: React.FC = () => {
   }, []);
 
   const renderItem = ({ item }: { item: Post }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("PostDetails", { postId: item.prayerId })}
-    >
-      <PostPreview post={item} />
-    </TouchableOpacity>
+    <PostPreview
+      post={item}
+      onPress={() =>
+        navigation.navigate("PostDetails", { postId: item.prayerId })
+      }
+    />
   );
 
   return (

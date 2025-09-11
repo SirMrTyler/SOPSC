@@ -14,7 +14,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { timeAgo } from "../../utils/timeAgo";
 import { EllipsisVerticalIcon } from "react-native-heroicons/outline";
-import ScreenContainer from "../navigation/ScreenContainer";
+import ScreenContainer from "../Navigation/ScreenContainer";
 import type { RootStackParamList } from "../../../App";
 import {
   getPostById,
@@ -39,9 +39,9 @@ const PostDetails: React.FC = () => {
   const [comments, setComments] = useState<CommentNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [reportVisible, setReportVisible] = useState(false);
-  const [reportMessage, setReportMessage] = useState('');
+  const [reportMessage, setReportMessage] = useState("");
   const { user } = useAuth();
 
   const buildCommentTree = (items: CommentNode[]): CommentNode[] => {
@@ -133,11 +133,11 @@ const PostDetails: React.FC = () => {
         text: newComment,
         dateCreated: new Date().toISOString(),
         prayerCount: 0,
-        authorName: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
+        authorName: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
         replies: [],
       };
       setComments((prev) => [...prev, comment]);
-      setNewComment('');
+      setNewComment("");
     } catch (err) {
       console.error(err);
     }
@@ -147,8 +147,8 @@ const PostDetails: React.FC = () => {
     if (!reportMessage.trim()) return;
     try {
       await reportPost(post.prayerId, reportMessage);
-      Alert.alert('Report submitted');
-      setReportMessage('');
+      Alert.alert("Report submitted");
+      setReportMessage("");
     } catch (err) {
       console.error(err);
     } finally {
@@ -171,8 +171,7 @@ const PostDetails: React.FC = () => {
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <Text style={styles.meta}>
-            {post.authorName} •{" "}
-            {timeAgo(post.dateCreated)}
+            {post.authorName} • {timeAgo(post.dateCreated)}
           </Text>
           <TouchableOpacity onPress={() => setMenuVisible(true)}>
             <EllipsisVerticalIcon size={20} color="#fff" />
@@ -198,7 +197,10 @@ const PostDetails: React.FC = () => {
                 value={newComment}
                 onChangeText={setNewComment}
               />
-              <TouchableOpacity style={styles.sendButton} onPress={handleAddComment}>
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={handleAddComment}
+              >
                 <Text style={styles.sendButtonText}>Send</Text>
               </TouchableOpacity>
             </View>
@@ -372,4 +374,3 @@ const styles = StyleSheet.create({
 });
 
 export default PostDetails;
-
