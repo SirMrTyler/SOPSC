@@ -1,0 +1,23 @@
+Issues:
+* Remove logo from background and place it in the center of the top nav bar
+
+* Reports can't be viewed by data, user, search, or division yet.
+* Report creating is currently unusable.
+* Reports 'Created Date' is rendering outside of the box.
+
+* Prayer Request UI needs changed for readability
+
+* Profile photo changing isn't working
+* Profile viewing for admins isn't developed yet
+* Admin panel isn't done yet.
+
+* Messages can't be deleted
+* Messages text box is to high (add when tapped the keyboard goes away)
+
+* Schedule isn't creating new calendar events
+
+* 
+* Notifications need wired for:
+	- Prayer Requests
+	- Calendar
+	- News and Announcements
