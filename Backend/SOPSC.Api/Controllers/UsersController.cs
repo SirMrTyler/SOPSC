@@ -28,12 +28,12 @@ using System.Collections.Generic;
 /// </remarks>
 [ApiController]
 [Route("api/users")]
-public class UsersController : BaseApiController
-{
-    private IUserService _userService = null;
-    private ITokenService _tokenService = null;
-    private IAuthenticationService<int> _authenticationService = null;
-    private IMessagesService _messagesService = null;
+    public class UsersController : BaseApiController
+    {
+        private IUserService _userService = null;
+        private ITokenService _tokenService = null;
+        private IAuthenticationService<int> _authenticationService = null;
+        private IMessagesService _messagesService = null;
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersController"/> class.
     /// </summary>
@@ -45,12 +45,12 @@ public class UsersController : BaseApiController
         IMessagesService messagesService,
         ILogger<UsersController> logger,
         IAuthenticationService<int> authService) : base(logger)
-    {
-        _userService = userService;
-        _tokenService = tokenService;
-        _messagesService = messagesService;
-        _authenticationService = authService;
-    }
+        {
+            _userService = userService;
+            _tokenService = tokenService;
+            _messagesService = messagesService;
+            _authenticationService = authService;
+        }
 
     #region POST
 
@@ -201,6 +201,48 @@ public class UsersController : BaseApiController
         }
 
         return StatusCode(iCode, response);
+    }
+
+    [Authorize(Roles = "Admin,Developer")]
+    [HttpPost("{id:int}/approve")]
+    public ActionResult<SuccessResponse> Approve(int id)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            _userService.ConfirmUser(id);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            code = 500;
+            response = new ErrorResponse(ex.Message);
+            base.Logger.LogError(ex.ToString());
+        }
+
+        return StatusCode(code, response);
+    }
+
+    [Authorize(Roles = "Admin,Developer")]
+    [HttpPost("{id:int}/reject")]
+    public ActionResult<SuccessResponse> Reject(int id)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            _userService.RejectUser(id);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            code = 500;
+            response = new ErrorResponse(ex.Message);
+            base.Logger.LogError(ex.ToString());
+        }
+
+        return StatusCode(code, response);
     }
 
     [AllowAnonymous]
