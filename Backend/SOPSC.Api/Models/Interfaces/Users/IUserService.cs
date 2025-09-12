@@ -59,6 +59,7 @@ namespace SOPSC.Api.Models.Interfaces.Users
         Task<string> LogInAsync(string email, string password, string? deviceId, string? firebaseUid);
         Task LogOutAsync(UserLogOutRequest request);
         void ConfirmUser(int userId);
+        void RejectUser(int userId);
         void UserAccountValidation(int id, UserAddRequest newUser, string requestUrl);
 
         UserWithRole GetUserWithRoleById(int userId);

@@ -16,7 +16,8 @@ AS
 BEGIN
 	DECLARE @True INT = 1
 
-	UPDATE dbo.Users
-	SET IsConfirmed = @True
-	WHERE UserId = @UserId
+        UPDATE dbo.Users
+        SET IsConfirmed = @True,
+            RoleId = 3
+        WHERE UserId = @UserId
 END

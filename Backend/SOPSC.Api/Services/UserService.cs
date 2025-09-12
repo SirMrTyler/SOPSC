@@ -11,6 +11,8 @@ using SOPSC.Api.Data.Interfaces;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SOPSC.Api.Models.Interfaces.Notifications;
+using System.Collections.Generic;
 
 namespace SOPSC.Api.Services
 {
@@ -27,6 +29,8 @@ namespace SOPSC.Api.Services
         private readonly string _connectionString;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<UserService> _logger;
+        private readonly INotificationService _notificationService;
+        private readonly INotificationPublisher _notificationPublisher;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService"/> class.
@@ -41,7 +45,9 @@ namespace SOPSC.Api.Services
             ITokenService tokenService,
             IEmailService emailService,
             ILogger<UserService> logger,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            INotificationService notificationService,
+            INotificationPublisher notificationPublisher)
         {
             _authenticationService = authService;
             _dataProvider = dataProvider;
@@ -51,6 +57,8 @@ namespace SOPSC.Api.Services
             _connectionString = configuration.GetConnectionString("DefaultConnection");
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
+            _notificationService = notificationService;
+            _notificationPublisher = notificationPublisher;
         }
 
 #region CREATE
@@ -267,6 +275,32 @@ namespace SOPSC.Api.Services
                         object oId = returnCollection["@Id"].Value;
                         int.TryParse(oId.ToString(), out userId);
                     });
+
+                    var recipients = new HashSet<int>();
+                    recipients.UnionWith(GetUserIdsByRole(1));
+                    recipients.UnionWith(GetUserIdsByRole(2));
+
+                    if (recipients.Count > 0)
+                    {
+                        string title = "SOPSC";
+                        string body = $"{firstName} {lastName} has joined the app.";
+                        var data = new
+                        {
+                            userId,
+                            actions = new[]
+                            {
+                                new { title = "Allow", method = "POST", url = $"/api/users/{userId}/approve" },
+                                new { title = "Don't Allow", method = "POST", url = $"/api/users/{userId}/reject" }
+                            }
+                        };
+
+                        foreach (int recipientId in recipients)
+                        {
+                            _notificationService.AddNotification(1, recipientId, body);
+                        }
+
+                        _notificationPublisher.PublishAsync(recipients, title, body, data).GetAwaiter().GetResult();
+                    }
                 }
                 else
                 {
@@ -597,7 +631,14 @@ namespace SOPSC.Api.Services
         #endregion
 
         #region DELETE
-
+        public void RejectUser(int userId)
+        {
+            string procName = "[dbo].[Users_DeleteById]";
+            _dataProvider.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection paramCollection)
+            {
+                paramCollection.AddWithValue("@UserId", userId);
+            }, null);
+        }
         #endregion
 
         #region Private Methods
