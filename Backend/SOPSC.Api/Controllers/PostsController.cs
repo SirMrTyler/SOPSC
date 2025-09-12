@@ -22,18 +22,21 @@ namespace SOPSC.Api.Controllers
         private readonly IPostsService _service;
         private readonly IAuthenticationService<int> _authService;
         private readonly INotificationPublisher _notificationPublisher;
+        private readonly INotificationService _notificationService;
         private readonly IUserService _userService;
 
         public PostsController(
             IPostsService service,
             IAuthenticationService<int> authService,
             INotificationPublisher notificationPublisher,
+            INotificationService notificationService,
             IUserService userService,
             ILogger<PostsController> logger) : base(logger)
         {
             _service = service;
             _authService = authService;
             _notificationPublisher = notificationPublisher;
+            _notificationService = notificationService;
             _userService = userService;
         }
 
@@ -113,6 +116,10 @@ namespace SOPSC.Api.Controllers
                 {
                     string title = "SOPSC";
                     string body = $"{requester.FirstName} {requester.LastName} Has Requested Prayer";
+                    foreach (int recipientId in userIds)
+                    {
+                        _notificationService.AddNotification(7, recipientId, body);
+                    }
                     await _notificationPublisher.PublishAsync(userIds, title, body, null);
                 }
 
