@@ -41,7 +41,12 @@ namespace SOPSC.Api.Services
                 var payload = JsonSerializer.Serialize(batch);
                 using var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(SEND_ENDPOINT, content);
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Expo push failed: {Status} {Error}", response.StatusCode, err);
+                    continue;
+                }
 
                 var result = await response.Content.ReadFromJsonAsync<ExpoPushResponse>();
                 if (result?.Data != null)
