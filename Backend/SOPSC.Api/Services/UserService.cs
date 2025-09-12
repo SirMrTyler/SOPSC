@@ -264,6 +264,7 @@ namespace SOPSC.Api.Services
                         paramCollection.AddWithValue("@Phone", model.Phone ?? (object)DBNull.Value);
                         paramCollection.AddWithValue("@ProfilePicturePath", avatarUrl);
                         paramCollection.AddWithValue("@IsGoogleUser", true);
+                        paramCollection.AddWithValue("@Phone", model.Phone ?? (object)DBNull.Value);
                         paramCollection.AddWithValue("@FirebaseUid", (object?)model.FirebaseUid ?? DBNull.Value);
                         SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
                         idOut.Direction = ParameterDirection.Output;
