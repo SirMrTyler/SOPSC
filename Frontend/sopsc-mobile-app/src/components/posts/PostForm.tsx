@@ -35,6 +35,7 @@ const PostForm: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
+      console.log("Submitting post");
       if (isEdit) {
         await updatePost(postId!, { subject, body });
         navigation.navigate("PostDetails", { postId: postId! });
