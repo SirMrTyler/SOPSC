@@ -102,10 +102,14 @@ namespace SOPSC.Api.Controllers
                 int id = _service.Add(userId, model);
 
                 var requester = _userService.GetById(userId);
-                var userIds = _userService.GetUserIdsByRole(3);
-                userIds?.Remove(userId);
 
-                if (userIds != null && userIds.Count > 0)
+                var userIds = new HashSet<int>();
+                userIds.UnionWith(_userService.GetUserIdsByRole(1));
+                userIds.UnionWith(_userService.GetUserIdsByRole(2));
+                userIds.UnionWith(_userService.GetUserIdsByRole(3));
+                userIds.Remove(userId);
+
+                if (userIds.Count > 0)
                 {
                     string title = "SOPSC";
                     string body = $"{requester.FirstName} {requester.LastName} Has Requested Prayer";
