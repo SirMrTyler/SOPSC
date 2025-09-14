@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../App";
@@ -20,6 +20,7 @@ interface Props {
 
 const TopBar: React.FC<Props> = ({
   showBack,
+  title,
   hasUnreadMessages,
   rightComponent,
 }) => {
@@ -30,12 +31,22 @@ const TopBar: React.FC<Props> = ({
     <View style={styles.container}>
       {showBack && (
         <View style={styles.leftContainer}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.backRow}
+            onPress={() => navigation.goBack()}
+          >
             <ChevronLeftIcon color="white" size={24} />
+            {title && <Text style={styles.title}>{title}</Text>}
           </TouchableOpacity>
         </View>
       )}
-      <Image source={logo} style={styles.logo} />
+      <TouchableOpacity
+        style={styles.logoContainer}
+        onPress={() => navigation.navigate("Landing")}
+      >
+        <Image source={logo} style={styles.logo} />
+        <Text style={styles.homeText}>home</Text>
+      </TouchableOpacity>
       <View style={styles.rightContainer}>
         {rightComponent
           ? rightComponent
@@ -75,6 +86,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  backRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   rightContainer: {
     position: "absolute",
     right: 12,
@@ -82,12 +98,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
+  logoContainer: {
+    alignItems: "center",
+  },
   logo: {
-    height: 48,
-    width: 48,
+    height: 32,
+    width: 32,
+  },
+  homeText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 2,
   },
   icon: {
     padding: 4,
+  },
+  title: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 
