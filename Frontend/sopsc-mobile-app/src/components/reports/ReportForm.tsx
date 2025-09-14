@@ -24,7 +24,7 @@ const ReportForm: React.FC<Props> = ({
   visible,
   onClose,
   onSuccess,
-  initialValues = {},
+  initialValues,
 }) => {
   const { user } = useAuth();
   const authUser: any = user;
@@ -40,78 +40,78 @@ const ReportForm: React.FC<Props> = ({
   }, [authUser]);
 
   const [division, setDivision] = useState(
-    initialValues.chaplainDivision || divisions[0] || ''
+    initialValues?.chaplainDivision || divisions[0] || ''
   );
   const [primaryAgency, setPrimaryAgency] = useState(
-    initialValues.primaryAgency || ''
+    initialValues?.primaryAgency || ''
   );
   const [typeOfService, setTypeOfService] = useState(
-    initialValues.typeOfService || ''
+    initialValues?.typeOfService || ''
   );
   const [contactName, setContactName] = useState(
-    initialValues.contactName || ''
+    initialValues?.contactName || ''
   );
-  const [pocPhone, setPocPhone] = useState(initialValues.pocPhone || '');
-  const [pocEmail, setPocEmail] = useState(initialValues.pocEmail || '');
-  const [clientName, setClientName] = useState(initialValues.clientName || '');
+  const [pocPhone, setPocPhone] = useState(initialValues?.pocPhone || '');
+  const [pocEmail, setPocEmail] = useState(initialValues?.pocEmail || '');
+  const [clientName, setClientName] = useState(initialValues?.clientName || '');
   const [clientPhone, setClientPhone] = useState(
-    initialValues.clientPhone || ''
+    initialValues?.clientPhone || ''
   );
   const [addressDispatch, setAddressDispatch] = useState(
-    initialValues.addressDispatch || ''
+    initialValues?.addressDispatch || ''
   );
   const [cityDispatch, setCityDispatch] = useState(
-    initialValues.cityDispatch || ''
+    initialValues?.cityDispatch || ''
   );
   const [addressDestination, setAddressDestination] = useState(
-    initialValues.addressDestination || ''
+    initialValues?.addressDestination || ''
   );
   const [cityDestination, setCityDestination] = useState(
-    initialValues.cityDestination || ''
+    initialValues?.cityDestination || ''
   );
   const [hoursOfService, setHoursOfService] = useState(
-    initialValues.hoursOfService ? String(initialValues.hoursOfService) : ''
+    initialValues?.hoursOfService ? String(initialValues.hoursOfService) : ''
   );
   const [commuteTime, setCommuteTime] = useState(
-    initialValues.commuteTime ? String(initialValues.commuteTime) : ''
+    initialValues?.commuteTime ? String(initialValues.commuteTime) : ''
   );
   const [dispatchTime, setDispatchTime] = useState(
-    initialValues.dispatchTime || ''
+    initialValues?.dispatchTime || ''
   );
   const [arrivalTime, setArrivalTime] = useState(
-    initialValues.arrivalTime || ''
+    initialValues?.arrivalTime || ''
   );
   const [milesDriven, setMilesDriven] = useState(
-    initialValues.milesDriven ? String(initialValues.milesDriven) : ''
+    initialValues?.milesDriven ? String(initialValues.milesDriven) : ''
   );
-  const [narrative, setNarrative] = useState(initialValues.narrative || '');
+  const [narrative, setNarrative] = useState(initialValues?.narrative || '');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    setDivision(initialValues.chaplainDivision || divisions[0] || '');
-    setPrimaryAgency(initialValues.primaryAgency || '');
-    setTypeOfService(initialValues.typeOfService || '');
-    setContactName(initialValues.contactName || '');
-    setPocPhone(initialValues.pocPhone || '');
-    setPocEmail(initialValues.pocEmail || '');
-    setClientName(initialValues.clientName || '');
-    setClientPhone(initialValues.clientPhone || '');
-    setAddressDispatch(initialValues.addressDispatch || '');
-    setCityDispatch(initialValues.cityDispatch || '');
-    setAddressDestination(initialValues.addressDestination || '');
-    setCityDestination(initialValues.cityDestination || '');
+    setDivision(initialValues?.chaplainDivision || divisions[0] || '');
+    setPrimaryAgency(initialValues?.primaryAgency || '');
+    setTypeOfService(initialValues?.typeOfService || '');
+    setContactName(initialValues?.contactName || '');
+    setPocPhone(initialValues?.pocPhone || '');
+    setPocEmail(initialValues?.pocEmail || '');
+    setClientName(initialValues?.clientName || '');
+    setClientPhone(initialValues?.clientPhone || '');
+    setAddressDispatch(initialValues?.addressDispatch || '');
+    setCityDispatch(initialValues?.cityDispatch || '');
+    setAddressDestination(initialValues?.addressDestination || '');
+    setCityDestination(initialValues?.cityDestination || '');
     setHoursOfService(
-      initialValues.hoursOfService ? String(initialValues.hoursOfService) : ''
+      initialValues?.hoursOfService ? String(initialValues.hoursOfService) : ''
     );
     setCommuteTime(
-      initialValues.commuteTime ? String(initialValues.commuteTime) : ''
+      initialValues?.commuteTime ? String(initialValues.commuteTime) : ''
     );
-    setDispatchTime(initialValues.dispatchTime || '');
-    setArrivalTime(initialValues.arrivalTime || '');
+    setDispatchTime(initialValues?.dispatchTime || '');
+    setArrivalTime(initialValues?.arrivalTime || '');
     setMilesDriven(
-      initialValues.milesDriven ? String(initialValues.milesDriven) : ''
+      initialValues?.milesDriven ? String(initialValues.milesDriven) : ''
     );
-    setNarrative(initialValues.narrative || '');
+    setNarrative(initialValues?.narrative || '');
   }, [initialValues, visible, divisions]);
 
   const isCommunity = division === 'Community';
