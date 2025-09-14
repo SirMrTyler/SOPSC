@@ -28,12 +28,16 @@ const ReportForm: React.FC<Props> = ({
 }) => {
   const { user } = useAuth();
   const authUser: any = user;
-  const divisions = useMemo<string[]>(
-    () =>
-      authUser?.divisions ??
-      (authUser?.division ? [authUser.division] : []),
-    [authUser?.divisions, authUser?.division]
-  );
+  const divisions = useMemo<string[]>(() => {
+    const { divisions: userDivisions, division: singleDivision } =
+      authUser ?? {};
+
+    if (userDivisions) {
+      return userDivisions;
+    }
+
+    return singleDivision ? [singleDivision] : [];
+  }, [authUser]);
 
   const [division, setDivision] = useState(
     initialValues.chaplainDivision || divisions[0] || ''
