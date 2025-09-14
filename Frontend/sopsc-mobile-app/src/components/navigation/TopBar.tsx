@@ -14,6 +14,7 @@ import logo from "../../../assets/images/notification_icon_96.png";
 interface Props {
   showBack?: boolean;
   title?: string;
+  pageTitle?: string;
   hasUnreadMessages?: boolean;
   rightComponent?: React.ReactNode;
 }
@@ -21,6 +22,7 @@ interface Props {
 const TopBar: React.FC<Props> = ({
   showBack,
   title,
+  pageTitle,
   hasUnreadMessages,
   rightComponent,
 }) => {
@@ -30,47 +32,51 @@ const TopBar: React.FC<Props> = ({
   const isLanding = route.name === "Landing";
 
   return (
-    <View style={styles.container}>
-      {showBack && (
-        <View style={styles.leftContainer}>
-          <TouchableOpacity
-            style={styles.backRow}
-            onPress={() => navigation.goBack()}
-          >
-            <ChevronLeftIcon color="white" size={24} />
-            {title && <Text style={styles.title}>{title}</Text>}
-          </TouchableOpacity>
+    <>
+      <View style={styles.container}>
+        {showBack && (
+          <View style={styles.leftContainer}>
+            <TouchableOpacity
+              style={styles.backRow}
+              onPress={() => navigation.goBack()}
+            >
+              <ChevronLeftIcon color="white" size={24} />
+              {title && <Text style={styles.navTitle}>{title}</Text>}
+            </TouchableOpacity>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.logoContainer}
+          onPress={() => navigation.navigate("Landing")}
+        >
+          <Image source={logo} style={styles.logo} />
+          <Text style={styles.homeText}>{isLanding ? "SOPSC" : "Home"}</Text>
+        </TouchableOpacity>
+        <View style={styles.rightContainer}>
+          {rightComponent
+            ? rightComponent
+            : !showBack && (
+                <>
+                  <TouchableOpacity style={styles.icon}>
+                    <BellIcon color="white" size={22} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.icon}
+                    onPress={() => navigation.navigate("Messages")}
+                  >
+                    {hasUnreadMessages ? (
+                      <EnvelopeOpenIcon color="white" size={22} />
+                    ) : (
+                      <EnvelopeIcon color="white" size={22} />
+                    )}
+                  </TouchableOpacity>
+                </>
+              )}
         </View>
-      )}
-      <TouchableOpacity
-        style={styles.logoContainer}
-        onPress={() => navigation.navigate("Landing")}
-      >
-        <Image source={logo} style={styles.logo} />
-        <Text style={styles.homeText}>{isLanding ? "SOPSC" : "Home"}</Text>
-      </TouchableOpacity>
-      <View style={styles.rightContainer}>
-        {rightComponent
-          ? rightComponent
-          : !showBack && (
-              <>
-                <TouchableOpacity style={styles.icon}>
-                  <BellIcon color="white" size={22} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.icon}
-                  onPress={() => navigation.navigate("Messages")}
-                >
-                  {hasUnreadMessages ? (
-                    <EnvelopeIcon color="white" size={22} />
-                  ) : (
-                    <EnvelopeOpenIcon color="white" size={22} />
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
       </View>
-    </View>
+      {pageTitle && <Text style={styles.pageTitle}>{pageTitle}</Text>}
+    </>
   );
 };
 
@@ -115,10 +121,18 @@ const styles = StyleSheet.create({
   icon: {
     padding: 4,
   },
-  title: {
+
+  navTitle: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  pageTitle: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 8,
+    marginLeft: 12,
   },
 });
 

@@ -1,13 +1,14 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import TopBar from './TopBar';
-import BottomBar from './BottomBar';
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import TopBar from "./TopBar";
+import BottomBar from "./BottomBar";
 
 interface Props {
   children: React.ReactNode;
   showBottomBar?: boolean;
   showBack?: boolean;
   title?: string;
+  pageTitle?: string;
   hasUnreadMessages?: boolean;
   rightComponent?: React.ReactNode;
 }
@@ -17,6 +18,7 @@ const ScreenContainer: React.FC<Props> = ({
   showBottomBar = true,
   showBack = false,
   title,
+  pageTitle,
   hasUnreadMessages,
   rightComponent,
 }) => {
@@ -25,6 +27,7 @@ const ScreenContainer: React.FC<Props> = ({
       <TopBar
         showBack={showBack}
         title={title}
+        pageTitle={pageTitle}
         hasUnreadMessages={hasUnreadMessages}
         rightComponent={rightComponent}
       />
