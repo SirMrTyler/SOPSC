@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import ScreenContainer from '../Navigation/ScreenContainer';
-import * as reportService from './services/reportService';
-import type { Report } from '../../types/report';
-import { useAuth } from '../../hooks/useAuth';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Button } from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import ScreenContainer from "../Navigation/ScreenContainer";
+import * as reportService from "./services/reportService";
+import type { Report } from "../../types/report";
+import { useAuth } from "../../hooks/useAuth";
 
 const ReportDetails: React.FC = () => {
   const route = useRoute();
@@ -34,7 +34,7 @@ const ReportDetails: React.FC = () => {
   }
 
   const isAdmin = user?.Roles?.some(
-    (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
+    (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
   const canModify = !!user && (user.userId === report.createdById || isAdmin);
 
@@ -55,17 +55,18 @@ const ReportDetails: React.FC = () => {
         <View style={styles.card}>
           <View style={[styles.row, styles.rowRight]}>
             <Text style={styles.header}>Hours Served:</Text>
-            <Text style={styles.body}>{report.hoursOfService ?? 'N/A'}</Text>
+            <Text style={styles.body}>{report.hoursOfService ?? "N/A"}</Text>
           </View>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
               <Text style={styles.header}>Chaplain Division:</Text>
               <Text style={styles.body}>{report.chaplainDivision}</Text>
             </View>
-            <View style={styles.rowRight}>
-              <Text style={styles.header}>Created Date:</Text>
-              <Text style={styles.body}>{report.dateCreated}</Text>
-            </View>
+          </View>
+          <View>
+            <Text style={styles.dateText}>
+              Created Date: {report.dateCreated}
+            </Text>
           </View>
           <Text style={styles.header}>Narrative:</Text>
           <Text style={styles.body}>{report.narrative}</Text>
@@ -73,13 +74,9 @@ const ReportDetails: React.FC = () => {
             <View style={styles.itemActions}>
               <Button
                 title="Edit"
-                onPress={() => navigation.navigate('Reports')}
+                onPress={() => navigation.navigate("Reports")}
               />
-              <Button
-                title="Delete"
-                color="red"
-                onPress={handleDelete}
-              />
+              <Button title="Delete" color="red" onPress={handleDelete} />
             </View>
           )}
         </View>
@@ -94,15 +91,19 @@ const ReportDetails: React.FC = () => {
             </View>
             <View style={styles.rowRight}>
               <Text style={styles.header}>Phone:</Text>
-              <Text style={styles.body}>{report.pocPhone ?? 'N/A'}</Text>
+              <Text style={styles.body}>{report.pocPhone ?? "N/A"}</Text>
             </View>
           </View>
           <View style={styles.row}>
             <Text style={styles.header}>Agency:</Text>
             <Text style={styles.body}>
-              {[report.primaryAgency, report.secondaryAgency, report.otherAgency]
+              {[
+                report.primaryAgency,
+                report.secondaryAgency,
+                report.otherAgency,
+              ]
                 .filter(Boolean)
-                .join(', ')}
+                .join(", ")}
             </Text>
           </View>
           <View style={styles.row}>
@@ -120,26 +121,28 @@ const ReportDetails: React.FC = () => {
           </View>
           {report.addressLine2Dispatch && (
             <View style={[styles.row, styles.rowCenter]}>
-              <Text style={styles.bodyCenter}>{report.addressLine2Dispatch}</Text>
+              <Text style={styles.bodyCenter}>
+                {report.addressLine2Dispatch}
+              </Text>
             </View>
           )}
           <View style={[styles.row, styles.rowCenter]}>
             <Text style={styles.bodyCenter}>
               {`${report.cityDispatch}${
-                report.stateDispatch ? `, ${report.stateDispatch}` : ''
+                report.stateDispatch ? `, ${report.stateDispatch}` : ""
               }${
-                report.postalCodeDispatch ? ` ${report.postalCodeDispatch}` : ''
+                report.postalCodeDispatch ? ` ${report.postalCodeDispatch}` : ""
               }`}
             </Text>
           </View>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
               <Text style={styles.header}>Date of Dispatch:</Text>
-              <Text style={styles.body}>{report.dateDispatch ?? 'N/A'}</Text>
+              <Text style={styles.body}>{report.dateDispatch ?? "N/A"}</Text>
             </View>
             <View style={styles.rowRight}>
               <Text style={styles.header}>Commute Time:</Text>
-              <Text style={styles.body}>{report.commuteTime ?? 'N/A'}</Text>
+              <Text style={styles.body}>{report.commuteTime ?? "N/A"}</Text>
             </View>
           </View>
         </View>
@@ -153,59 +156,65 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     padding: 16,
     borderRadius: 8,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   rowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
   rowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
   rowCenter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
   },
   header: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 16,
     marginRight: 4,
   },
   body: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
+  },
+  dateText: {
+    color: "white",
+    fontSize: 14,
+    width: "100%",
+    marginBottom: 8,
   },
   bodyCenter: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   loading: {
-    color: 'white',
+    color: "white",
   },
   pageTitle: {
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 16,
-    color: 'white',
+    color: "white",
   },
   itemActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 8,
   },
 });
