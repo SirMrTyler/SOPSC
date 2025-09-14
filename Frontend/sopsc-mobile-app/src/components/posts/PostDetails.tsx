@@ -210,7 +210,7 @@ const PostDetails: React.FC = () => {
   return (
     <ScreenContainer
       showBack
-      title="Prayer Requests"
+      title="Prayers"
       pageTitle={post.subject}
       showBottomBar={false}
     >
