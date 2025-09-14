@@ -73,9 +73,7 @@ const ReportDetails: React.FC = () => {
             </View>
           </View>
           <View>
-            <Text style={styles.dateText}>
-              Created Date: {report.dateCreated}
-            </Text>
+            <Text style={styles.dateText}>Created Date: {formattedDate}</Text>
           </View>
           <Text style={styles.header}>Narrative:</Text>
           <Text style={styles.body}>{report.narrative}</Text>
