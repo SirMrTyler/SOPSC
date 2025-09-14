@@ -6,6 +6,7 @@ using SOPSC.Api.Models.Interfaces.Messages;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Google.Cloud.Firestore;
 
 namespace SOPSC.Api.Services
 {
@@ -15,10 +16,12 @@ namespace SOPSC.Api.Services
     public class MessagesService : IMessagesService
     {
         private readonly IDataProvider _dataProvider;
+        private readonly FirestoreDb _db;
 
-        public MessagesService(IDataProvider dataProvider)
+        public MessagesService(IDataProvider dataProvider, FirestoreDb db = null)
         {
             _dataProvider = dataProvider;
+            _db = db;
         }
 
         /// <inheritdoc />
@@ -198,6 +201,23 @@ namespace SOPSC.Api.Services
 
             _dataProvider.ExecuteNonQuery(procName,
                 param => { param.AddWithValue("@MessageIds", messageIds); });
+
+            if (_db != null)
+            {
+                foreach (var id in messageIds.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    int sqlId;
+                    if (int.TryParse(id.Trim(), out sqlId))
+                    {
+                        var query = _db.CollectionGroup("messages").WhereEqualTo("sqlId", sqlId);
+                        var snapshot = query.GetSnapshotAsync().GetAwaiter().GetResult();
+                        foreach (var doc in snapshot.Documents)
+                        {
+                            doc.Reference.DeleteAsync().GetAwaiter().GetResult();
+                        }
+                    }
+                }
+            }
         }
 
         public void DeleteConversation(int chatId)
@@ -209,6 +229,17 @@ namespace SOPSC.Api.Services
                 {
                     param.AddWithValue("@ChatId", chatId);
                 });
+
+            if (_db != null)
+            {
+                var convRef = _db.Collection("conversations").Document(chatId.ToString());
+                var messages = convRef.Collection("messages").GetSnapshotAsync().GetAwaiter().GetResult();
+                foreach (var doc in messages.Documents)
+                {
+                    doc.Reference.DeleteAsync().GetAwaiter().GetResult();
+                }
+                convRef.DeleteAsync().GetAwaiter().GetResult();
+            }
         }
     }
 }

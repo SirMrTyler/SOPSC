@@ -239,5 +239,25 @@ namespace SOPSC.Api.Controllers
 
             return StatusCode(code, response);
         }
+
+        [HttpDelete("{messageId:int}")]
+        public ActionResult<SuccessResponse> Delete(int messageId)
+        {
+            int code = 200;
+            BaseResponse response = null;
+            try
+            {
+                _messagesService.DeleteMessages(messageId.ToString());
+                response = new SuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                base.Logger.LogError(ex.ToString());
+                code = 500;
+                response = new ErrorResponse($"Generic Error: {ex.Message}.");
+            }
+
+            return StatusCode(code, response);
+        }
     }
 }

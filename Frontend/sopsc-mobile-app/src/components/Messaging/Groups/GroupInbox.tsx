@@ -11,13 +11,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import type { RootStackParamList } from "../../../../App";
 import ScreenContainer from "../../Navigation/ScreenContainer";
 import { listenToGroupChats } from "../services/groupChatFs";
-import { FsConversation } from "../../../types/fsMessages";
+import { FsConversation, deleteConversation } from "../../../types/fsMessages";
 import { useAuth } from "../../../hooks/useAuth";
 import { formatTimestamp } from "../../../utils/date";
 
@@ -46,6 +47,20 @@ const GroupChats: React.FC = () => {
     return () => unsub();
   }, [user]);
 
+  const handleDelete = (chat: FsConversation) => {
+    Alert.alert("Delete group?", "This will remove the conversation.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteConversation(chat.chatId, "group");
+          setChats((prev) => prev.filter((c) => c.chatId !== chat.chatId));
+        },
+      },
+    ]);
+  };
+
   const renderItem = ({ item }: { item: FsConversation }) => {
     const unread = item.unreadCount?.[user?.firebaseUid || ""] || 0;
     const groupName =
@@ -68,6 +83,7 @@ const GroupChats: React.FC = () => {
             name: groupName,
           })
         }
+        onLongPress={() => handleDelete(item)}
       >
         <View style={styles.rowBetween}>
           <Text style={styles.name}>{groupName}</Text>
