@@ -33,6 +33,15 @@ const ReportDetails: React.FC = () => {
     );
   }
 
+  const createdDate = new Date(report.dateCreated);
+  const formattedDate = `${createdDate.toLocaleDateString()} ${createdDate
+    .toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toLowerCase()}`;
+
   const isAdmin = user?.Roles?.some(
     (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
