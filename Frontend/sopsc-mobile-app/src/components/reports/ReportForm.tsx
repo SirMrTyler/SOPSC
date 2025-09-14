@@ -226,7 +226,7 @@ const ReportForm: React.FC<Props> = ({
 
   return (
     <Modal visible={visible} animationType="slide">
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>
           {initialValues.reportId ? 'Edit Report' : 'New Report'}
         </Text>
@@ -439,11 +439,13 @@ const ReportForm: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
+    backgroundColor: 'white',
+  },
+  container: {
     padding: 16,
     paddingBottom: 32,
-    backgroundColor: 'white',
   },
   title: {
     fontSize: 20,
