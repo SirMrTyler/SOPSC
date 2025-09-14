@@ -220,8 +220,9 @@ const ReportForm: React.FC<Props> = ({
     payload.milesDriven = Number(milesDriven);
 
     try {
-      if (initialValues.reportId) {
-        await reportService.update(initialValues.reportId, payload);
+      const reportId = initialValues?.reportId;
+      if (reportId) {
+        await reportService.update(reportId, payload);
       } else {
         await reportService.add(payload);
       }
@@ -236,7 +237,7 @@ const ReportForm: React.FC<Props> = ({
     <Modal visible={visible} animationType="slide">
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>
-          {initialValues.reportId ? 'Edit Report' : 'New Report'}
+          {initialValues?.reportId ? 'Edit Report' : 'New Report'}
         </Text>
         {divisions.length > 1 && (
           <>
