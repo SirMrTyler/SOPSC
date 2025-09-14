@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -28,8 +28,12 @@ const ReportForm: React.FC<Props> = ({
 }) => {
   const { user } = useAuth();
   const authUser: any = user;
-  const divisions: string[] =
-    authUser?.divisions ?? (authUser?.division ? [authUser.division] : []);
+  const divisions = useMemo<string[]>(
+    () =>
+      authUser?.divisions ??
+      (authUser?.division ? [authUser.division] : []),
+    [authUser?.divisions, authUser?.division]
+  );
 
   const [division, setDivision] = useState(
     initialValues.chaplainDivision || divisions[0] || ''
@@ -104,7 +108,7 @@ const ReportForm: React.FC<Props> = ({
       initialValues.milesDriven ? String(initialValues.milesDriven) : ''
     );
     setNarrative(initialValues.narrative || '');
-  }, [initialValues, divisions]);
+  }, [initialValues, visible, divisions]);
 
   const isCommunity = division === 'Community';
 
