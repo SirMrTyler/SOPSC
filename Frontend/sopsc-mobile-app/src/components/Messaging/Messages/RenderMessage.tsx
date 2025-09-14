@@ -14,6 +14,8 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,6 +31,7 @@ import {
   sendMessage,
   MemberProfile,
   getFsConversation,
+  deleteMessage,
 } from "../../../types/fsMessages";
 import { formatTimestamp } from "../../../utils/date";
 import { useConversationMeta } from "../../../hooks/useConversationMeta";
@@ -106,6 +109,20 @@ const Conversation: React.FC<Props> = ({ route }) => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
+  const handleDeleteMessage = (msg: FsMessage) => {
+    const type = meta.type || conversation?.type || "direct";
+    Alert.alert("Delete message?", "This cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteMessage(String(conversationId), msg.messageId, type);
+        },
+      },
+    ]);
+  };
+
   /**
    * Renders each message bubble with timestamp and read status.
    */
@@ -129,7 +146,10 @@ const Conversation: React.FC<Props> = ({ route }) => {
       ? !!item.readBy?.[user?.firebaseUid || ""]
       : otherParticipantUids.every((uid) => item.readBy?.[uid]);
     return (
-      <View style={incoming ? styles.messageRowLeft : styles.messageRowRight}>
+      <TouchableOpacity
+        onLongPress={() => handleDeleteMessage(item)}
+        style={incoming ? styles.messageRowLeft : styles.messageRowRight}
+      >
         {incoming && (
           <Image
             source={
@@ -149,7 +169,7 @@ const Conversation: React.FC<Props> = ({ route }) => {
             <Text style={styles.readStatus}>{isRead ? "Read" : "Unread"}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

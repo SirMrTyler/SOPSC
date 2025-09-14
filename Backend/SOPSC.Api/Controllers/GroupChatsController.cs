@@ -184,4 +184,44 @@ public class GroupChatsController : BaseApiController
         }
         return StatusCode(code, response);
     }
+
+    [HttpDelete("{groupChatId:int}/messages/{messageId:int}")]
+    public ActionResult<SuccessResponse> DeleteMessage(int groupChatId, int messageId)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            _service.DeleteMessage(groupChatId, messageId);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+
+        return StatusCode(code, response);
+    }
+
+    [HttpDelete("{groupChatId:int}")]
+    public ActionResult<SuccessResponse> DeleteGroup(int groupChatId)
+    {
+        int code = 200;
+        BaseResponse response = null;
+        try
+        {
+            _service.DeleteGroup(groupChatId);
+            response = new SuccessResponse();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+            code = 500;
+            response = new ErrorResponse($"Generic Error: {ex.Message}.");
+        }
+
+        return StatusCode(code, response);
+    }
 }

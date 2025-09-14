@@ -14,6 +14,8 @@ import {
   getDoc,
   increment,
   writeBatch,
+  deleteDoc,
+  getDocs,
 } from '@react-native-firebase/firestore';
 import type { FirebaseFirestoreTypes, Timestamp } from '@react-native-firebase/firestore';
 import axios from 'axios';
@@ -336,6 +338,54 @@ export const markConversationRead = async (
   await batch.commit();
 };
 
+export const deleteMessage = async (
+  chatId: string,
+  messageId: string,
+  type: 'direct' | 'group',
+): Promise<void> => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const url =
+    type === 'direct'
+      ? `${process.env.EXPO_PUBLIC_API_URL}messages/${messageId}`
+      : `${process.env.EXPO_PUBLIC_API_URL}groupchats/${chatId}/messages/${messageId}`;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (deviceId) headers.DeviceId = deviceId;
+  try {
+    await axios.delete(url, { headers });
+  } catch (err) {
+    console.error('deleteMessage: backend delete failed', err);
+  }
+  await deleteDoc(doc(db, `conversations/${chatId}/messages`, messageId));
+};
+
+export const deleteConversation = async (
+  chatId: string,
+  type: 'direct' | 'group',
+): Promise<void> => {
+  const token = await helper.getToken();
+  const deviceId = await helper.getDeviceId();
+  const url =
+    type === 'direct'
+      ? `${process.env.EXPO_PUBLIC_API_URL}messages/conversation/${chatId}`
+      : `${process.env.EXPO_PUBLIC_API_URL}groupchats/${chatId}`;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (deviceId) headers.DeviceId = deviceId;
+  try {
+    await axios.delete(url, { headers });
+  } catch (err) {
+    console.error('deleteConversation: backend delete failed', err);
+  }
+  const convRef = doc(db, 'conversations', chatId);
+  const msgs = await getDocs(collection(db, `conversations/${chatId}/messages`));
+  const batch = writeBatch(db);
+  msgs.forEach((m) => batch.delete(m.ref));
+  batch.delete(convRef);
+  await batch.commit();
+};
+
 export default {
   getFsConversation,
   ensureConversationDoc,
@@ -343,5 +393,7 @@ export default {
   listenToMyConversations,
   listenToConversationMessages,
   markConversationRead,
+  deleteMessage,
+  deleteConversation,
 };
 

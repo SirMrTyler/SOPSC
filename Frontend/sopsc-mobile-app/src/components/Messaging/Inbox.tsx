@@ -12,6 +12,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -23,6 +24,7 @@ import {
   listenToMyConversations,
   FsConversation,
   MemberProfile,
+  deleteConversation,
 } from "../../types/fsMessages";
 import { getAll, getById } from "../User/services/userService";
 import type { UserResult } from "../../types/user";
@@ -159,6 +161,20 @@ const Messages: React.FC = () => {
     navigation.navigate("Conversation", { conversationId: item.chatId });
   };
 
+  const handleDeleteConversation = (item: FsConversation) => {
+    Alert.alert("Delete conversation?", "This will remove all messages.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteConversation(item.chatId, item.type);
+          setMessages((prev) => prev.filter((m) => m.chatId !== item.chatId));
+        },
+      },
+    ]);
+  };
+
   return (
     <ScreenContainer showBack title="Home">
       <View style={styles.container}>
@@ -200,6 +216,7 @@ const Messages: React.FC = () => {
               <RenderMessageItem
                 conversation={item}
                 onPress={() => handleUserPress(item)}
+                onLongPress={() => handleDeleteConversation(item)}
               />
             )}
           />

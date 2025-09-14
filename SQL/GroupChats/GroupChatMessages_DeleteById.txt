@@ -1,0 +1,9 @@
+ALTER PROC dbo.GroupChatMessages_DeleteById
+        @GroupChatId INT,
+        @MessageId INT
+AS
+BEGIN
+        DELETE FROM dbo.GroupChatMessages
+        WHERE GroupChatId = @GroupChatId
+          AND MessageId = @MessageId;
+END;

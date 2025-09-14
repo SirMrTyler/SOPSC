@@ -5,6 +5,7 @@ using SOPSC.Api.Models.Domains.GroupChats;
 using SOPSC.Api.Models.Interfaces.GroupChats;
 using System.Collections.Generic;
 using System.Data;
+using Google.Cloud.Firestore;
 
 namespace SOPSC.Api.Services;
 
@@ -14,10 +15,12 @@ namespace SOPSC.Api.Services;
 public class GroupChatsService : IGroupChatsService
 {
     private readonly IDataProvider _dataProvider;
+    private readonly FirestoreDb _db;
 
-    public GroupChatsService(IDataProvider dataProvider)
+    public GroupChatsService(IDataProvider dataProvider, FirestoreDb db = null)
     {
         _dataProvider = dataProvider;
+        _db = db;
     }
 
     public List<GroupChatSummary> GetByUserId(int userId)
@@ -176,5 +179,42 @@ public class GroupChatsService : IGroupChatsService
             });
 
         return list ?? new List<GroupChatMember>();
+    }
+
+    public void DeleteMessage(int groupChatId, int messageId)
+    {
+        string procName = "[dbo].[GroupChatMessages_DeleteById]";
+
+        _dataProvider.ExecuteNonQuery(procName,
+            param =>
+            {
+                param.AddWithValue("@GroupChatId", groupChatId);
+                param.AddWithValue("@MessageId", messageId);
+            });
+
+        if (_db != null)
+        {
+            var msgRef = _db.Collection($"conversations/{groupChatId}/messages").Document(messageId.ToString());
+            msgRef.DeleteAsync().GetAwaiter().GetResult();
+        }
+    }
+
+    public void DeleteGroup(int groupChatId)
+    {
+        string procName = "[dbo].[GroupChats_Delete]";
+
+        _dataProvider.ExecuteNonQuery(procName,
+            param => { param.AddWithValue("@GroupChatId", groupChatId); });
+
+        if (_db != null)
+        {
+            var convRef = _db.Collection("conversations").Document(groupChatId.ToString());
+            var messages = convRef.Collection("messages").GetSnapshotAsync().GetAwaiter().GetResult();
+            foreach (var doc in messages.Documents)
+            {
+                doc.Reference.DeleteAsync().GetAwaiter().GetResult();
+            }
+            convRef.DeleteAsync().GetAwaiter().GetResult();
+        }
     }
 }

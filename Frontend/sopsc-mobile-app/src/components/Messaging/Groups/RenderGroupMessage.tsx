@@ -30,6 +30,7 @@ import {
   markConversationRead,
   sendMessage,
   MemberProfile,
+  deleteMessage,
 } from "../../../types/fsMessages";
 import { UserPlusIcon } from "react-native-heroicons/outline";
 import defaultAvatar from "../../../../assets/images/default-avatar.png";
@@ -123,6 +124,19 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
+  const handleDeleteMessage = (msg: FsMessage) => {
+    Alert.alert("Delete message?", "This cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteMessage(chatId, msg.messageId, "group");
+        },
+      },
+    ]);
+  };
+
   const toggleExpanded = (id: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -158,6 +172,7 @@ const GroupChatConversation: React.FC<Props> = ({ route, navigation }) => {
     return (
       <TouchableOpacity
         onPress={() => toggleExpanded(item.messageId)}
+        onLongPress={() => handleDeleteMessage(item)}
         activeOpacity={0.8}
       >
         <View
