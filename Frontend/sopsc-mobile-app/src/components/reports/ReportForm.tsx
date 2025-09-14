@@ -51,8 +51,27 @@ const ReportForm: React.FC<Props> = ({
   const [contactName, setContactName] = useState(
     initialValues?.contactName || ''
   );
-  const [pocPhone, setPocPhone] = useState(initialValues?.pocPhone || '');
-  const [pocEmail, setPocEmail] = useState(initialValues?.pocEmail || '');
+  const [contactPhone, setContactPhone] = useState(
+    initialValues?.contactPhone || ''
+  );
+  const [contactEmail, setContactEmail] = useState(
+    initialValues?.contactEmail || ''
+  );
+  const [secondaryAgency, setSecondaryAgency] = useState(
+    initialValues?.secondaryAgency || ''
+  );
+  const [otherAgency, setOtherAgency] = useState(
+    initialValues?.otherAgency || ''
+  );
+  const [addressLine2Dispatch, setAddressLine2Dispatch] = useState(
+    initialValues?.addressLine2Dispatch || ''
+  );
+  const [stateDispatch, setStateDispatch] = useState(
+    initialValues?.stateDispatch || ''
+  );
+  const [postalCodeDispatch, setPostalCodeDispatch] = useState(
+    initialValues?.postalCodeDispatch || ''
+  );
   const [clientName, setClientName] = useState(initialValues?.clientName || '');
   const [clientPhone, setClientPhone] = useState(
     initialValues?.clientPhone || ''
@@ -92,12 +111,17 @@ const ReportForm: React.FC<Props> = ({
     setPrimaryAgency(initialValues?.primaryAgency || '');
     setTypeOfService(initialValues?.typeOfService || '');
     setContactName(initialValues?.contactName || '');
-    setPocPhone(initialValues?.pocPhone || '');
-    setPocEmail(initialValues?.pocEmail || '');
+    setContactPhone(initialValues?.contactPhone || '');
+    setContactEmail(initialValues?.contactEmail || '');
+    setSecondaryAgency(initialValues?.secondaryAgency || '');
+    setOtherAgency(initialValues?.otherAgency || '');
     setClientName(initialValues?.clientName || '');
     setClientPhone(initialValues?.clientPhone || '');
     setAddressDispatch(initialValues?.addressDispatch || '');
+    setAddressLine2Dispatch(initialValues?.addressLine2Dispatch || '');
     setCityDispatch(initialValues?.cityDispatch || '');
+    setStateDispatch(initialValues?.stateDispatch || '');
+    setPostalCodeDispatch(initialValues?.postalCodeDispatch || '');
     setAddressDestination(initialValues?.addressDestination || '');
     setCityDestination(initialValues?.cityDestination || '');
     setHoursOfService(
@@ -172,17 +196,32 @@ const ReportForm: React.FC<Props> = ({
       if (!contactName.trim()) {
         newErrors.contactName = 'Contact name is required';
       }
-      if (!pocPhone.trim()) {
-        newErrors.pocPhone = 'POC phone is required';
+      if (!secondaryAgency.trim()) {
+        newErrors.secondaryAgency = 'Secondary agency is required';
       }
-      if (!pocEmail.trim()) {
-        newErrors.pocEmail = 'POC email is required';
+      if (!otherAgency.trim()) {
+        newErrors.otherAgency = 'Other agency is required';
+      }
+      if (!contactPhone.trim()) {
+        newErrors.contactPhone = 'Contact phone is required';
+      }
+      if (!contactEmail.trim()) {
+        newErrors.contactEmail = 'Contact email is required';
       }
       if (!addressDispatch.trim()) {
         newErrors.addressDispatch = 'Dispatch address is required';
       }
+      if (!addressLine2Dispatch.trim()) {
+        newErrors.addressLine2Dispatch = 'Dispatch address line 2 is required';
+      }
       if (!cityDispatch.trim()) {
         newErrors.cityDispatch = 'Dispatch city is required';
+      }
+      if (!stateDispatch.trim()) {
+        newErrors.stateDispatch = 'Dispatch state is required';
+      }
+      if (!postalCodeDispatch.trim()) {
+        newErrors.postalCodeDispatch = 'Dispatch postal code is required';
       }
     }
 
@@ -205,12 +244,17 @@ const ReportForm: React.FC<Props> = ({
       payload.commuteTime = Number(commuteTime);
     } else {
       payload.primaryAgency = primaryAgency;
+      payload.secondaryAgency = secondaryAgency;
+      payload.otherAgency = otherAgency;
       payload.typeOfService = typeOfService;
       payload.contactName = contactName;
-      payload.pocPhone = pocPhone;
-      payload.pocEmail = pocEmail;
+      payload.contactPhone = contactPhone;
+      payload.contactEmail = contactEmail;
       payload.addressDispatch = addressDispatch;
+      payload.addressLine2Dispatch = addressLine2Dispatch;
       payload.cityDispatch = cityDispatch;
+      payload.stateDispatch = stateDispatch;
+      payload.postalCodeDispatch = postalCodeDispatch;
     }
 
     payload.addressDestination = addressDestination;
@@ -285,25 +329,45 @@ const ReportForm: React.FC<Props> = ({
             {errors.contactName && (
               <Text style={styles.errorText}>{errors.contactName}</Text>
             )}
-            <Text style={styles.label}>POC Phone</Text>
+            <Text style={styles.label}>Secondary Agency</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter POC phone"
-              value={pocPhone}
-              onChangeText={setPocPhone}
+              placeholder="Enter secondary agency"
+              value={secondaryAgency}
+              onChangeText={setSecondaryAgency}
             />
-            {errors.pocPhone && (
-              <Text style={styles.errorText}>{errors.pocPhone}</Text>
+            {errors.secondaryAgency && (
+              <Text style={styles.errorText}>{errors.secondaryAgency}</Text>
             )}
-            <Text style={styles.label}>POC Email</Text>
+            <Text style={styles.label}>Other Agency</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter POC email"
-              value={pocEmail}
-              onChangeText={setPocEmail}
+              placeholder="Enter other agency"
+              value={otherAgency}
+              onChangeText={setOtherAgency}
             />
-            {errors.pocEmail && (
-              <Text style={styles.errorText}>{errors.pocEmail}</Text>
+            {errors.otherAgency && (
+              <Text style={styles.errorText}>{errors.otherAgency}</Text>
+            )}
+            <Text style={styles.label}>Contact Phone</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter contact phone"
+              value={contactPhone}
+              onChangeText={setContactPhone}
+            />
+            {errors.contactPhone && (
+              <Text style={styles.errorText}>{errors.contactPhone}</Text>
+            )}
+            <Text style={styles.label}>Contact Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter contact email"
+              value={contactEmail}
+              onChangeText={setContactEmail}
+            />
+            {errors.contactEmail && (
+              <Text style={styles.errorText}>{errors.contactEmail}</Text>
             )}
             <Text style={styles.label}>Dispatch Address</Text>
             <TextInput
@@ -315,6 +379,16 @@ const ReportForm: React.FC<Props> = ({
             {errors.addressDispatch && (
               <Text style={styles.errorText}>{errors.addressDispatch}</Text>
             )}
+            <Text style={styles.label}>Dispatch Address Line 2</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter dispatch address line 2"
+              value={addressLine2Dispatch}
+              onChangeText={setAddressLine2Dispatch}
+            />
+            {errors.addressLine2Dispatch && (
+              <Text style={styles.errorText}>{errors.addressLine2Dispatch}</Text>
+            )}
             <Text style={styles.label}>Dispatch City</Text>
             <TextInput
               style={styles.input}
@@ -324,6 +398,26 @@ const ReportForm: React.FC<Props> = ({
             />
             {errors.cityDispatch && (
               <Text style={styles.errorText}>{errors.cityDispatch}</Text>
+            )}
+            <Text style={styles.label}>Dispatch State</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter dispatch state"
+              value={stateDispatch}
+              onChangeText={setStateDispatch}
+            />
+            {errors.stateDispatch && (
+              <Text style={styles.errorText}>{errors.stateDispatch}</Text>
+            )}
+            <Text style={styles.label}>Dispatch Postal Code</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter dispatch postal code"
+              value={postalCodeDispatch}
+              onChangeText={setPostalCodeDispatch}
+            />
+            {errors.postalCodeDispatch && (
+              <Text style={styles.errorText}>{errors.postalCodeDispatch}</Text>
             )}
           </>
         )}

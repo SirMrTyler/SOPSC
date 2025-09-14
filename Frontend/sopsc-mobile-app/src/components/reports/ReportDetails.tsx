@@ -98,7 +98,7 @@ const ReportDetails: React.FC = () => {
             </View>
             <View style={styles.rowRight}>
               <Text style={styles.header}>Phone:</Text>
-              <Text style={styles.body}>{report.pocPhone ?? "N/A"}</Text>
+              <Text style={styles.body}>{report.contactPhone ?? 'N/A'}</Text>
             </View>
           </View>
           <View style={styles.row}>
@@ -117,10 +117,10 @@ const ReportDetails: React.FC = () => {
             <Text style={styles.header}>Service Type:</Text>
             <Text style={styles.body}>{report.typeOfService}</Text>
           </View>
-          {report.pocEmail && (
+          {report.contactEmail && (
             <View style={styles.row}>
               <Text style={styles.header}>Email:</Text>
-              <Text style={styles.body}>{report.pocEmail}</Text>
+              <Text style={styles.body}>{report.contactEmail}</Text>
             </View>
           )}
           <View style={[styles.row, styles.rowCenter]}>

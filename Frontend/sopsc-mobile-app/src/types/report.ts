@@ -9,8 +9,8 @@ export interface Report {
   otherAgency?: string | null;
   typeOfService: string;
   contactName: string;
-  pocPhone?: string | null;
-  pocEmail?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
   clientName?: string | null;
   clientPhone?: string | null;
   addressDispatch: string;
