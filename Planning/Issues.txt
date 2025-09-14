@@ -1,23 +1,24 @@
-Issues:
-* Remove logo from background and place it in the center of the top nav bar
+Issues/ToDo List:
+* Place logo in the center of the middle top navbar.
 
 * Reports can't be viewed by data, user, search, or division yet.
-* Report creating is currently unusable.
-* Reports 'Created Date' is rendering outside of the box.
+* Report creating is currently unusable do to visual UI (invisible text, poorly formatted entry, nothing but entry boxes, etc).
+* Reports 'Created Date' is rendering outside of the box when viewing an individual report. I would like it moved to a new line right below, 'Chaplain Division:'.
 
-* Prayer Request UI needs changed for readability
+* Prayer Request UI needs changed for readability (currently comments blur with the background, I would like more of a rounded white box container style like the rest of the app).
 
-* Profile photo changing isn't working
-* Profile viewing for admins isn't developed yet
-* Admin panel isn't done yet.
+* Messages can't be deleted (in groups, individually, or by whole conversation. If this is implemented you will have to run delete requests to my SQL server, AND to firebase).
+* Messages text entry box is to0 high (add when tapped the keyboard goes away), and needs a more visually UI friendly rounded box container around it.
 
-* Messages can't be deleted
-* Messages text box is to high (add when tapped the keyboard goes away)
-
-* Schedule isn't creating new calendar events
+* The schedule isn't creating working when users attempt to create new calendar events. 
+- Issue: SQL isn't being updated when the creation happens, and the calendar doesn't render any new events to the UI.
 
 * 
 * Notifications need wired for:
 	- Prayer Requests
 	- Calendar
 	- News and Announcements
+
+*** Profile photo changing isn't working
+*** Profile viewing for admins isn't developed yet
+*** Admin panel isn't done yet.
