@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../App";
 import {
@@ -26,6 +26,8 @@ const TopBar: React.FC<Props> = ({
 }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const isLanding = route.name === "Landing";
 
   return (
     <View style={styles.container}>
@@ -45,7 +47,7 @@ const TopBar: React.FC<Props> = ({
         onPress={() => navigation.navigate("Landing")}
       >
         <Image source={logo} style={styles.logo} />
-        <Text style={styles.homeText}>home</Text>
+        <Text style={styles.homeText}>{isLanding ? "SOPSC" : "Home"}</Text>
       </TouchableOpacity>
       <View style={styles.rightContainer}>
         {rightComponent
