@@ -3,16 +3,34 @@ import * as helper from '../../serviceHelpers';
 
 const endpoint = `${process.env.EXPO_PUBLIC_API_URL}reports`;
 
-const getAll = async (pageIndex = 0, pageSize = 10, divisionId) => {
+const getAll = async (
+  pageIndex = 0,
+  pageSize = 10,
+  divisionId,
+  filters = {}
+) => {
   const token = await helper.getToken();
   const deviceId = await helper.getDeviceId();
-  let url = `${endpoint}?pageIndex=${pageIndex}&pageSize=${pageSize}`;
-  if (divisionId) {
-    url += `&divisionId=${divisionId}`;
+  const params = new URLSearchParams({
+    pageIndex: String(pageIndex),
+    pageSize: String(pageSize),
+  });
+  const division = filters.divisionId || divisionId;
+  if (division) {
+    params.append('divisionId', String(division));
+  }
+  if (filters.userId) {
+    params.append('userId', String(filters.userId));
+  }
+  if (filters.date) {
+    params.append('date', filters.date);
+  }
+  if (filters.query) {
+    params.append('query', filters.query);
   }
   const config = {
     method: 'GET',
-    url,
+    url: `${endpoint}?${params.toString()}`,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
