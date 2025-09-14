@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,27 +17,76 @@ import { Report } from '../../types/report';
 import ReportForm from './ReportForm';
 import { useAuth } from '../../hooks/useAuth';
 import { TrashIcon } from 'react-native-heroicons/outline';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import * as userService from '../User/services/userService';
 
 const Reports: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [reports, setReports] = useState<Report[]>([]);
+  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Report | null>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [filterUserId, setFilterUserId] = useState<number | null>(null);
+  const [filterDivision, setFilterDivision] = useState('');
+  const [search, setSearch] = useState('');
+  const [users, setUsers] = useState<any[]>([]);
   const { user } = useAuth();
+  const authUser: any = user;
+  const divisions: string[] =
+    authUser?.divisions ?? (authUser?.division ? [authUser.division] : []);
   const divisionId = (user as any)?.divisionId;
   const isAdmin = user?.Roles?.some(
     (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
   );
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await userService.getAll(0, 500);
+        const list = Array.isArray(data)
+          ? data
+          : data.item?.pagedItems || [];
+        setUsers(list);
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (search) {
+      const lower = search.toLowerCase();
+      setFilteredReports(
+        reports.filter(
+          (r) =>
+            r.chaplain?.toLowerCase().includes(lower) ||
+            r.primaryAgency?.toLowerCase().includes(lower) ||
+            r.typeOfService?.toLowerCase().includes(lower) ||
+            r.narrative?.toLowerCase().includes(lower)
+        )
+      );
+    } else {
+      setFilteredReports(reports);
+    }
+  }, [search, reports]);
+
   const load = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getAll(pageIndex, pageSize, divisionId);
+      const data = await reportService.getAll(pageIndex, pageSize, divisionId, {
+        divisionId: filterDivision || undefined,
+        userId: filterUserId || undefined,
+        date: filterDate ? filterDate.toISOString() : undefined,
+        query: search || undefined,
+      });
       const newItems: Report[] = data.item?.pagedItems || [];
       if (newItems.length === 0) {
         Alert.alert('No More Reports...');
@@ -60,7 +110,15 @@ const Reports: React.FC = () => {
 
   useEffect(() => {
     load();
-  }, [pageIndex, pageSize, divisionId]);
+  }, [
+    pageIndex,
+    pageSize,
+    divisionId,
+    filterDivision,
+    filterUserId,
+    filterDate,
+    search,
+  ]);
 
   const refreshReports = async () => {
     await load();
@@ -136,6 +194,71 @@ const Reports: React.FC = () => {
   return (
     <ScreenContainer showBack title="Home">
       <Text style={styles.title}>REPORTS</Text>
+      <View style={styles.filters}>
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.dateButtonText}>
+            {filterDate ? filterDate.toLocaleDateString() : 'Select Date'}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={filterDate || new Date()}
+            mode="date"
+            onChange={(_, date) => {
+              setShowDatePicker(false);
+              if (date) {
+                setFilterDate(date);
+                setPageIndex(0);
+              }
+            }}
+          />
+        )}
+        <Picker
+          selectedValue={filterUserId ?? ''}
+          onValueChange={(v) => {
+            setFilterUserId(v ? Number(v) : null);
+            setPageIndex(0);
+          }}
+          style={styles.picker}
+        >
+          <Picker.Item label="All Users" value="" />
+          {users.map((u) => (
+            <Picker.Item
+              key={u.userId}
+              label={`${u.firstName} ${u.lastName}`}
+              value={u.userId}
+            />
+          ))}
+        </Picker>
+        <Picker
+          selectedValue={filterDivision}
+          onValueChange={(v) => {
+            setFilterDivision(v);
+            setPageIndex(0);
+          }}
+          style={styles.picker}
+        >
+          <Picker.Item label="All Divisions" value="" />
+          {divisions.map((d) => (
+            <Picker.Item key={d} label={d} value={d} />
+          ))}
+        </Picker>
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search reports..."
+            placeholderTextColor="#DED3C4"
+            value={search}
+            onChangeText={(text) => {
+              setSearch(text);
+              setPageIndex(0);
+            }}
+          />
+        </View>
+      </View>
       <View style={styles.paginationRow}>
         <View style={styles.leftArrows}>
           <TouchableOpacity
@@ -174,7 +297,7 @@ const Reports: React.FC = () => {
         </View>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-        {reports.map((r) => renderReport(r))}
+        {filteredReports.map((r) => renderReport(r))}
       </ScrollView>
       <TouchableOpacity
         style={styles.addButton}
@@ -216,6 +339,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 16,
+  },
+  filters: {
+    paddingHorizontal: 16,
+    gap: 8,
+    marginBottom: 8,
+  },
+  dateButton: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: 'white',
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  dateButtonText: {
+    color: 'white',
+  },
+  picker: {
+    color: 'white',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  searchRow: {
+    flexDirection: 'row',
+  },
+  searchInput: {
+    flex: 1,
+    borderColor: 'white',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    color: 'white',
   },
   paginationRow: {
     flexDirection: 'row',
