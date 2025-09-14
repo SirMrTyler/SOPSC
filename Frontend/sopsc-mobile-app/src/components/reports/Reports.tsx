@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,19 +7,19 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../App';
-import ScreenContainer from '../Navigation/ScreenContainer';
-import * as reportService from './services/reportService';
-import { Report } from '../../types/report';
-import ReportForm from './ReportForm';
-import { useAuth } from '../../hooks/useAuth';
-import { TrashIcon } from 'react-native-heroicons/outline';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
-import * as userService from '../User/services/userService';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../../../App";
+import ScreenContainer from "../Navigation/ScreenContainer";
+import * as reportService from "./services/reportService";
+import { Report } from "../../types/report";
+import ReportForm from "./ReportForm";
+import { useAuth } from "../../hooks/useAuth";
+import { TrashIcon } from "react-native-heroicons/outline";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import * as userService from "../User/services/userService";
 
 const Reports: React.FC = () => {
   const navigation =
@@ -35,8 +35,8 @@ const Reports: React.FC = () => {
   const [filterDate, setFilterDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [filterUserId, setFilterUserId] = useState<number | null>(null);
-  const [filterDivision, setFilterDivision] = useState('');
-  const [search, setSearch] = useState('');
+  const [filterDivision, setFilterDivision] = useState("");
+  const [search, setSearch] = useState("");
   const [users, setUsers] = useState<any[]>([]);
   const { user } = useAuth();
   const authUser: any = user;
@@ -44,16 +44,14 @@ const Reports: React.FC = () => {
     authUser?.divisions ?? (authUser?.division ? [authUser.division] : []);
   const divisionId = (user as any)?.divisionId;
   const isAdmin = user?.Roles?.some(
-    (r) => r.roleName === 'Admin' || r.roleName === 'Administrator'
+    (r) => r.roleName === "Admin" || r.roleName === "Administrator"
   );
 
   useEffect(() => {
     (async () => {
       try {
         const data = await userService.getAll(0, 500);
-        const list = Array.isArray(data)
-          ? data
-          : data.item?.pagedItems || [];
+        const list = Array.isArray(data) ? data : data.item?.pagedItems || [];
         setUsers(list);
       } catch (err) {
         console.error(err);
@@ -62,21 +60,33 @@ const Reports: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let list = [...reports];
+
+    if (filterUserId) {
+      list = list.filter((r) => r.createdById === filterUserId);
+    }
+    if (filterDivision) {
+      list = list.filter((r) => r.chaplainDivision === filterDivision);
+    }
+    if (filterDate) {
+      const selected = filterDate.toDateString();
+      list = list.filter(
+        (r) => new Date(r.dateCreated).toDateString() === selected
+      );
+    }
     if (search) {
       const lower = search.toLowerCase();
-      setFilteredReports(
-        reports.filter(
-          (r) =>
-            r.chaplain?.toLowerCase().includes(lower) ||
-            r.primaryAgency?.toLowerCase().includes(lower) ||
-            r.typeOfService?.toLowerCase().includes(lower) ||
-            r.narrative?.toLowerCase().includes(lower)
-        )
+      list = list.filter(
+        (r) =>
+          r.chaplain?.toLowerCase().includes(lower) ||
+          r.primaryAgency?.toLowerCase().includes(lower) ||
+          r.typeOfService?.toLowerCase().includes(lower) ||
+          r.narrative?.toLowerCase().includes(lower)
       );
-    } else {
-      setFilteredReports(reports);
     }
-  }, [search, reports]);
+
+    setFilteredReports(list);
+  }, [reports, search, filterDivision, filterUserId, filterDate]);
 
   const load = async () => {
     try {
@@ -89,7 +99,7 @@ const Reports: React.FC = () => {
       });
       const newItems: Report[] = data.item?.pagedItems || [];
       if (newItems.length === 0) {
-        Alert.alert('No More Reports...');
+        Alert.alert("No More Reports...");
       }
       setReports(
         newItems.sort(
@@ -158,7 +168,7 @@ const Reports: React.FC = () => {
           if (selectedIds.length > 0) {
             if (canModify) toggleSelect(item.reportId);
           } else {
-            navigation.navigate('ReportDetails', {
+            navigation.navigate("ReportDetails", {
               reportId: item.reportId,
             });
           }
@@ -170,7 +180,7 @@ const Reports: React.FC = () => {
           <View style={styles.metaRow}>
             <Text style={styles.metaDate}>{formattedDate}</Text>
             <Text style={styles.metaHours}>
-              Hours: {item.hoursOfService ?? 'N/A'}
+              Hours: {item.hoursOfService ?? "N/A"}
             </Text>
           </View>
           <View style={styles.row}>
@@ -200,7 +210,7 @@ const Reports: React.FC = () => {
           onPress={() => setShowDatePicker(true)}
         >
           <Text style={styles.dateButtonText}>
-            {filterDate ? filterDate.toLocaleDateString() : 'Select Date'}
+            {filterDate ? filterDate.toLocaleDateString() : "Select Date"}
           </Text>
         </TouchableOpacity>
         {showDatePicker && (
@@ -217,7 +227,7 @@ const Reports: React.FC = () => {
           />
         )}
         <Picker
-          selectedValue={filterUserId ?? ''}
+          selectedValue={filterUserId ?? ""}
           onValueChange={(v) => {
             setFilterUserId(v ? Number(v) : null);
             setPageIndex(0);
@@ -264,17 +274,17 @@ const Reports: React.FC = () => {
           <TouchableOpacity
             onPress={() => setPageIndex((p) => Math.max(0, p - 2))}
           >
-            <Text style={styles.arrowText}>{'<<'}</Text>
+            <Text style={styles.arrowText}>{"<<"}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setPageIndex((p) => Math.max(0, p - 1))}
           >
-            <Text style={styles.arrowText}>{'<'}</Text>
+            <Text style={styles.arrowText}>{"<"}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.pageSizeRow}>
-          {['5', '10', '20', '50', 'All'].map((size) => {
-            const numeric = size === 'All' ? 9999 : parseInt(size, 10);
+          {["5", "10", "20", "50", "All"].map((size) => {
+            const numeric = size === "All" ? 9999 : parseInt(size, 10);
             const active = pageSize === numeric;
             return (
               <TouchableOpacity
@@ -289,10 +299,10 @@ const Reports: React.FC = () => {
         </View>
         <View style={styles.rightArrows}>
           <TouchableOpacity onPress={() => setPageIndex((p) => p + 1)}>
-            <Text style={styles.arrowText}>{'>'}</Text>
+            <Text style={styles.arrowText}>{">"}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setPageIndex((p) => p + 2)}>
-            <Text style={styles.arrowText}>{'>>'}</Text>
+            <Text style={styles.arrowText}>{">>"}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -309,10 +319,7 @@ const Reports: React.FC = () => {
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
       {selectedIds.length > 0 && (
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={deleteSelected}
-        >
+        <TouchableOpacity style={styles.deleteButton} onPress={deleteSelected}>
           <TrashIcon color="white" size={24} />
         </TouchableOpacity>
       )}
@@ -334,10 +341,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   title: {
-    color: 'white',
+    color: "white",
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginTop: 16,
   },
   filters: {
@@ -348,43 +355,43 @@ const styles = StyleSheet.create({
   dateButton: {
     padding: 8,
     borderWidth: 1,
-    borderColor: 'white',
+    borderColor: "white",
     borderRadius: 4,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   dateButtonText: {
-    color: 'white',
+    color: "white",
   },
   picker: {
-    color: 'white',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    color: "white",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
   searchRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   searchInput: {
     flex: 1,
-    borderColor: 'white',
+    borderColor: "white",
     borderWidth: 1,
     paddingHorizontal: 8,
     borderRadius: 4,
-    color: 'white',
+    color: "white",
   },
   paginationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
   },
   leftArrows: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     flex: 1,
   },
   pageSizeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     flex: 1,
   },
@@ -392,103 +399,103 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   sizeButtonActive: {
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
   },
   sizeText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   rightArrows: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   arrowText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
   },
   cardContainer: {
-    position: 'relative',
+    position: "relative",
   },
   card: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     padding: 12,
     borderRadius: 8,
   },
   selectedCard: {
     borderWidth: 2,
-    borderColor: '#007bff',
+    borderColor: "#007bff",
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
   },
   rowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 'auto',
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
   },
   header: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     marginRight: 4,
   },
   body: {
-    color: 'white',
+    color: "white",
     marginRight: 8,
   },
   divisionBody: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
     marginLeft: 4,
   },
   type: {
-    color: 'white',
+    color: "white",
     marginTop: 4,
   },
   metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 0,
     marginBottom: 4,
   },
   metaDate: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   metaHours: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   addButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     width: 50,
     height: 50,
     borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   deleteButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     left: 20,
-    backgroundColor: '#dc3545',
+    backgroundColor: "#dc3545",
     width: 50,
     height: 50,
     borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   addButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 24,
     lineHeight: 24,
   },
