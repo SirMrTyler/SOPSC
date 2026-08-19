@@ -1,0 +1,24 @@
+Ideas:
+- Messages: Mute message feature.
+
+Issues:
+- Registration:
+	1. when typing passwords, the text is invisible. It should show bullet points unless it is the most recent character typed. There should also be an eye symbol on the far right that when tapped reveals the entire password being typed.
+- Schedule:
+	1. ->CalenderEvent->Google Meet->Join Meeting is not working when tapped. It should automatically open the google meet link when tapped.
+
+- Messages:
+	1. No way to delete messages (I would like to tap and hold, when that happens the messages should all render with an empty circle on the left, and when tapped it fills the circle; adding it to the selected messages list). Once the user presses delete, all the selected messages are deleted)
+	
+	2. No way to delete conversations (I want this to work the same way as the deletion functionality above)
+	
+	* Group Chats:
+		1. The group chat names are listed as "Group Chat" instead of the `conversations/{chatId.name}` value
+		2. The group messages themselves should (color layout only) look like the messages in the direct messages (except for the read receipt functionality; leave that the 		   same). At the moment other users have a more "black background" look. They should be white like messages from 'other users' in direct messages.
+	
+	* Direct Messages:
+		1. The names of users who haven't sent a message yet don't seem to be displaying. The users name, and profile photo should be loaded/rendered to the UI from SQL then 		   passed to firebases payload if/when they send a message.
+
+- Notifications:
+	1. The users email is being displayed instead of their name
+	2. The notification comes up twice on apple (not android)
